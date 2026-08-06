@@ -10,7 +10,10 @@ A minimal, evidence-driven workflow for [Pi Coding Agent](https://pi.dev/) that 
 - Pi-native project settings in `.pi/settings.json`;
 - a project launcher (`./p`) with the required tool allowlist;
 - automatic read-heavy subagents through the pinned `pi-sub-agent` package;
-- a project-local safety extension that blocks secrets, destructive commands, production mutation, Git history mutation, and accidental workflow-policy edits;
+- on-demand LSP, Context7 documentation, web search/fetch, and image analysis;
+- lazy Playwright MCP browser exploration through a restricted proxy tool;
+- a visible todo panel for genuinely multi-step work;
+- a project-local safety extension that blocks secrets, destructive commands, production mutation, Git history mutation, unsafe MCP calls, and accidental workflow-policy edits;
 - prompt templates: `/build`, `/plan`, `/review`, `/ship`, `/bootstrap`;
 - on-demand skills for verification routing, risk review, and browser QA;
 - generic CI and full verification scripts that adapt to common stacks.
@@ -24,6 +27,7 @@ Pi intentionally keeps the core small. It does not prescribe MCP, plan mode, per
 - no parallel shared-file writers;
 - small always-loaded context;
 - workflows loaded on demand through skills and prompt templates;
+- lazy external tools instead of permanently exposing large schemas;
 - a deterministic safety guard instead of relying only on prompt instructions;
 - targeted verification during implementation and one full gate at delivery.
 
@@ -47,7 +51,9 @@ Start Pi:
 ./p
 ```
 
-The first time Pi sees project-local resources, approve/trust the project after reviewing `.pi/settings.json`, `.pi/extensions/`, `.pi/skills/`, and `.pi/prompts/`. Pi will install the pinned project package after trust is granted.
+The first time Pi sees project-local resources, approve/trust the project after reviewing `.pi/settings.json`, `.pi/extensions/`, `.pi/skills/`, `.pi/prompts/`, and `.mcp.json`. Pi installs the pinned project packages after trust is granted.
+
+Complete the one-time tool setup in [`docs/TOOLING_SETUP.md`](docs/TOOLING_SETUP.md).
 
 Authenticate from Pi:
 
@@ -123,6 +129,33 @@ Recommended posture:
 - Security auditor: strong model, high thinking
 - Parent implementation session: strongest cost-effective coding model
 
+### Production tool stack
+
+The template pins:
+
+```text
+pi-sub-agent
+pi-mcp-adapter
+rpiv-todo
+pi-lsp-adapter
+pi-context7
+pi-image-subagent
+pi-web-search
+```
+
+The launcher exposes only the required tools. The MCP adapter exposes a single compact `mcp` proxy; Playwright server schemas are discovered only when needed.
+
+Use:
+
+```text
+/todos
+/lsp status
+/mcp status
+/web --show
+```
+
+See [`docs/TOOLING_SETUP.md`](docs/TOOLING_SETUP.md) for LSP installation, Context7 keys, search provider selection, vision-model configuration, and Playwright smoke checks.
+
 ## Safety model
 
 Pi project trust is not a sandbox. Pi runs with the operating-system permissions of the current user.
@@ -136,7 +169,8 @@ This template adds `.pi/extensions/safety-guard.js`, which blocks:
 - global package installation and publishing;
 - remote shell, deployment, infrastructure, and production database commands;
 - writes outside the repository;
-- accidental edits to workflow policy files.
+- accidental edits to workflow policy files;
+- unsafe Playwright MCP tools and non-local browser navigation.
 
 Workflow files are intentionally protected during normal feature work. For an explicit workflow-maintenance session:
 
@@ -177,7 +211,10 @@ Projects can provide `scripts/project-verify.sh` to replace the generic detector
 
 ## Browser and visual QA
 
-Pi does not need MCP for the normal browser-testing workflow. The `browser-qa` skill uses repository-local Playwright or equivalent scripts through the shell.
+Browser work has two layers:
+
+- Playwright MCP for interactive exploration, console/network inspection, and focused browser actions;
+- repository-local Playwright Test for durable regression coverage and CI.
 
 For local development:
 
@@ -189,13 +226,14 @@ For local development:
 - reuse servers;
 - run a specific spec.
 
-Use visual artifacts only when appearance materially matters.
+Use accessibility snapshots for actions. Use screenshots only when appearance materially matters, then delegate interpretation to the image subagent when needed.
 
 ## Repository layout
 
 ```text
 .
 ├── AGENTS.md
+├── .mcp.json
 ├── p
 ├── .pi/
 │   ├── APPEND_SYSTEM.md
@@ -214,6 +252,7 @@ Use visual artifacts only when appearance materially matters.
 │       ├── risk-review/
 │       └── verification-routing/
 ├── docs/
+│   └── TOOLING_SETUP.md
 ├── scripts/
 └── .github/workflows/quality.yml
 ```
@@ -223,12 +262,13 @@ Use visual artifacts only when appearance materially matters.
 1. Copy the template into the new repository.
 2. Fill or import the real product source.
 3. Run `./p`.
-4. Trust the project after reviewing Pi resources.
-5. Run `/bootstrap`.
-6. Review the generated project-specific docs and verification lanes.
-7. Deliver one vertical slice at a time with `/build`.
-8. Use `/review` for high-risk changes.
-9. Use `/ship` for final local handoff.
+4. Trust the project after reviewing Pi resources and `.mcp.json`.
+5. Complete `docs/TOOLING_SETUP.md` once for the machine/project.
+6. Run `/bootstrap`.
+7. Review the generated project-specific docs and verification lanes.
+8. Deliver one vertical slice at a time with `/build`.
+9. Use `/review` for high-risk changes.
+10. Use `/ship` for final local handoff.
 
 ## Updating Pi and packages
 
@@ -244,7 +284,7 @@ Project packages:
 pi update --extensions
 ```
 
-The subagent package is pinned in `.pi/settings.json`. Update the pin only after reviewing the release and testing delegation in a disposable branch.
+Packages are pinned in `.pi/settings.json`. Update a pin only after reviewing the release and testing it in a disposable branch.
 
 ## Migration from the previous OpenCode workflow
 
