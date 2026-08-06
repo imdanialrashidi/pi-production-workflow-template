@@ -30,6 +30,7 @@ const generatedSegments = [
   ".next",
   ".turbo",
   ".vite",
+  ".artifacts",
   "playwright-report",
   "test-results",
 ];
@@ -38,6 +39,7 @@ const workflowPaths = [
   "AGENTS.md",
   "p",
   ".pi",
+  ".mcp.json",
   ".github/workflows",
   "scripts/verify.sh",
   "scripts/verify-fast.sh",
@@ -160,6 +162,7 @@ function commandMutatesProtectedWorkflow(command) {
   const referencesProtected = [
     /(^|[\s"'=])AGENTS\.md(?:[\s"'|;&]|$)/,
     /(^|[\s"'=])\.pi\//,
+    /(^|[\s"'=])\.mcp\.json(?:[\s"'|;&]|$)/,
     /(^|[\s"'=])\.github\/workflows\//,
     /(^|[\s"'=])scripts\/(?:verify(?:-(?:fast|feature|full))?|pi-doctor)\.sh/,
     /(^|[\s"'=])p(?:[\s"'|;&]|$)/,
@@ -176,6 +179,54 @@ function commandMutatesProtectedWorkflow(command) {
     /\b(?:cp|mv|rm|install)\b/,
     /(^|[^<])>>?/,
   ].some((pattern) => pattern.test(command));
+}
+
+function parseMcpArgs(value) {
+  if (!value || typeof value !== "object") return {};
+  if (value.args && typeof value.args === "object") return value.args;
+  if (typeof value.args === "string") {
+    try {
+      const parsed = JSON.parse(value.args);
+      return parsed && typeof parsed === "object" ? parsed : {};
+    } catch {
+      return {};
+    }
+  }
+  return {};
+}
+
+function mcpCallReason(input) {
+  if (!input || typeof input !== "object") return null;
+
+  const tool = String(input.tool ?? "");
+  const blockedTools = new Set([
+    "browser_evaluate",
+    "browser_file_upload",
+    "browser_drop",
+    "browser_run_code",
+    "browser_run_code_unsafe",
+  ]);
+
+  if (blockedTools.has(tool) || [...blockedTools].some((name) => tool.endsWith(`_${name}`))) {
+    return `Unsafe MCP browser tool is blocked: ${tool}`;
+  }
+
+  if (tool === "browser_navigate" || tool.endsWith("_browser_navigate")) {
+    const args = parseMcpArgs(input);
+    if (typeof args.url !== "string") return null;
+
+    try {
+      const url = new URL(args.url);
+      const localHosts = new Set(["localhost", "127.0.0.1", "::1"]);
+      if (!["http:", "https:"].includes(url.protocol) || !localHosts.has(url.hostname)) {
+        return `Playwright MCP navigation is restricted to local development origins: ${url.origin}`;
+      }
+    } catch {
+      return "Playwright MCP navigation requires a valid local HTTP(S) URL.";
+    }
+  }
+
+  return null;
 }
 
 function blockedCommandReason(command) {
@@ -231,6 +282,12 @@ export default function safetyGuard(pi) {
 
     if (event.toolName === "bash") {
       const reason = blockedCommandReason(event.input?.command);
+      if (reason) return { block: true, reason };
+      return;
+    }
+
+    if (event.toolName === "mcp") {
+      const reason = mcpCallReason(event.input);
       if (reason) return { block: true, reason };
       return;
     }
