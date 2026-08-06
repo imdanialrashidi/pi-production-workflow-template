@@ -21,6 +21,9 @@ docs/private/**
 .pi/auth.json
 .pi/models.json
 .pi/trust.json
+.pi/mcp.json
+.pi/mcp-oauth/
+.pi/mcp-traces/
 
 # Dependencies and environments
 node_modules/
@@ -28,7 +31,7 @@ node_modules/
 venv/
 vendor/
 
-# Build, test, and framework output
+# Build, test, browser, and framework output
 dist/
 build/
 coverage/
@@ -36,6 +39,7 @@ target/
 .next/
 .turbo/
 .vite/
+.artifacts/
 playwright-report/
 test-results/
 *.log
