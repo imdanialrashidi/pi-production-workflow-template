@@ -25,7 +25,7 @@ export PI_CACHE_RETENTION="${PI_CACHE_RETENTION:-long}"
 
 args=(
   --tools
-  "read,bash,edit,write,grep,find,ls,subagent"
+  "read,bash,edit,write,grep,find,ls,subagent,todo,mcp,lsp_diagnostics,lsp_hover,lsp_definition,lsp_references,lsp_document_symbols,lsp_workspace_symbols,lsp_more,context7_resolve_library_id,context7_get_library_docs,context7_get_cached_doc_raw,analyze_image,web_search,web_fetch"
 )
 
 if [[ -n "${PI_MAIN_MODEL:-}" ]]; then
