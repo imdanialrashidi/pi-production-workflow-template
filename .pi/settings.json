@@ -1,0 +1,16 @@
+{
+  "defaultThinkingLevel": "high",
+  "enableInstallTelemetry": false,
+  "compaction": {
+    "enabled": true,
+    "reserveTokens": 16384,
+    "keepRecentTokens": 24000
+  },
+  "retry": {
+    "enabled": true,
+    "maxRetries": 2
+  },
+  "packages": [
+    "npm:pi-sub-agent@0.1.5"
+  ]
+}
