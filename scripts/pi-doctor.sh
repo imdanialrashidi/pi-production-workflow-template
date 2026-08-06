@@ -16,6 +16,7 @@ fail() { printf 'FAIL  %s\n' "$1" >&2; failures=$((failures + 1)); }
 required=(
   AGENTS.md
   p
+  .mcp.json
   .pi/settings.json
   .pi/models.env
   .pi/APPEND_SYSTEM.md
@@ -27,16 +28,17 @@ required=(
   .pi/skills/risk-review/SKILL.md
   .pi/skills/verification-routing/SKILL.md
   .pi/skills/browser-qa/SKILL.md
+  docs/TOOLING_SETUP.md
 )
 
 for file in "${required[@]}"; do
   [[ -f "$file" ]] && pass "$file exists" || fail "$file is missing"
 done
 
-if node -e 'JSON.parse(require("fs").readFileSync(".pi/settings.json","utf8"))' >/dev/null 2>&1; then
-  pass ".pi/settings.json is valid JSON"
+if node -e 'JSON.parse(require("fs").readFileSync(".pi/settings.json","utf8")); JSON.parse(require("fs").readFileSync(".mcp.json","utf8"))' >/dev/null 2>&1; then
+  pass "Pi settings and MCP config are valid JSON"
 else
-  fail ".pi/settings.json is invalid JSON"
+  fail "Pi settings or MCP config is invalid JSON"
 fi
 
 if node --check .pi/extensions/safety-guard.js >/dev/null 2>&1; then
@@ -45,17 +47,88 @@ else
   fail "safety guard has a JavaScript syntax error"
 fi
 
-if bash -n p scripts/verify.sh; then
+if bash -n p scripts/verify.sh scripts/pi-doctor.sh; then
   pass "shell entrypoints parse"
 else
   fail "shell syntax validation failed"
 fi
 
-if grep -Fq '"npm:pi-sub-agent@0.1.5"' .pi/settings.json; then
-  pass "subagent package is pinned"
+if node <<'NODE'
+const fs = require('fs');
+const settings = JSON.parse(fs.readFileSync('.pi/settings.json', 'utf8'));
+const installed = new Set((settings.packages || []).map((entry) =>
+  typeof entry === 'string' ? entry : entry && entry.source
+));
+const required = [
+  'npm:pi-sub-agent@0.1.5',
+  'npm:pi-mcp-adapter@2.20.1',
+  'npm:@juicesharp/rpiv-todo@2.1.0',
+  'npm:pi-lsp-adapter@0.1.3',
+  'npm:@dreki-gg/pi-context7@0.2.0',
+  'npm:pi-image-subagent@1.0.0',
+  'npm:@bytetrue/pi-web-search@0.1.3',
+];
+const missing = required.filter((item) => !installed.has(item));
+if (missing.length) {
+  console.error(`Missing package pins: ${missing.join(', ')}`);
+  process.exit(1);
+}
+const mcpPackage = (settings.packages || []).find((entry) =>
+  entry && typeof entry === 'object' && entry.source === 'npm:pi-mcp-adapter@2.20.1'
+);
+if (!mcpPackage || !Array.isArray(mcpPackage.skills) || mcpPackage.skills.length !== 0) {
+  console.error('MCP adapter package skills must be disabled to avoid loading mcpScript guidance.');
+  process.exit(1);
+}
+NODE
+then
+  pass "production package pins are present"
 else
-  fail "subagent package pin is missing"
+  fail "production package pin validation failed"
 fi
+
+if node <<'NODE'
+const fs = require('fs');
+const config = JSON.parse(fs.readFileSync('.mcp.json', 'utf8'));
+const server = config.mcpServers?.playwright;
+if (!server) throw new Error('Playwright MCP server is missing');
+if (config.settings?.scriptMode !== false) throw new Error('MCP scripting must be disabled');
+if (!Array.isArray(server.args) || !server.args.includes('@playwright/mcp@0.0.78')) {
+  throw new Error('Playwright MCP version pin is missing');
+}
+if (server.lifecycle !== 'lazy') throw new Error('Playwright MCP must be lazy');
+const included = new Set(server.includeTools || []);
+for (const unsafe of ['browser_evaluate', 'browser_file_upload', 'browser_drop']) {
+  if (included.has(unsafe)) throw new Error(`Unsafe browser tool exposed: ${unsafe}`);
+}
+for (const required of ['browser_snapshot', 'browser_find', 'browser_navigate', 'browser_take_screenshot']) {
+  if (!included.has(required)) throw new Error(`Required browser tool missing: ${required}`);
+}
+NODE
+then
+  pass "Playwright MCP is pinned, lazy, and restricted"
+else
+  fail "Playwright MCP policy validation failed"
+fi
+
+launcher_tools=(
+  subagent
+  todo
+  mcp
+  lsp_diagnostics
+  context7_get_library_docs
+  analyze_image
+  web_search
+  web_fetch
+)
+
+for tool in "${launcher_tools[@]}"; do
+  if grep -Fq "$tool" p; then
+    pass "launcher allows $tool"
+  else
+    fail "launcher does not allow $tool"
+  fi
+done
 
 missing_frontmatter=0
 while IFS= read -r -d '' file; do
@@ -76,7 +149,7 @@ secret_scan_file="$(mktemp)"
 trap 'rm -f "$secret_scan_file"' EXIT
 
 if find . -maxdepth 4 -type f \
-  \( -path './.pi/*' -o -name 'p' -o -path './docs/*' \) \
+  \( -path './.pi/*' -o -name '.mcp.json' -o -name 'p' -o -path './docs/*' \) \
   -print0 |
   xargs -0 grep -En \
     'sk-[A-Za-z0-9_-]{16,}|(API_KEY|ACCESS_TOKEN|SECRET|PASSWORD)[[:space:]]*=[[:space:]]*[^"<${][^[:space:]]+' \
