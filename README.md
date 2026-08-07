@@ -1,45 +1,65 @@
-# Pi Vibe Production Template
+# Pi Production Workflow Template
 
-A minimal, evidence-driven workflow for [Pi Coding Agent](https://pi.dev/) that favors fast vertical slices, bounded delegation, explicit safety guardrails, and verification over agent ceremony.
-
-> The repository name is historical. The workflow is now Pi-native and no longer depends on OpenCode.
+A compact, evidence-driven harness for [Pi Coding Agent](https://pi.dev/) focused on high-quality autonomous implementation, bounded independent evaluation, low-resource verification, and production-safe guardrails.
 
 ## What this template provides
 
-- concise repository-wide rules in `AGENTS.md`;
+- a short progressive-disclosure map in `AGENTS.md` instead of a giant always-loaded manual;
+- a detailed on-demand harness playbook in `docs/HARNESS.md`;
+- a project quality/evaluator contract in `docs/QUALITY.md`;
+- acceptance-driven `/build`, `/review`, and `/ship` workflows;
+- durable execution plans plus `/handoff` and `/resume` for long-running work across fresh contexts;
 - Pi-native project settings in `.pi/settings.json`;
 - a project launcher (`./p`) with the required tool allowlist;
-- automatic read-heavy subagents through the pinned `pi-sub-agent` package;
+- bounded read-heavy subagents through the pinned `pi-sub-agent` package;
 - on-demand LSP, Context7 documentation, web search/fetch, and image analysis;
 - lazy Playwright MCP browser exploration through a restricted proxy tool;
+- repository-local Playwright Test (when the real project uses it) for durable regression coverage;
 - a visible todo panel for genuinely multi-step work;
-- a project-local safety extension that blocks secrets, destructive commands, production mutation, Git history mutation, unsafe MCP calls, and accidental workflow-policy edits;
-- prompt templates: `/build`, `/plan`, `/review`, `/ship`, `/bootstrap`;
-- on-demand skills for verification routing, risk review, and browser QA;
-- generic CI and full verification scripts that adapt to common stacks.
+- a project-local safety extension that blocks secrets, destructive commands, production mutation, Git history mutation, unsafe MCP calls, and accidental harness-policy edits;
+- specialized skills for verification routing, risk review, and browser QA;
+- a doctor/CI check that validates package pins, security posture, and always-loaded context budgets.
 
-## Why this design
+## Harness philosophy
 
-Pi intentionally keeps the core small. It does not prescribe MCP, plan mode, permission popups, subagents, or a todo system. This template implements only the pieces that materially improve delivery:
+The workflow follows a simple loop:
 
-- one primary write-capable agent;
-- isolated read-heavy Scout/Reviewer/Security subagents;
-- no parallel shared-file writers;
-- small always-loaded context;
-- workflows loaded on demand through skills and prompt templates;
-- lazy external tools instead of permanently exposing large schemas;
-- a deterministic safety guard instead of relying only on prompt instructions;
-- targeted verification during implementation and one full gate at delivery.
+```text
+intent
+→ classify
+→ acceptance contract
+→ focused discovery
+→ one primary writer
+→ targeted verification
+→ independent evaluator when justified
+→ bounded repair
+→ final gate
+→ acceptance → evidence report
+```
+
+For long-running work:
+
+```text
+execution plan
+→ incremental work
+→ /handoff
+→ fresh context
+→ /resume
+```
+
+The design intentionally avoids agent swarms and giant skill packs. Extra orchestration is added only where it solves a demonstrated failure mode.
+
+See [`docs/PI_WORKFLOW.md`](docs/PI_WORKFLOW.md) and [`docs/HARNESS.md`](docs/HARNESS.md) for the architecture and operating playbook.
 
 ## Install
 
-Install the official Pi package:
+Install Pi:
 
 ```bash
 npm install -g --ignore-scripts @earendil-works/pi-coding-agent
 ```
 
-Validate the workflow:
+Validate the template:
 
 ```bash
 bash scripts/pi-doctor.sh
@@ -51,11 +71,11 @@ Start Pi:
 ./p
 ```
 
-The first time Pi sees project-local resources, approve/trust the project after reviewing `.pi/settings.json`, `.pi/extensions/`, `.pi/skills/`, `.pi/prompts/`, and `.mcp.json`. Pi installs the pinned project packages after trust is granted.
+The first time Pi sees project-local resources, review and trust `.pi/settings.json`, `.pi/extensions/`, `.pi/skills/`, `.pi/prompts/`, and `.mcp.json`. Pi then installs the pinned project packages.
 
 Complete the one-time tool setup in [`docs/TOOLING_SETUP.md`](docs/TOOLING_SETUP.md).
 
-Authenticate from Pi:
+Authenticate:
 
 ```text
 /login
@@ -67,14 +87,14 @@ Select a model:
 /model
 ```
 
-The launcher uses the selected Pi model by default. To pin a model for this repository, edit `.pi/models.env`:
+To pin a model for this repository, edit `.pi/models.env`:
 
 ```bash
 export PI_MAIN_MODEL="provider/model-id"
 export PI_MAIN_THINKING="high"
 ```
 
-Do not put API keys in `.pi/models.env`. Pi credentials belong in its global auth storage.
+Do not put API keys in `.pi/models.env`.
 
 ## Daily usage
 
@@ -84,39 +104,54 @@ Start:
 ./p
 ```
 
-Normal prompt:
+For an ordinary task, a natural prompt is enough:
 
 ```text
-Implement the smallest complete slice for the requested behavior and verify it.
+Implement this behavior completely and verify it.
 ```
 
-Reusable commands:
+Reusable workflows:
 
 ```text
 /build <accepted task>
-/plan <goal>
-/review [scope]
-/ship [scope]
+/plan <complex goal>
+/review [scope or acceptance contract]
+/ship [scope or execution plan]
+/handoff <active execution plan or task>
+/resume <docs/exec-plans/active/...md>
 /bootstrap [project constraints]
 ```
 
-Reload changed Pi resources without restarting:
+Reload project resources:
 
 ```text
 /reload
 ```
 
-### Automatic subagents
+## Task routing
 
-The main agent automatically delegates when the task justifies it:
+The harness distinguishes four levels:
 
-- `scout` before implementation when files, tests, contracts, or cross-module flow are unclear;
-- `reviewer` after meaningful high-risk or multi-module implementation;
+- **Localized:** direct inspect → change → targeted check; no ceremony.
+- **Standard:** compact acceptance contract, one vertical slice, verification, independent evaluation where useful.
+- **Complex:** `/plan` plus a durable execution plan when work must survive context/session boundaries.
+- **High risk:** explicit acceptance, risk/security review, negative-path evidence, and full verification before completion.
+
+For Standard or larger work, the acceptance contract contains 3–7 observable criteria and proof required for each. This same contract drives implementation, review, browser QA, and the final report.
+
+## Automatic subagents
+
+The main agent remains the only writer.
+
+It may automatically use:
+
+- `scout` when the relevant repository surface or cross-module flow is genuinely unclear;
+- `reviewer` after non-trivial user-facing work, cross-module changes, production-bug fixes, or material regression-risk changes;
 - `security-auditor` after trust-boundary, money, access, migration, secret, upload, callback, deployment, or data-integrity changes.
 
-The primary agent remains the only writer. Subagents return evidence; they do not prove tests passed.
+Independent evaluation is bounded: by default, no more than two evaluator/repair rounds before the agent must reassess the root cause/contract or report a real blocker.
 
-Configure subagent models and thinking levels:
+Configure subagent models with:
 
 ```text
 /sub-agent-settings
@@ -129,7 +164,7 @@ Recommended posture:
 - Security auditor: strong model, high thinking
 - Parent implementation session: strongest cost-effective coding model
 
-### Production tool stack
+## Production tool stack
 
 The template pins:
 
@@ -143,9 +178,9 @@ pi-image-subagent
 pi-web-search
 ```
 
-The launcher exposes only the required tools. The MCP adapter exposes a single compact `mcp` proxy; Playwright server schemas are discovered only when needed.
+The launcher exposes only the required tools. The MCP adapter exposes a compact `mcp` proxy, and Playwright schemas are discovered only when needed.
 
-Use:
+Useful checks:
 
 ```text
 /todos
@@ -154,13 +189,46 @@ Use:
 /web --show
 ```
 
-See [`docs/TOOLING_SETUP.md`](docs/TOOLING_SETUP.md) for LSP installation, Context7 keys, search provider selection, vision-model configuration, and Playwright smoke checks.
+See [`docs/TOOLING_SETUP.md`](docs/TOOLING_SETUP.md) for LSP, Context7, search, vision, and Playwright setup.
+
+## Context and long-running work
+
+`AGENTS.md` is a map, not an encyclopedia. `scripts/pi-doctor.sh` enforces an always-loaded size budget so detailed guidance must live in docs/skills instead of silently consuming task context.
+
+For complex work, use `docs/exec-plans/active/`. The plan stores accepted criteria, verified state, decisions, evidence, risks, and the next action—not raw transcripts.
+
+When old context becomes noisy or the task must cross sessions:
+
+```text
+/handoff docs/exec-plans/active/my-task.md
+```
+
+Start a fresh session, then:
+
+```text
+/resume docs/exec-plans/active/my-task.md
+```
+
+The fresh agent validates the plan against the working tree before continuing.
+
+## Failure recovery
+
+The agent must not repeat the same failed approach indefinitely. After the same approach/check fails twice without materially new evidence, it should:
+
+- preserve the exact failure;
+- state competing root-cause hypotheses;
+- gather the cheapest discriminating evidence;
+- use semantic/local evidence before broad external research;
+- use one focused independent investigation if needed;
+- hand off to a fresh context when stale history is becoming harmful.
+
+Recurring failure classes should become tests, types/schemas, lint/structural checks, clearer APIs/tools, or focused docs—not more generic prompt text.
 
 ## Safety model
 
-Pi project trust is not a sandbox. Pi runs with the operating-system permissions of the current user.
+Pi project trust is not a sandbox. Pi runs with the operating-system permissions of the account that starts it.
 
-This template adds `.pi/extensions/safety-guard.js`, which blocks:
+`.pi/extensions/safety-guard.js` blocks:
 
 - sensitive credential and private-key paths;
 - destructive recursive deletion;
@@ -169,54 +237,52 @@ This template adds `.pi/extensions/safety-guard.js`, which blocks:
 - global package installation and publishing;
 - remote shell, deployment, infrastructure, and production database commands;
 - writes outside the repository;
-- accidental edits to workflow policy files;
+- accidental edits to harness-policy files;
 - unsafe Playwright MCP tools and non-local browser navigation.
 
-Workflow files are intentionally protected during normal feature work. For an explicit workflow-maintenance session:
+For explicit harness maintenance:
 
 ```bash
 PI_WORKFLOW_EDIT=1 ./p
 ```
 
-Review the diff before keeping any workflow change.
-
-For stronger isolation, run Pi inside a container, VM, or dedicated development account. The extension is a guardrail, not an operating-system sandbox.
+Review the diff before keeping harness changes. For stronger isolation, use a container, VM, or dedicated development account.
 
 ## Verification
 
-The main agent loads `verification-routing` and chooses the cheapest reliable lane.
+The `verification-routing` skill chooses the cheapest reliable lane.
 
 During implementation:
 
 - exact affected test;
 - changed/related tests;
 - fast verification;
-- one affected browser spec.
+- one affected browser spec where relevant.
 
 After a bounded slice:
 
 - feature verification once.
 
-Before merge/release or after high-risk changes:
+Before final delivery or after High-risk changes:
 
 - full verification once.
 
-The generic full entrypoint is:
+Generic full entrypoint:
 
 ```bash
 bash scripts/verify.sh
 ```
 
-Projects can provide `scripts/project-verify.sh` to replace the generic detector with their canonical gate.
+A real project can provide `scripts/project-verify.sh` to replace the generic detector with its canonical gate.
 
 ## Browser and visual QA
 
 Browser work has two layers:
 
-- Playwright MCP for interactive exploration, console/network inspection, and focused browser actions;
-- repository-local Playwright Test for durable regression coverage and CI.
+- Playwright MCP for interactive exploration, accessibility snapshots, console/network inspection, and focused actions;
+- repository-local Playwright Test for deterministic regression coverage and CI.
 
-For local development:
+Local development policy:
 
 - no `CI=1`;
 - one relevant browser project;
@@ -226,7 +292,7 @@ For local development:
 - reuse servers;
 - run a specific spec.
 
-Use accessibility snapshots for actions. Use screenshots only when appearance materially matters, then delegate interpretation to the image subagent when needed.
+Use screenshots only when appearance materially matters; use the image subagent only when visual interpretation adds value.
 
 ## Repository layout
 
@@ -246,33 +312,40 @@ Use accessibility snapshots for actions. Use screenshots only when appearance ma
 │   │   ├── build.md
 │   │   ├── plan.md
 │   │   ├── review.md
-│   │   └── ship.md
+│   │   ├── ship.md
+│   │   ├── handoff.md
+│   │   └── resume.md
 │   └── skills/
 │       ├── browser-qa/
 │       ├── risk-review/
 │       └── verification-routing/
 ├── docs/
-│   └── TOOLING_SETUP.md
+│   ├── HARNESS.md
+│   ├── QUALITY.md
+│   ├── PI_WORKFLOW.md
+│   ├── TOOLING_SETUP.md
+│   └── exec-plans/
+│       └── README.md
 ├── scripts/
 └── .github/workflows/quality.yml
 ```
 
 ## New-project workflow
 
-1. Copy the template into the new repository.
-2. Fill or import the real product source.
-3. Run `./p`.
-4. Trust the project after reviewing Pi resources and `.mcp.json`.
-5. Complete `docs/TOOLING_SETUP.md` once for the machine/project.
-6. Run `/bootstrap`.
-7. Review the generated project-specific docs and verification lanes.
-8. Deliver one vertical slice at a time with `/build`.
-9. Use `/review` for high-risk changes.
-10. Use `/ship` for final local handoff.
+1. Create a repository from this template.
+2. Add/import the real product source.
+3. Run `./p` and review/trust project resources.
+4. Complete `docs/TOOLING_SETUP.md` once for the machine/project.
+5. Run `/bootstrap` to make product, architecture, quality, verification, and runtime interfaces project-specific.
+6. Deliver bounded slices with `/build`.
+7. Use `/plan` only for work that genuinely needs durable design/execution state.
+8. Use `/review` when independent evaluation adds value.
+9. Use `/handoff` + `/resume` for long-running work across clean contexts.
+10. Use `/ship` for final local acceptance/release readiness.
 
 ## Updating Pi and packages
 
-Pi itself:
+Pi:
 
 ```bash
 pi update --self
@@ -286,9 +359,9 @@ pi update --extensions
 
 Packages are pinned in `.pi/settings.json`. Update a pin only after reviewing the release and testing it in a disposable branch.
 
-## Migration from the previous OpenCode workflow
+## Research basis
 
-See [`docs/MIGRATION_FROM_OPENCODE.md`](docs/MIGRATION_FROM_OPENCODE.md).
+The harness design is informed by public engineering work from OpenAI and Anthropic on harness engineering, context engineering, long-running agents, evaluator/optimizer loops, tool design, and repository-as-system-of-record practices, plus SWE-agent research on agent-computer interfaces. See `docs/HARNESS.md` for the specific design mapping.
 
 ## License
 
