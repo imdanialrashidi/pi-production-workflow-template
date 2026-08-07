@@ -41,6 +41,8 @@ const workflowPaths = [
   ".pi",
   ".mcp.json",
   ".github/workflows",
+  "docs/HARNESS.md",
+  "docs/exec-plans/README.md",
   "scripts/verify.sh",
   "scripts/verify-fast.sh",
   "scripts/verify-feature.sh",
@@ -164,6 +166,8 @@ function commandMutatesProtectedWorkflow(command) {
     /(^|[\s"'=])\.pi\//,
     /(^|[\s"'=])\.mcp\.json(?:[\s"'|;&]|$)/,
     /(^|[\s"'=])\.github\/workflows\//,
+    /(^|[\s"'=])docs\/HARNESS\.md(?:[\s"'|;&]|$)/,
+    /(^|[\s"'=])docs\/exec-plans\/README\.md(?:[\s"'|;&]|$)/,
     /(^|[\s"'=])scripts\/(?:verify(?:-(?:fast|feature|full))?|pi-doctor)\.sh/,
     /(^|[\s"'=])p(?:[\s"'|;&]|$)/,
   ].some((pattern) => pattern.test(command));
