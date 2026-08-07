@@ -21,13 +21,19 @@ required=(
   .pi/models.env
   .pi/APPEND_SYSTEM.md
   .pi/extensions/safety-guard.js
+  .pi/prompts/bootstrap.md
   .pi/prompts/build.md
   .pi/prompts/plan.md
   .pi/prompts/review.md
   .pi/prompts/ship.md
+  .pi/prompts/handoff.md
+  .pi/prompts/resume.md
   .pi/skills/risk-review/SKILL.md
   .pi/skills/verification-routing/SKILL.md
   .pi/skills/browser-qa/SKILL.md
+  docs/HARNESS.md
+  docs/QUALITY.md
+  docs/exec-plans/README.md
   docs/TOOLING_SETUP.md
 )
 
@@ -51,6 +57,36 @@ if bash -n p scripts/verify.sh scripts/pi-doctor.sh; then
   pass "shell entrypoints parse"
 else
   fail "shell syntax validation failed"
+fi
+
+check_context_budget() {
+  local file="$1" max_lines="$2" max_bytes="$3"
+  local lines bytes
+  lines="$(wc -l <"$file" | tr -d ' ')"
+  bytes="$(wc -c <"$file" | tr -d ' ')"
+  if (( lines <= max_lines && bytes <= max_bytes )); then
+    pass "$file stays within always-loaded context budget (${lines} lines, ${bytes} bytes)"
+  else
+    fail "$file is too large for always-loaded context (${lines}/${max_lines} lines, ${bytes}/${max_bytes} bytes); move detail to docs/skills"
+  fi
+}
+
+check_context_budget AGENTS.md 180 9000
+check_context_budget .pi/APPEND_SYSTEM.md 180 12000
+
+for reference in 'docs/HARNESS.md' 'docs/QUALITY.md' 'verification-routing'; do
+  if grep -Fq "$reference" AGENTS.md; then
+    pass "AGENTS.md maps to $reference"
+  else
+    fail "AGENTS.md must map to $reference"
+  fi
+done
+
+if grep -Fq 'at most two evaluator/repair rounds' .pi/APPEND_SYSTEM.md && \
+   grep -Fq 'same check or implementation approach fails twice' .pi/APPEND_SYSTEM.md; then
+  pass "execution policy includes bounded evaluator and failure-recovery loops"
+else
+  fail "execution policy is missing evaluator/failure-recovery bounds"
 fi
 
 if node <<'NODE'
@@ -148,7 +184,7 @@ fi
 secret_scan_file="$(mktemp)"
 trap 'rm -f "$secret_scan_file"' EXIT
 
-if find . -maxdepth 4 -type f \
+if find . -maxdepth 5 -type f \
   \( -path './.pi/*' -o -name '.mcp.json' -o -name 'p' -o -path './docs/*' \) \
   -print0 |
   xargs -0 grep -En \
