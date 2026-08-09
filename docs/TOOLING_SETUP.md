@@ -22,7 +22,7 @@ The project MCP configuration pins `@playwright/mcp@0.0.79` and exposes a restri
 ./p
 ```
 
-Review and trust the project-local Pi resources when prompted. Pi then installs missing pinned packages into its project runtime.
+The repository launcher passes Pi's official `--approve` trust override, so it loads the project resources and installs missing pinned packages without a trust prompt. Use `PI_PROJECT_TRUST=ask ./p` only when you intentionally want the interactive trust decision.
 
 Reload after installation:
 
@@ -62,16 +62,15 @@ A useful smoke request is:
 Use the mcp proxy to find the Playwright page snapshot tool. Do not navigate anywhere.
 ```
 
-For actual browser QA, start the project's local application first, then ask Pi to navigate to its localhost URL. Browser actions use accessibility snapshots. Screenshots are reserved for appearance-related evidence and are saved under `.artifacts/playwright/`.
+For actual browser QA, start the project's local application and navigate to its URL. Public HTTP(S) navigation is also available for documentation, references, and comparison evidence. Browser actions should begin with accessibility snapshots; screenshots are reserved for appearance-related evidence and are saved under `.artifacts/playwright/`.
 
-The project intentionally hides:
+Autonomous mode exposes focused `browser_evaluate` for state that snapshots and normal interactions cannot reveal. It still hides:
 
-- arbitrary page JavaScript evaluation;
 - file upload;
 - drag-and-drop file injection;
 - MCP JavaScript scripting.
 
-It also uses an isolated in-memory profile and blocks service workers. The localhost origin allowlist is an accident-reduction measure, not a network sandbox and not redirect containment; use `SECURITY.md` isolation guidance when egress is sensitive.
+It also uses an isolated in-memory profile and blocks service workers. `PI_GUARD_MODE=strict` disables page evaluation and restricts navigation to localhost. Neither mode is a network sandbox or redirect containment; use `SECURITY.md` isolation guidance when egress is sensitive.
 
 If Playwright reports that no browser executable is available, install Chromium once outside the normal agent session:
 

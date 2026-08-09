@@ -104,7 +104,7 @@ Prefer stronger evidence when practical:
 2. real browser/API/database exercise of the relevant journey;
 3. type/lint/structural/static analysis for invariant classes;
 4. reproducible measurement for performance/reliability claims;
-5. focused manual inspection for aspects that cannot be automated economically.
+5. focused independent-evaluator inspection for aspects that cannot be automated economically.
 
 A reviewer or subagent opinion alone is not proof.
 

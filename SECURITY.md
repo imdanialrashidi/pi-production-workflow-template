@@ -8,9 +8,11 @@ Include the affected version/commit, impact, prerequisites, a minimal reproducti
 
 ## Execution boundary
 
-Pi runs with the operating-system permissions of the account that starts it. Project trust, prompts, tool allowlists, and `.pi/extensions/safety-guard.js` are defense in depth; they are not a sandbox and cannot reliably parse every shell/interpreter behavior or redirect.
+Pi runs with the operating-system permissions of the account that starts it. Project trust, prompts, tool allowlists, and `.pi/extensions/safety-guard.js` are defense in depth; they are not a sandbox and cannot reliably parse every shell/interpreter behavior or redirect. This matches Pi's official security model: project trust controls repository-provided input, while real isolation must come from the operating system, container, or VM.
 
-For untrusted repositories, unattended work, or changes with meaningful credentials/data:
+For a trusted working copy, `./p` is autonomous by default: it passes `--approve`, allows routine workspace/Git/browser execution, and does not insert confirmation popups. The guard still blocks high-blast-radius patterns such as credential-store access, destructive deletion, force/deleting pushes, publication/deployment, production mutation, and browser file upload. `PI_PROJECT_TRUST=ask|never` and `PI_GUARD_MODE=strict` remain explicit diagnostic/restriction overrides.
+
+For an untrusted repository, unreviewed third-party instructions, or work exposed to meaningful credentials/private data:
 
 1. Prefer an OS/container/VM boundary with only the required workspace and credentials.
 2. Use `scripts/pi-sandbox.sh` for a simple local Docker boundary, or follow Pi's official [containerization guidance](https://pi.dev/docs/latest/containerization) for Gondolin/OpenShell alternatives.
@@ -20,7 +22,7 @@ For untrusted repositories, unattended work, or changes with meaningful credenti
 
 The Docker build context is reduced by `.dockerignore` to the Dockerfile only. At runtime the wrapper bind-mounts this repository read/write, so the agent can still modify repository files. It uses a read-only container filesystem, drops Linux capabilities, disables privilege escalation, and applies process/resource limits. Model/API traffic still requires network access; use a policy-controlled sandbox when network/credential egress must be restricted.
 
-Playwright MCP's allowed-origin option and the safety extension reduce accidental direct external navigation; they are not a network security boundary and do not contain redirects or every action triggered by a local page. Use network policy/container isolation when browsing untrusted local applications or when egress matters.
+Autonomous Playwright may navigate public HTTP(S) pages and use focused page evaluation. File upload/drop and MCP scripting stay unavailable; strict mode also makes navigation local-only and blocks page evaluation. None of these settings is a network security boundary or redirect containment. Use network policy/container isolation when browsing untrusted applications or when egress matters.
 
 ## Vision data routing
 

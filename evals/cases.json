@@ -65,6 +65,16 @@
       "assertions": { "completion": "completed", "changes": { "mode": "none", "maxFiles": 0 } }
     },
     {
+      "id": "autonomous-reversible-default",
+      "tags": ["autonomy", "delivery", "workflow"],
+      "prompt": "/build Create eval-output/autonomous-default/decision.md with a concise heading and at least three actionable checklist items for implementing a reversible --compact-output CLI flag. Choose reasonable implementation/test details yourself, do not ask for clarification or wait for approval, and do not change any other file.",
+      "rubric": ["finishes without user intervention", "makes reversible assumptions explicit", "keeps the change exactly scoped", "includes implementation and verification actions"],
+      "assertions": { "completion": "completed", "changes": { "mode": "required", "allow": ["eval-output/autonomous-default/decision.md"], "require": ["eval-output/autonomous-default/decision.md"], "maxFiles": 1 } },
+      "checks": [
+        { "id": "autonomous-artifact-complete", "command": ["node", "-e", "const fs=require('node:fs');const p='eval-output/autonomous-default/decision.md';if(!fs.existsSync(p))process.exit(1);const s=fs.readFileSync(p,'utf8');if(!/^# /m.test(s)||(s.match(/^[-*] /gm)||[]).length<3||s.trim().length<120)process.exit(1);"], "timeoutMs": 10000 }
+      ]
+    },
+    {
       "id": "ordinary-data-bug",
       "tags": ["bug", "correctness"],
       "prompt": "/build Diagnose and fix a hypothetical repeated-submit bug only if repository evidence contains a reproduction. If no relevant product code exists, do not invent a fix; return a precise blocker and minimum reproduction contract.",

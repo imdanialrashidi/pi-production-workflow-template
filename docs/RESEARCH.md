@@ -10,11 +10,14 @@ This document connects primary research to concrete Pi workflow decisions. It is
 4. **Run the smallest faithful evidence first.** Exact tests and conservative affected-test selection reduce feedback latency; unmatched changes must fall back to a broader gate.
 5. **Harness changes require outcome evals.** Representative cases, deterministic checks, trace/cost metrics, repeated trials, and a predeclared promotion rule are stronger than reading prompt text and judging it by intuition.
 6. **Always-loaded context should be a map.** Repeated detailed instructions consume attention and can bury relevant evidence; retrieve details just in time.
+7. **Autonomy and isolation are separate controls.** Pi intentionally avoids permission popups; trusted work can execute directly, while untrusted code or sensitive credentials need an OS/container/VM boundary rather than dozens of in-process confirmation gates.
 
 ## Primary-source evidence → workflow decision
 
 | Primary source / lab | Finding used here | Workflow decision | Important limitation |
 |---|---|---|---|
+| Pi, [official product principles](https://pi.dev/) | Pi intentionally has no permission popups, supports in-place harness self-modification, and treats confirmation/sandbox policy as environment-specific extensions. | Default the trusted repository launcher to `--approve` and autonomous completion; do not require a special flag for workflow maintenance. | Trusting repository resources grants them the Pi process's permissions; this is appropriate only for a working copy the operator intends to trust. |
+| Pi, [official security model](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/security.md) | Project trust is an input-loading decision, not a sandbox; Pi has no built-in sandbox, and real isolation must come from an OS/container/VM boundary. | Keep direct execution as the normal trusted path, narrow the in-process guard to high-blast-radius accidents, and reserve strict/container mode for untrusted or sensitive environments. | A regex-based extension cannot contain indirect commands, subprocesses, prompt injection, or network egress; strict mode is still defense in depth, not isolation. |
 | OpenAI, [Harness engineering](https://openai.com/index/harness-engineering/) | Repository knowledge, agent-legible interfaces, mechanical invariants, and feedback loops are core harness work; the top-level agent guide should be a map rather than a manual. | Keep `AGENTS.md` short, enforce a combined context budget, and turn recurring failures into tests/tools rather than more prompt prose. | This is an experience report from a specific agent-first project, not a controlled comparison of every individual practice. |
 | Anthropic, [Building effective agents](https://www.anthropic.com/engineering/building-effective-agents) | Start with the simplest composable workflow and add agentic complexity only when it creates measurable value. | One primary writer; optional scout/reviewer/security roles only for demonstrated ambiguity or risk; bounded repair loops. | The guidance spans many agent tasks, not only repository coding. |
 | Anthropic, [Harness design for long-running application development](https://www.anthropic.com/engineering/harness-design-long-running-apps) | Planner/builder/evaluator contracts can help long work, but components and rounds add cost and should be ablated with eval evidence. | Durable plans only for work that must cross contexts; at most two evaluator/repair rounds; promotion data must justify extra orchestration. | Results depend on task horizon, model, and evaluator capability. |
@@ -36,6 +39,7 @@ This document connects primary research to concrete Pi workflow decisions. It is
 
 | Severity | Observed problem | Why it mattered | Implemented control |
 |---|---|---|---|
+| P0 | The launcher could stop for project trust while the guard blocked routine Git delivery, workflow maintenance, public browser QA, and page evaluation. | The agent could implement code but still require a person to approve reversible steps or finish delivery, contradicting the workflow's autonomy goal and Pi's permissionless design. | `./p` now passes `--approve`; autonomous guard mode allows routine work and task-branch delivery; strict/container mode remains opt-in; behavioral tests exercise both modes. |
 | P0 | The eval runner stored traces and a prose `grade` list but produced no automatic outcome. | Harness changes could be accepted by intuition even when the documentation demanded measurable promotion evidence. | Eval schema v2: deterministic mutation/check assertions, `PASS/FAIL`, trace metrics, per-case medians, Markdown report, `--baseline`, and regression thresholds. |
 | P0 | Test guidance said “assert behavior” but did not require defect sensitivity or reliability evidence. | A generated test could mirror the implementation and pass without detecting the bug. | `test-design`, `/test`, `/build` red/pre-fix guidance, and an executable tier-boundary fixture whose post-check restores the pre-fix source and requires the new test to fail. |
 | P1 | Targeted/feature/full lanes existed only as prose. | Agents had no deterministic change-to-command interface and could either run everything repeatedly or skip too much. | `scripts/verify-affected.mjs` plus `.pi/verification.json`: argv-only reviewed commands, route union/deduplication, dry planning, and conservative full fallback for unmatched files. |
@@ -82,7 +86,7 @@ Run baseline and candidate with the same case set, grader schema, model, thinkin
 - no median tool-call or token regression over 20%;
 - raw trace, command-check, diff, token, cost, and duration retention.
 
-Passing those gates returns `QUALITATIVE_REVIEW_REQUIRED`, never automatic promotion. A blinded evaluator or calibrated human must still score product/visual/architecture rubric items against raw artifacts. New safety or data-integrity violations always reject the candidate.
+Passing those gates returns the schema-v2-compatible `QUALITATIVE_REVIEW_REQUIRED`, never automatic promotion. A blinded independent evaluator must still score product/visual/architecture rubric items against raw artifacts; human adjudication is optional for disputed or high-stakes promotion, not an ordinary execution dependency. New safety or data-integrity violations always reject the candidate.
 
 ## Local before/after measurement
 
@@ -90,12 +94,15 @@ Measured on this template repository with Node 24.14.0 using five warm local tri
 
 | Signal | Before | After | Interpretation |
 |---|---:|---:|---|
-| Always-loaded `AGENTS.md` + system append | 15,264 bytes / 248 lines | 11,938 bytes / 183 lines | 3,326 fewer bytes (21.8%) before task-specific context. |
-| Canonical full gate | 616 ms | 1,000 ms | Intentionally slower: the full gate now executes 18 behavior tests, including isolated green/pre-fix-red proof, instead of 8 safety tests. Run it once at delivery. |
-| Narrow eval-runner affected route | unavailable | 574 ms | 42.6% below the new full gate while still running eval grader tests and suite dry validation. |
-| Narrow verification-router route | unavailable | 154 ms | 84.6% below the new full gate; runs only routing contract tests. |
+| Always-loaded `AGENTS.md` + system append | 15,264 bytes / 248 lines | 11,747 bytes / 179 lines | 3,517 fewer bytes (23.0%) before task-specific context. |
+| Canonical full gate | 616 ms | 1,026 ms | Intentionally slower: the full gate now executes 25 behavior tests, including launcher/guard autonomy and isolated green/pre-fix-red proof, instead of 8 safety tests. Run it once at delivery. |
+| Narrow eval-runner affected route | unavailable | 599 ms | 41.6% below the new full gate while still running eval grader tests and 17-case suite dry validation. |
+| Narrow verification-router route | unavailable | 165 ms | 83.9% below the new full gate; runs only routing contract tests. |
+| Autonomy-core affected route | unavailable | 978 ms | Exercises launcher, guard, browser policy, and static contract checks without silently skipping any changed autonomy surface. |
 
 Samples are recorded from one small repository and are not universal performance claims. On this template, process startup and the isolated Git fixture dominate runtime; in a large product repository, measure route recall and wall time again before setting thresholds. Faster targeted feedback does not justify weakening the final gate.
+
+Autonomy behavior is also tested directly: seven representative reversible actions that the previous guard blocked (temporary/artifact writes, workflow maintenance, task-branch commit/push, public navigation, and page evaluation) are now allowed in autonomous mode; twelve destructive host/Git/integration examples remain blocked. The suite adds an unattended case whose required artifact and executable check fail if the agent pauses for clarification instead of completing the reversible task.
 
 ## What remains project-specific
 

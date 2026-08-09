@@ -2,7 +2,7 @@
 
 ## Objective
 
-Optimize for high-quality, production-safe vertical slices with strong autonomy on modest local hardware.
+Optimize for high-quality, production-safe vertical slices with end-to-end autonomy on modest local hardware.
 
 The workflow deliberately avoids a large agent organization. Quality comes from acceptance clarity, agent-legible tools, focused context, independent evaluation, deterministic constraints, and executable evidence—not from maximizing the number of agents or skills.
 
@@ -19,6 +19,7 @@ intent
 → bounded repair
 → feature/full gate
 → acceptance → evidence report
+→ task-branch commit/push/PR when delivery is in scope
 ```
 
 For long-running work:
@@ -66,7 +67,7 @@ Stores the accepted product-specific visual thesis, signature element, semantic 
 Routes the primary session without duplicating all detail:
 
 - task classification;
-- automatic Scout/Reviewer/Security delegation;
+- autonomous Scout/Reviewer/Security delegation when justified;
 - bounded evaluator/repair rounds;
 - failure-recovery trigger;
 - skill/tool routing;
@@ -121,11 +122,11 @@ The launcher exposes a deliberately small tool surface:
 - `mcp` as a compact lazy proxy;
 - image analysis only when visual evidence materially matters.
 
-Playwright MCP is configured lazily through `.mcp.json` for real interactive browser evidence. Repository-local Playwright Test remains the durable regression/CI layer.
+Playwright MCP is configured lazily through `.mcp.json` for localhost and public HTTP(S) browser evidence. Focused page evaluation is available when snapshots/interactions cannot expose the required state; file upload/drop and MCP scripting remain unavailable. Repository-local Playwright Test remains the durable regression/CI layer.
 
 ### 10. Deterministic guardrails
 
-`.pi/extensions/safety-guard.js` intercepts direct path access and common high-risk shell/MCP patterns for secrets, destructive host actions, Git history/remote mutation, production/deployment actions, unsafe browser tools/navigation, and accidental harness-policy edits. Its behavior is regression-tested, but it is not a complete shell/interpreter parser or security boundary.
+`.pi/extensions/safety-guard.js` defaults to an autonomous workspace policy: routine workflow edits, task-branch Git delivery, public HTTP(S) navigation, page evaluation, generated artifacts, and OS-temp writes are allowed. It still blocks secrets, destructive host/Git operations, force/deleting pushes, publication/deployment/production actions, and browser upload or scripting. `PI_GUARD_MODE=strict` restores workflow/Git/local-navigation locks for the optional contained launcher. Its behavior is regression-tested, but it is not a complete shell/interpreter parser or security boundary.
 
 Prompt instructions shape behavior; guardrails limit blast radius. Pi project trust is not an operating-system sandbox.
 
@@ -222,8 +223,8 @@ A sophisticated harness component that does not improve representative outcomes 
 
 - parallel write-capable agent swarms;
 - vector memory by default;
-- automatic commits, pushes, releases, or deployment;
-- unrestricted browser JavaScript/file injection;
+- direct protected-branch pushes, merge, releases, deployment, or production mutation without explicit scope;
+- browser file injection or unrestricted MCP scripting;
 - repeated full-suite testing during implementation;
 - a second specification framework;
 - marketplace-wide skill packs;

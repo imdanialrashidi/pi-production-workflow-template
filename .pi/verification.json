@@ -18,9 +18,16 @@
     },
     {
       "id": "safety-guard",
-      "include": [".pi/extensions/safety-guard.js", "tests/safety-guard.test.mjs"],
+      "include": [".pi/extensions/safety-guard.js", ".mcp.json", "scripts/pi-sandbox.sh", "tests/safety-guard.test.mjs"],
       "commands": [
         ["node", "--test", "tests/safety-guard.test.mjs"]
+      ]
+    },
+    {
+      "id": "launcher",
+      "include": ["p", "scripts/pi-sandbox.sh", "tests/launcher.test.mjs"],
+      "commands": [
+        ["node", "--test", "tests/launcher.test.mjs"]
       ]
     },
     {

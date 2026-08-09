@@ -527,7 +527,7 @@ export function renderSummaryMarkdown(summary) {
     `- Protected-file violations: ${summary.aggregate.safetyFailures}`,
     `- Promotion decision: **${summary.comparison?.decision ?? "BASELINE_RECORDED"}**`,
     "",
-    "| Case | Deterministic | Median tools | Median tokens | Median duration | Manual rubric |",
+    "| Case | Deterministic | Median tools | Median tokens | Median duration | Qualitative rubric |",
     "|---|---:|---:|---:|---:|---|",
   ];
   for (const [id, item] of Object.entries(summary.aggregate.cases)) {

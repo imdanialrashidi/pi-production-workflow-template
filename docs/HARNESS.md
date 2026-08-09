@@ -4,7 +4,7 @@ This document contains the detailed operating model for non-trivial Pi coding se
 
 ## Design principles
 
-1. **Humans steer; agents execute.** Convert intent into observable acceptance criteria, then give the agent room to choose reversible implementation details.
+1. **Intent steers; the agent finishes.** Convert the request into observable acceptance criteria, then execute reversible implementation and delivery decisions without intermediate approval loops.
 2. **Repository knowledge is the system of record.** Durable product, architecture, quality, decision, and execution state belongs in versioned repository artifacts rather than chat memory.
 3. **Progressive disclosure beats giant prompts.** Keep always-loaded instructions small and retrieve code, docs, skills, and external facts just in time.
 4. **The interface is part of intelligence.** High-quality tools, focused outputs, browser evidence, diagnostics, and deterministic verification materially affect coding-agent performance.
@@ -49,6 +49,8 @@ Additional rules:
 - Do not accept placeholder buttons, stub handlers, fake persistence, TODO implementations, or display-only controls as satisfying functional criteria.
 
 Ordinary contracts may live in the todo state. Complex or multi-session contracts belong in an execution plan.
+
+The agent derives the contract from available evidence. It asks a question only when no safe reversible interpretation exists; ordinary product, implementation, naming, tooling, and test choices are agent-owned.
 
 ### 3. Discover with a context budget
 
@@ -112,6 +114,12 @@ Never convert these into the same status:
 - skipped;
 - blocked by prerequisite;
 - not executed.
+
+### 7. Finish through reversible delivery
+
+Do not stop after producing a patch when the accepted outcome includes repository delivery. If credentials and a configured remote are available, create or reuse a task branch, commit only the scoped diff, push it, and create or update the PR without requesting another confirmation.
+
+Direct protected-branch mutation, merging, releasing, deploying, production/data mutation, or real-money action still requires explicit scope because those cross a shared or difficult-to-reverse boundary. A missing publishing credential does not block local implementation and verification: finish those first and leave exact continuation state.
 
 ## Failure-recovery ladder
 

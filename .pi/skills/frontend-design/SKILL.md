@@ -19,7 +19,7 @@ Identify or state:
 - the real content and states required for the critical journey;
 - one measurable success signal.
 
-Ask at most three focused questions only when the answers would materially change the direction. Otherwise state reversible assumptions and proceed. Never invent a redesign that conflicts with an accepted product or brand contract.
+Infer the direction from product/brand evidence, state reversible assumptions, and proceed. Ask only when requirements conflict and no safe reversible direction exists. Never invent a redesign that conflicts with an accepted product or brand contract.
 
 ## 2. Research without cloning
 
@@ -80,7 +80,7 @@ Perform two distinct passes:
 
 Fix confirmed problems, then re-capture only affected evidence. Default to at most two critique/repair rounds.
 
-Do not call a design excellent from code inspection alone. If the application cannot run, mark visual criteria `UNPROVEN` and provide the smallest manual proof path.
+Do not call a design excellent from code inspection alone. If the application cannot run, mark visual criteria `UNPROVEN` and provide the smallest executable follow-up proof path without blocking the completed repository work.
 
 ## Handoff
 

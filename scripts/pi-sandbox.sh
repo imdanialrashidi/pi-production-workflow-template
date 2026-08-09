@@ -43,6 +43,7 @@ docker run --rm "${tty_args[@]}" \
   --tmpfs /tmp:rw,nosuid,nodev,size=1g,mode=1777 \
   --env HOME=/tmp/pi-home \
   --env PI_TELEMETRY=0 \
+  --env "PI_GUARD_MODE=${PI_GUARD_MODE:-strict}" \
   --volume "$ROOT_DIR:/workspace" \
   --workdir /workspace \
   "${env_args[@]}" \
