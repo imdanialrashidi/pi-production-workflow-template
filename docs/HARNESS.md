@@ -73,6 +73,8 @@ Prefer a complete end-to-end behavior over many half-finished layers. Keep one p
 During implementation:
 
 - use the narrowest reliable verification after meaningful edits;
+- map the affected symbols/contracts/dependencies and nearest tests before editing;
+- when tests change, use `test-design` and require defect sensitivity where practical;
 - preserve existing architectural boundaries;
 - avoid speculative abstractions;
 - keep data validation at boundaries;
@@ -101,7 +103,7 @@ Default to at most **two evaluator/repair rounds**. If a BLOCKER or MAJOR issue 
 
 ### 6. Verify and report evidence
 
-Load `verification-routing` and use its targeted, feature, and full lanes. The final report maps every acceptance criterion to evidence.
+Load `verification-routing` and use its targeted, affected, feature, and full lanes. A configured affected route may narrow known changes, but an unmatched file must use the full fallback. The final report maps every acceptance criterion to evidence.
 
 Never convert these into the same status:
 
@@ -205,11 +207,4 @@ Do not keep a harness feature because it feels sophisticated. Keep it because it
 
 ## Research basis
 
-This playbook is informed by public work on coding-agent harnesses and agent-computer interfaces, especially:
-
-- OpenAI, **Harness engineering: leveraging Codex in an agent-first world** (repository knowledge as system of record, progressive disclosure, mechanical architecture constraints, agent-legible UI/observability, feedback loops)
-- Anthropic, **Effective context engineering for AI agents** (tight context, minimal overlapping tools, just-in-time retrieval)
-- Anthropic, **Effective harnesses for long-running agents** (structured progress artifacts, incremental work, end-to-end browser verification)
-- Anthropic, **Harness design for long-running application development** (planner/generator/evaluator separation, explicit completion criteria, evaluator feedback loops, context resets)
-- Anthropic, **Building effective agents** (start simple; add orchestration only when measurable value exists)
-- SWE-agent, **Agent-Computer Interfaces Enable Automated Software Engineering** (agent-facing interfaces materially change software-engineering performance)
+[`docs/RESEARCH.md`](RESEARCH.md) records the primary sources, the exact workflow decision derived from each, benchmark limitations, the repository audit, and the promotion protocol. Keep that evidence map current when a harness component or threshold changes.

@@ -19,9 +19,9 @@ A compact, evidence-driven harness for [Pi Coding Agent](https://pi.dev/) focuse
 - repository-local Playwright Test (when the real project uses it) for durable regression coverage;
 - a visible todo panel for genuinely multi-step work;
 - a tested project-local defense-in-depth extension that intercepts direct secret/path access and common destructive, production, Git, workflow-policy, and unsafe MCP patterns;
-- specialized skills for frontend design, verification routing, risk review, and browser QA;
+- specialized skills for frontend design, behavior-sensitive test design, verification routing, risk review, and browser QA;
 - a doctor/CI check that validates package pins, security posture, and always-loaded context budgets;
-- a 15-case, three-trial RPC evaluation scaffold for measuring workflow changes instead of judging prompt text by intuition.
+- a 16-case, three-trial RPC evaluation harness with deterministic graders, trace/efficiency metrics, baseline comparison, and a real code-plus-regression-test fixture.
 
 ## Harness philosophy
 
@@ -157,6 +157,7 @@ Reusable workflows:
 /design <surface or journey>
 /spec <accepted outcome>
 /build <accepted task>
+/test <behavior, defect, or risk>
 /build-ui <accepted UI slice>
 /design-review [route, flow, or diff]
 /plan <complex goal>
@@ -326,7 +327,7 @@ Validate the starter benchmark without making model calls:
 node scripts/run-workflow-evals.mjs --dry-run
 ```
 
-For a real comparison, run at least three isolated trials per case with the same approved model/thinking level for baseline and candidate, then grade deterministic behavior before independent visual judgment. Model calls can incur cost and transmit repository content to the selected provider. See [`docs/EVALUATION.md`](docs/EVALUATION.md).
+The v2 runner grades completion, mutation scope, protected paths, executable post-checks, and trace efficiency; qualitative rubrics remain explicitly unscored. For a real comparison, run at least three isolated trials per case with the same approved model/thinking level for baseline and candidate and pass the first `summary.json` through `--baseline`. Model calls can incur cost and transmit repository content to the selected provider. See [`docs/EVALUATION.md`](docs/EVALUATION.md).
 
 ## Verification
 
@@ -335,9 +336,19 @@ The `verification-routing` skill chooses the cheapest reliable lane.
 During implementation:
 
 - exact affected test;
-- changed/related tests;
+- a reviewed affected-file plan;
+- changed/dependency-related tests;
 - fast verification;
 - one affected browser spec where relevant.
+
+Inspect and execute the deterministic route map:
+
+```bash
+node scripts/verify-affected.mjs --file src/path/to/change.ts --plan
+node scripts/verify-affected.mjs --file src/path/to/change.ts
+```
+
+`.pi/verification.json` stores argv-array commands. Matching routes are unioned and deduplicated; any unmatched file invokes the canonical full fallback instead of being silently skipped. `/bootstrap` must replace template routes with real project dependency evidence.
 
 After a bounded slice:
 
@@ -353,7 +364,7 @@ Generic full entrypoint:
 bash scripts/verify.sh
 ```
 
-A real project can provide `scripts/project-verify.sh` to replace the generic detector with its canonical gate.
+A real project can provide `scripts/project-verify.sh` to replace the generic detector with its canonical gate. Use `/test` plus `test-design` when the task is specifically to add behavioral regression coverage with red/pre-fix or equivalent defect-sensitivity proof.
 
 ## Browser and visual QA
 
@@ -385,20 +396,23 @@ For a material visual change, the product pass proves journey, states, accessibi
 │   ├── APPEND_SYSTEM.md
 │   ├── models.env
 │   ├── settings.json
+│   ├── verification.json
 │   ├── extensions/
 │   │   └── safety-guard.js
 │   ├── prompts/
 │   │   ├── discover.md / design.md / spec.md / adr.md
 │   │   ├── build.md / build-ui.md / design-review.md
-│   │   └── plan.md / release-plan.md / review.md / ship.md / incident.md / handoff.md / resume.md
+│   │   └── test.md / plan.md / release-plan.md / review.md / ship.md / incident.md / handoff.md / resume.md
 │   └── skills/
 │       ├── browser-qa/
 │       ├── frontend-design/
 │       ├── risk-review/
+│       ├── test-design/
 │       └── verification-routing/
 ├── docs/
 │   ├── PRODUCT.md / DESIGN.md / ARCHITECTURE.md / PLAN.md
 │   ├── HARNESS.md
+│   ├── RESEARCH.md
 │   ├── QUALITY.md
 │   ├── PI_WORKFLOW.md
 │   ├── TOOLING_SETUP.md
@@ -436,7 +450,7 @@ node scripts/verify-package-integrity.mjs --online
 
 ## Research basis
 
-The harness design is informed by public engineering work from OpenAI and Anthropic on harness engineering, context engineering, long-running agents, evaluator/optimizer loops, tool design, and repository-as-system-of-record practices, plus SWE-agent research on agent-computer interfaces. The visual workflow additionally maps primary guidance from [W3C WCAG 2.2](https://www.w3.org/TR/WCAG22/), [Google Web Vitals](https://web.dev/articles/vitals), [Material Design foundations/tokens](https://m3.material.io/styles), and Anthropic's [frontend-design skill](https://github.com/anthropics/skills/blob/main/skills/frontend-design/SKILL.md) into executable gates. See `docs/HARNESS.md` and the `frontend-design` rubric for the specific mapping.
+[`docs/RESEARCH.md`](docs/RESEARCH.md) maps primary evidence from OpenAI, Anthropic, Princeton, UIUC, Microsoft Research, Meta, UMass, Stanford/Berkeley, Google, and regression-test-selection research to each workflow control and its limitations. The visual workflow additionally maps primary guidance from [W3C WCAG 2.2](https://www.w3.org/TR/WCAG22/), [Google Web Vitals](https://web.dev/articles/vitals), [Material Design foundations/tokens](https://m3.material.io/styles), and Anthropic's [frontend-design skill](https://github.com/anthropics/skills/blob/main/skills/frontend-design/SKILL.md) into executable gates.
 
 ## License
 

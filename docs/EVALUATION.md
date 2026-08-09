@@ -10,7 +10,7 @@ Treat harness changes like product changes: compare outcomes on representative t
 - Use a fresh disposable copy and session for every trial. Do not let one trial's files, chat, or expected answer leak into another.
 - Keep benchmark prompts outcome-focused. Do not tell the agent which harness rule is being tested.
 
-`evals/cases.json` is a starter suite. Replace or extend generic cases with anonymized real failures and accepted product tasks as the repository matures.
+`evals/cases.json` is a v2 starter suite. Replace or extend generic cases with anonymized real failures and accepted product tasks as the repository matures. Every case has a qualitative `rubric` plus deterministic completion/change assertions; executable cases may also define argv-array post-checks.
 
 ## Evidence and graders
 
@@ -39,7 +39,7 @@ Record per trial:
 - changed-file count and accidental/unrelated changes;
 - security, privacy, data-integrity, or deployment-policy violations.
 
-Before running, define the promotion rule and material regression thresholds. A candidate never passes with a new safety/data violation or a required criterion hidden as `UNPROVEN`. Prefer confidence intervals or repeated-case distributions over a single average.
+Before running, define the promotion rule and material regression thresholds. The starter rule requires a 100% deterministic pass rate, no protected-file violation, and rejects per-case median duration regression above 25% or tool/token regression above 20%. Tune thresholds from real variance rather than weakening them after seeing a candidate. A required qualitative criterion hidden as `UNPROVEN` still cannot pass.
 
 ## Running
 
@@ -47,6 +47,12 @@ Review the suite without model calls:
 
 ```bash
 node scripts/run-workflow-evals.mjs --dry-run
+```
+
+Run its deterministic grader/router unit tests:
+
+```bash
+node --test tests/workflow-evals.test.mjs tests/verify-affected.test.mjs
 ```
 
 Run three isolated trials per selected case:
@@ -58,17 +64,31 @@ node scripts/run-workflow-evals.mjs \
   --trials 3
 ```
 
+Record the emitted baseline `summary.json`, then run the candidate from its branch/worktree with identical settings:
+
+```bash
+node scripts/run-workflow-evals.mjs \
+  --model provider/model-id \
+  --thinking high \
+  --trials 3 \
+  --baseline /absolute/path/to/baseline/summary.json
+```
+
 Filter while iterating:
 
 ```bash
 node scripts/run-workflow-evals.mjs --model provider/model-id --filter frontend --trials 1
 ```
 
-The runner uses Pi's official JSONL RPC mode, copies Git-tracked and non-ignored files into `.artifacts/evals/`, refuses common secret/private paths and external symlinks, and creates a fresh local Git baseline with no remote for each trial. It disables session persistence, captures raw events/stderr/session statistics, and records a content-hash file manifest. It does not grade quality automatically or publish anything.
+The runner uses Pi's official JSONL RPC mode, copies Git-tracked and non-ignored files into `.artifacts/evals/`, refuses common secret/private paths and external symlinks, and creates a fresh local Git baseline with no remote for each trial. It disables session persistence, captures raw events/stderr/session statistics, records a content-hash manifest, runs declared post-checks without a shell, and grades deterministic completion/mutation/safety evidence. Post-checks must leave the disposable workspace byte-for-byte unchanged.
+
+It writes `summary.json` plus `summary.md` and returns exit code 2 for deterministic failure or rejected baseline comparison. A suite fingerprint plus model/thinking/trial/timeout/Pi/Node metadata prevents comparison across different benchmark contracts or run settings. Tool starts/ends are reduced to call/error/duplicate/verification/repair/retry/compaction metrics; official session stats supply tokens and cost. Qualitative rubric items remain explicitly `UNSCORED`, so a mechanically clean result is only `QUALITATIVE_REVIEW_REQUIRED`, never automatic promotion.
 
 Model calls can incur cost and may transmit copied repository content to the selected provider. Run only with an approved model/provider and suitable data classification. For stronger isolation, launch the evaluation from the container/VM policy described in `SECURITY.md`.
 
 RPC reference: [Pi RPC mode](https://pi.dev/docs/latest/rpc).
+
+The executable `tiered-pricing-regression` fixture validates test usefulness rather than test existence: the final test must pass, the same test must fail when the disposable workspace temporarily restores the committed pre-fix source, and that source is restored in a `finally` block.
 
 ## Promotion report
 
