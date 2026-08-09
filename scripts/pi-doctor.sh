@@ -167,12 +167,16 @@ const required = [
   'npm:@juicesharp/rpiv-todo@2.1.0',
   'npm:pi-lsp-adapter@0.1.3',
   'npm:@dreki-gg/pi-doc-search@0.3.2',
-  'npm:@bytetrue/pi-vision@0.2.0',
+  'npm:@getpipher/vision@0.5.2',
   'npm:@bytetrue/pi-web-search@0.1.3',
 ];
 const missing = required.filter((item) => !installed.has(item));
 if (missing.length) {
   console.error(`Missing package pins: ${missing.join(', ')}`);
+  process.exit(1);
+}
+if (installed.has('npm:@bytetrue/pi-vision@0.2.0')) {
+  console.error('Obsolete vision package is still configured; use npm:@getpipher/vision@0.5.2 only.');
   process.exit(1);
 }
 const mcpPackage = (settings.packages || []).find((entry) =>
@@ -222,7 +226,7 @@ launcher_tools=(
   mcp
   lsp_diagnostics
   doc_search_get_library_docs
-  image_ask
+  describe_image
   web_search
   web_fetch
 )
@@ -234,6 +238,14 @@ for tool in "${launcher_tools[@]}"; do
     fail "launcher does not allow $tool"
   fi
 done
+
+if grep -Fq '/vision-use' docs/TOOLING_SETUP.md && \
+   grep -Fq '["text", "image"]' docs/TOOLING_SETUP.md && \
+   ! grep -Fq 'image_ask' p README.md .pi/APPEND_SYSTEM.md docs/TOOLING_SETUP.md .pi/skills/browser-qa/SKILL.md; then
+  pass "dual-model vision setup and capability contract are documented"
+else
+  fail "vision setup must document model switching and use describe_image"
+fi
 
 doctor_tmp_dir=".artifacts/pi-doctor"
 mkdir -p "$doctor_tmp_dir"

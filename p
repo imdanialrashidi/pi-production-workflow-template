@@ -25,7 +25,7 @@ export PI_CACHE_RETENTION="${PI_CACHE_RETENTION:-long}"
 
 args=(
   --tools
-  "read,bash,edit,write,grep,find,ls,subagent,todo,mcp,lsp_diagnostics,lsp_hover,lsp_definition,lsp_references,lsp_document_symbols,lsp_workspace_symbols,lsp_more,doc_search_resolve_library_id,doc_search_get_library_docs,doc_search_get_cached_doc_raw,image_ask,web_search,web_fetch"
+  "read,bash,edit,write,grep,find,ls,subagent,todo,mcp,lsp_diagnostics,lsp_hover,lsp_definition,lsp_references,lsp_document_symbols,lsp_workspace_symbols,lsp_more,doc_search_resolve_library_id,doc_search_get_library_docs,doc_search_get_cached_doc_raw,describe_image,web_search,web_fetch"
 )
 
 if [[ -n "${PI_MAIN_MODEL:-}" ]]; then

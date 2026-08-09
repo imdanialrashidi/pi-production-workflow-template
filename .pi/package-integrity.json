@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "reviewedAt": "2026-08-08",
+  "reviewedAt": "2026-08-09",
   "packages": [
     {
       "source": "npm:@earendil-works/pi-coding-agent@0.84.1",
@@ -39,10 +39,10 @@
       "repository": "https://github.com/jalbarrang/pi-doc-search"
     },
     {
-      "source": "npm:@bytetrue/pi-vision@0.2.0",
-      "integrity": "sha512-CBO4wZ7n9R2FIPU2HOL30uJLypbXuiTnEgU6soPpRhnSIbaJ5YwbaqOKB8Mur8A/3jhB7MEN+CkV/uu9TrDSXw==",
+      "source": "npm:@getpipher/vision@0.5.2",
+      "integrity": "sha512-frHkPWjsfG0ENaKxyDa5n3hwJkx3HsmrKVuMGp3OqSh/7oNUpsY2X5vt1RCbgmB71Kk7TNeCFu+opmwRUJ10cA==",
       "license": "MIT",
-      "repository": "https://github.com/ByteTrue/pi-package-mono"
+      "repository": "https://github.com/getpipher/vision"
     },
     {
       "source": "npm:@bytetrue/pi-web-search@0.1.3",

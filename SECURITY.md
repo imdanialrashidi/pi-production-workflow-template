@@ -22,6 +22,20 @@ The Docker build context is reduced by `.dockerignore` to the Dockerfile only. A
 
 Playwright MCP's allowed-origin option and the safety extension reduce accidental direct external navigation; they are not a network security boundary and do not contain redirects or every action triggered by a local page. Use network policy/container isolation when browsing untrusted local applications or when egress matters.
 
+## Vision data routing
+
+Image analysis can cross a separate provider boundary from ordinary coding prompts. With a text-only primary, `describe_image` sends image bytes to the delegate shown by `/vision show`. With an image-capable primary, the extension hides that tool and the image goes directly to the active primary provider instead.
+
+Before using screenshots containing customer, production, credential, health, financial, or other sensitive data:
+
+1. Minimize or redact the image before attaching it.
+2. Verify both `/model` and `/vision show`; do not infer the destination from the current text model alone.
+3. Keep the default `hint` paste mode unless automatic delegation is explicitly accepted.
+4. Use `/vision audit show` to inspect routing metadata. The audit contains paths and content hashes, so treat the log itself as sensitive metadata.
+5. Use `/vision local-only on` when image bytes must not leave the machine. New uncached images are refused in this mode; it does not provide a local vision model by itself.
+
+Provider retention, training, regional processing, and contractual controls still apply. The extension's cache, audit log, and configuration live under the user's Pi agent directory and must not be committed or copied into support reports without review.
+
 ## Third-party packages
 
 Pi packages and extensions execute with the Pi process's permissions. Versions in `.pi/settings.json` and `.mcp.json` are exact pins, but a pin is not a source review. Before updating:
