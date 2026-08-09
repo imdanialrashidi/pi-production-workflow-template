@@ -25,6 +25,8 @@ For accepted scope:
 - Handle retries, duplicate requests, time, rounding, ordering, partial failure, and concurrency where they are material to the changed behavior.
 - A production bug should gain regression evidence when practical.
 - Tests should assert behavior and contracts rather than implementation trivia.
+- A new regression test should demonstrably fail on pre-fix behavior (or a safe focused mutation/equivalent independent characterization) when practical, then pass after the fix.
+- Generated tests must build, pass reliably, add a distinct behavioral signal, and isolate relevant state; line coverage alone is not acceptance evidence.
 
 ## Security and data integrity
 

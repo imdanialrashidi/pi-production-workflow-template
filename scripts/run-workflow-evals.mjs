@@ -4,8 +4,24 @@ import { execFileSync, spawn, spawnSync } from "node:child_process";
 import crypto from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
+import {
+  aggregateRecords,
+  analyzeTrace,
+  compareSummaries,
+  evaluateDeterministic,
+  renderSummaryMarkdown,
+  runCaseChecks,
+  selectedCases,
+  validateSuite,
+} from "./lib/workflow-evals.mjs";
 
 const repositoryRoot = path.resolve(import.meta.dirname, "..");
+
+function requiredValue(argv, index, option) {
+  const value = argv[index + 1];
+  if (!value || value.startsWith("--")) throw new Error(`${option} requires a value.`);
+  return value;
+}
 
 function parseArgs(argv) {
   const options = {
@@ -14,6 +30,7 @@ function parseArgs(argv) {
     model: undefined,
     thinking: undefined,
     filter: undefined,
+    baselinePath: undefined,
     dryRun: false,
     timeoutMs: 20 * 60 * 1000,
   };
@@ -21,51 +38,16 @@ function parseArgs(argv) {
   for (let index = 0; index < argv.length; index += 1) {
     const token = argv[index];
     if (token === "--dry-run") options.dryRun = true;
-    else if (token === "--cases") options.casesPath = path.resolve(argv[++index]);
-    else if (token === "--trials") options.trials = Number(argv[++index]);
-    else if (token === "--model") options.model = argv[++index];
-    else if (token === "--thinking") options.thinking = argv[++index];
-    else if (token === "--filter") options.filter = argv[++index];
-    else if (token === "--timeout-ms") options.timeoutMs = Number(argv[++index]);
+    else if (token === "--cases") options.casesPath = path.resolve(requiredValue(argv, index++, token));
+    else if (token === "--trials") options.trials = Number(requiredValue(argv, index++, token));
+    else if (token === "--model") options.model = requiredValue(argv, index++, token);
+    else if (token === "--thinking") options.thinking = requiredValue(argv, index++, token);
+    else if (token === "--filter") options.filter = requiredValue(argv, index++, token);
+    else if (token === "--baseline") options.baselinePath = path.resolve(requiredValue(argv, index++, token));
+    else if (token === "--timeout-ms") options.timeoutMs = Number(requiredValue(argv, index++, token));
     else throw new Error(`Unknown argument: ${token}`);
   }
-
   return options;
-}
-
-function validateSuite(value) {
-  if (!value || value.version !== 1 || !Array.isArray(value.cases)) {
-    throw new Error("Evaluation suite must have version 1 and a cases array.");
-  }
-  if (!Number.isInteger(value.defaultTrials) || value.defaultTrials < 1) {
-    throw new Error("defaultTrials must be a positive integer.");
-  }
-
-  const ids = new Set();
-  for (const item of value.cases) {
-    if (!item || typeof item.id !== "string" || !/^[a-z0-9-]+$/.test(item.id)) {
-      throw new Error("Every case needs a lowercase hyphenated id.");
-    }
-    if (ids.has(item.id)) throw new Error(`Duplicate case id: ${item.id}`);
-    ids.add(item.id);
-    if (!Array.isArray(item.tags) || item.tags.length === 0) {
-      throw new Error(`${item.id} needs at least one tag.`);
-    }
-    if (typeof item.prompt !== "string" || item.prompt.trim().length < 20) {
-      throw new Error(`${item.id} needs a substantive prompt.`);
-    }
-    if (!Array.isArray(item.grade) || item.grade.length < 2) {
-      throw new Error(`${item.id} needs at least two grading criteria.`);
-    }
-  }
-}
-
-function selectedCases(suite, filter) {
-  if (!filter) return suite.cases;
-  const needle = filter.toLowerCase();
-  return suite.cases.filter((item) =>
-    item.id.includes(needle) || item.tags.some((tag) => tag.toLowerCase().includes(needle)),
-  );
 }
 
 function evaluationFiles() {
@@ -89,11 +71,8 @@ function assertSafeEvaluationPath(relative) {
 }
 
 async function copyRepository(destination) {
-  const files = evaluationFiles();
-
-  for (const relative of files) {
+  for (const relative of evaluationFiles()) {
     const normalized = assertSafeEvaluationPath(relative);
-
     const source = path.join(repositoryRoot, relative);
     const target = path.join(destination, relative);
     const sourceStat = await fs.lstat(source);
@@ -128,7 +107,7 @@ async function fileManifest(root) {
 
   async function walk(directory) {
     const entries = await fs.readdir(directory, { withFileTypes: true });
-    entries.sort((a, b) => a.name.localeCompare(b.name));
+    entries.sort((left, right) => left.name.localeCompare(right.name));
     for (const entry of entries) {
       const absolute = path.join(directory, entry.name);
       const relative = path.relative(root, absolute).split(path.sep).join("/");
@@ -154,7 +133,7 @@ function manifestDiff(before, after) {
   for (const file of after.keys()) {
     if (!before.has(file)) changed.push({ file, status: "added" });
   }
-  return changed.sort((a, b) => a.file.localeCompare(b.file));
+  return changed.sort((left, right) => left.file.localeCompare(right.file));
 }
 
 function runRpc({ cwd, prompt, model, thinking, timeoutMs }) {
@@ -165,14 +144,9 @@ function runRpc({ cwd, prompt, model, thinking, timeoutMs }) {
 
     const child = spawn("pi", args, {
       cwd,
-      env: {
-        ...process.env,
-        PI_TELEMETRY: "0",
-        PI_SKIP_VERSION_CHECK: "1",
-      },
+      env: { ...process.env, PI_TELEMETRY: "0", PI_SKIP_VERSION_CHECK: "1" },
       stdio: ["pipe", "pipe", "pipe"],
     });
-
     const startedAt = Date.now();
     const eventLines = [];
     let stderr = "";
@@ -199,7 +173,7 @@ function runRpc({ cwd, prompt, model, thinking, timeoutMs }) {
       eventLines.push(line);
       try {
         const event = JSON.parse(line);
-        if (event.type === "agent_end" || event.type === "agent_settled") requestStats();
+        if (event.type === "agent_settled") requestStats();
         if (event.type === "response" && event.id === "eval-stats") {
           stats = event.data;
           completion = event.success ? "completed" : "stats-failed";
@@ -220,15 +194,9 @@ function runRpc({ cwd, prompt, model, thinking, timeoutMs }) {
         consumeLine(line);
       }
     });
-    child.stderr.on("data", (chunk) => {
-      stderr += chunk.toString("utf8");
-    });
-    child.stdin.on("error", (error) => {
-      stderr += `stdin error: ${error.message}\n`;
-    });
-    child.on("error", (error) => {
-      completion = `spawn-error: ${error.message}`;
-    });
+    child.stderr.on("data", (chunk) => { stderr += chunk.toString("utf8"); });
+    child.stdin.on("error", (error) => { stderr += `stdin error: ${error.message}\n`; });
+    child.on("error", (error) => { completion = `spawn-error: ${error.message}`; });
     child.on("close", (exitCode, signal) => {
       clearTimeout(timeout);
       clearTimeout(forcedTimer);
@@ -243,52 +211,46 @@ function runRpc({ cwd, prompt, model, thinking, timeoutMs }) {
         events: eventLines,
       });
     });
-
     child.stdin.write(`${JSON.stringify({ id: "eval-prompt", type: "prompt", message: prompt })}\n`);
   });
 }
 
+async function validateDisposableCopy(files) {
+  const dryRunRoot = path.join(repositoryRoot, ".artifacts");
+  await fs.mkdir(dryRunRoot, { recursive: true });
+  const workspace = await fs.mkdtemp(path.join(dryRunRoot, "eval-dry-run-"));
+  try {
+    await copyRepository(workspace);
+    initializeEvaluationRepository(workspace);
+    const status = execFileSync("git", ["status", "--short"], { cwd: workspace, encoding: "utf8" });
+    if (status.trim()) throw new Error("Disposable evaluation baseline is not clean.");
+  } finally {
+    await fs.rm(workspace, { recursive: true, force: true });
+  }
+  return files.length;
+}
+
 async function main() {
   const options = parseArgs(process.argv.slice(2));
-  const suite = JSON.parse(await fs.readFile(options.casesPath, "utf8"));
-  validateSuite(suite);
+  const suite = validateSuite(JSON.parse(await fs.readFile(options.casesPath, "utf8")));
   const cases = selectedCases(suite, options.filter);
   const trials = options.trials ?? suite.defaultTrials;
-
   if (!Number.isInteger(trials) || trials < 1) throw new Error("trials must be a positive integer.");
-  if (!Number.isFinite(options.timeoutMs) || options.timeoutMs < 1000) {
-    throw new Error("timeout-ms must be at least 1000.");
-  }
+  if (!Number.isFinite(options.timeoutMs) || options.timeoutMs < 1000) throw new Error("timeout-ms must be at least 1000.");
   if (cases.length === 0) throw new Error("No evaluation cases match the filter.");
 
+  const files = evaluationFiles();
+  files.forEach(assertSafeEvaluationPath);
   if (options.dryRun) {
-    const files = evaluationFiles();
-    files.forEach(assertSafeEvaluationPath);
-    const dryRunRoot = path.join(repositoryRoot, ".artifacts");
-    await fs.mkdir(dryRunRoot, { recursive: true });
-    const dryRunWorkspace = await fs.mkdtemp(path.join(dryRunRoot, "eval-dry-run-"));
-    try {
-      await copyRepository(dryRunWorkspace);
-      initializeEvaluationRepository(dryRunWorkspace);
-      const status = execFileSync("git", ["status", "--short"], {
-        cwd: dryRunWorkspace,
-        encoding: "utf8",
-      });
-      if (status.trim()) throw new Error("Disposable evaluation baseline is not clean.");
-    } finally {
-      await fs.rm(dryRunWorkspace, { recursive: true, force: true });
+    await validateDisposableCopy(files);
+    process.stdout.write(`Valid v2 suite: ${cases.length} selected case(s), ${trials} trial(s) each; ${files.length} safe input file(s).\n`);
+    for (const item of cases) {
+      process.stdout.write(`- ${item.id} [${item.tags.join(", ")}] — ${item.assertions.changes.mode} changes, ${item.rubric.length} rubric item(s)\n`);
     }
-    process.stdout.write(
-      `Valid suite: ${cases.length} selected case(s), ${trials} trial(s) each; ${files.length} safe input file(s).\n`,
-    );
-    for (const item of cases) process.stdout.write(`- ${item.id} [${item.tags.join(", ")}]\n`);
     return;
   }
 
-  if (!options.model) {
-    throw new Error("--model is required for paid/external evaluation runs; review the provider and data policy first.");
-  }
-
+  if (!options.model) throw new Error("--model is required for paid/external evaluation runs; review provider and data policy first.");
   const piProbe = spawnSync("pi", ["--version"], { encoding: "utf8" });
   if (piProbe.error || piProbe.status !== 0) {
     throw new Error("Pi CLI is unavailable; install the reviewed version and run scripts/pi-doctor.sh first.");
@@ -297,24 +259,24 @@ async function main() {
   const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
   const outputRoot = path.join(repositoryRoot, ".artifacts/evals", timestamp);
   await fs.mkdir(outputRoot, { recursive: true });
-  const sourceRevision = execFileSync("git", ["rev-parse", "HEAD"], {
-    cwd: repositoryRoot,
-    encoding: "utf8",
-  }).trim();
-  const sourceStatus = execFileSync("git", ["status", "--short"], {
-    cwd: repositoryRoot,
-    encoding: "utf8",
-  }).trim();
   const summary = {
+    schemaVersion: 2,
     startedAt: new Date().toISOString(),
-    sourceRevision,
-    sourceStatus,
+    sourceRevision: execFileSync("git", ["rev-parse", "HEAD"], { cwd: repositoryRoot, encoding: "utf8" }).trim(),
+    sourceStatus: execFileSync("git", ["status", "--short"], { cwd: repositoryRoot, encoding: "utf8" }).trim(),
     casesPath: path.relative(repositoryRoot, options.casesPath),
+    suiteFingerprint: crypto.createHash("sha256").update(JSON.stringify({
+      version: suite.version,
+      promotion: suite.promotion ?? null,
+      cases,
+    })).digest("hex"),
+    selectedCaseIds: cases.map((item) => item.id),
     nodeVersion: process.versions.node,
     piVersion: piProbe.stdout.trim(),
     model: options.model,
     thinking: options.thinking ?? null,
     trials,
+    timeoutMs: options.timeoutMs,
     cases: [],
   };
 
@@ -326,38 +288,61 @@ async function main() {
       await copyRepository(workspace);
       initializeEvaluationRepository(workspace);
       const before = await fileManifest(workspace);
-      const result = await runRpc({
-        cwd: workspace,
-        prompt: item.prompt,
-        model: options.model,
-        thinking: options.thinking,
-        timeoutMs: options.timeoutMs,
-      });
-      const after = await fileManifest(workspace);
+      const result = await runRpc({ cwd: workspace, prompt: item.prompt, model: options.model, thinking: options.thinking, timeoutMs: options.timeoutMs });
+      const afterAgent = await fileManifest(workspace);
+      const checkResults = runCaseChecks(workspace, item.checks);
+      const afterChecks = await fileManifest(workspace);
+      const checkMutations = manifestDiff(afterAgent, afterChecks);
+      if (checkMutations.length) {
+        checkResults.push({
+          id: "check-workspace-cleanliness",
+          status: "FAIL",
+          exitCode: null,
+          signal: null,
+          error: `Post-check mutated workspace: ${checkMutations.map((change) => change.file).join(", ")}`,
+          stdout: "",
+          stderr: "",
+        });
+      }
       const record = {
         id: item.id,
         tags: item.tags,
-        grade: item.grade,
+        rubric: item.rubric,
+        rubricStatus: "UNSCORED",
         trial,
         completion: result.completion,
         durationMs: result.durationMs,
         exitCode: result.exitCode,
         signal: result.signal,
         stats: result.stats ?? null,
-        changes: manifestDiff(before, after),
+        trace: analyzeTrace(result.events),
+        changes: manifestDiff(before, afterAgent),
+        checkResults,
       };
+      record.deterministic = evaluateDeterministic(item, record);
       await fs.writeFile(path.join(trialRoot, "prompt.txt"), `${item.prompt}\n`);
       await fs.writeFile(path.join(trialRoot, "events.jsonl"), `${result.events.join("\n")}\n`);
       await fs.writeFile(path.join(trialRoot, "stderr.log"), result.stderr);
       await fs.writeFile(path.join(trialRoot, "result.json"), `${JSON.stringify(record, null, 2)}\n`);
       summary.cases.push(record);
-      process.stdout.write(`${item.id} trial ${trial}: ${record.completion} (${record.durationMs} ms)\n`);
+      process.stdout.write(`${item.id} trial ${trial}: ${record.deterministic.status} / ${record.completion} (${record.durationMs} ms, ${record.trace.toolCalls} tools)\n`);
     }
   }
 
   summary.finishedAt = new Date().toISOString();
+  summary.aggregate = aggregateRecords(summary.cases);
+  if (options.baselinePath) {
+    const baseline = JSON.parse(await fs.readFile(options.baselinePath, "utf8"));
+    summary.baselinePath = options.baselinePath;
+    summary.comparison = compareSummaries(summary, baseline, suite.promotion);
+  }
   await fs.writeFile(path.join(outputRoot, "summary.json"), `${JSON.stringify(summary, null, 2)}\n`);
+  await fs.writeFile(path.join(outputRoot, "summary.md"), renderSummaryMarkdown(summary));
   process.stdout.write(`Evaluation artifacts: ${outputRoot}\n`);
+
+  if (summary.aggregate.deterministicPassRate < 1 || summary.comparison?.decision === "REJECT") {
+    process.exitCode = 2;
+  }
 }
 
 main().catch((error) => {

@@ -5,7 +5,14 @@ ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
 ci_mode=0
-[[ "${1:-}" == "--ci" ]] && ci_mode=1
+static_mode=0
+for argument in "$@"; do
+  case "$argument" in
+    --ci) ci_mode=1 ;;
+    --static) static_mode=1 ;;
+    *) printf 'Unknown argument: %s\n' "$argument" >&2; exit 2 ;;
+  esac
+done
 
 failures=0
 
@@ -42,6 +49,7 @@ required=(
   .mcp.json
   .pi/settings.json
   .pi/package-integrity.json
+  .pi/verification.json
   .pi/models.env
   .pi/APPEND_SYSTEM.md
   .pi/extensions/safety-guard.js
@@ -60,22 +68,32 @@ required=(
   .pi/prompts/incident.md
   .pi/prompts/handoff.md
   .pi/prompts/resume.md
+  .pi/prompts/test.md
   .pi/skills/risk-review/SKILL.md
   .pi/skills/verification-routing/SKILL.md
+  .pi/skills/test-design/SKILL.md
   .pi/skills/browser-qa/SKILL.md
   .pi/skills/frontend-design/SKILL.md
   .pi/skills/frontend-design/references/visual-quality-rubric.md
   docs/HARNESS.md
+  docs/RESEARCH.md
   docs/DESIGN.md
   docs/EVALUATION.md
   docs/QUALITY.md
   docs/exec-plans/README.md
   docs/TOOLING_SETUP.md
   evals/cases.json
+  evals/fixtures/tiered-pricing/pricing.mjs
+  evals/fixtures/tiered-pricing/pricing.test.mjs
+  evals/fixtures/tiered-pricing/verify-regression.mjs
   scripts/pi-sandbox.sh
   scripts/verify-package-integrity.mjs
   scripts/run-workflow-evals.mjs
+  scripts/lib/workflow-evals.mjs
+  scripts/verify-affected.mjs
   tests/safety-guard.test.mjs
+  tests/workflow-evals.test.mjs
+  tests/verify-affected.test.mjs
 )
 
 for file in "${required[@]}"; do
@@ -89,10 +107,10 @@ else
   fail "Node >=22.19.0 is required for the reviewed Pi pin"
 fi
 
-if node -e 'JSON.parse(require("fs").readFileSync(".pi/settings.json","utf8")); JSON.parse(require("fs").readFileSync(".mcp.json","utf8"))' >/dev/null 2>&1; then
-  pass "Pi settings and MCP config are valid JSON"
+if node -e 'for (const f of [".pi/settings.json", ".pi/verification.json", ".mcp.json", "evals/cases.json"]) JSON.parse(require("fs").readFileSync(f,"utf8"))' >/dev/null 2>&1; then
+  pass "Pi, verification, MCP, and evaluation configs are valid JSON"
 else
-  fail "Pi settings or MCP config is invalid JSON"
+  fail "a Pi, verification, MCP, or evaluation config is invalid JSON"
 fi
 
 if node --check .pi/extensions/safety-guard.js >/dev/null 2>&1; then
@@ -101,10 +119,20 @@ else
   fail "safety guard has a JavaScript syntax error"
 fi
 
-if node --test tests/safety-guard.test.mjs; then
-  pass "safety guard behavior tests pass"
+if [[ "$static_mode" -eq 1 ]]; then
+  pass "workflow behavior tests omitted in explicit static-only mode"
+elif node --test tests/*.test.mjs; then
+  pass "workflow behavior tests pass"
 else
-  fail "safety guard behavior tests failed"
+  fail "workflow behavior tests failed"
+fi
+
+if node --check scripts/run-workflow-evals.mjs >/dev/null 2>&1 && \
+   node --check scripts/lib/workflow-evals.mjs >/dev/null 2>&1 && \
+   node --check scripts/verify-affected.mjs >/dev/null 2>&1; then
+  pass "workflow evaluation and verification runners parse"
+else
+  fail "a workflow evaluation or verification runner has a syntax error"
 fi
 
 if bash -n p scripts/verify.sh scripts/pi-doctor.sh scripts/pi-sandbox.sh scripts/ci-install.sh; then
@@ -140,7 +168,15 @@ check_context_budget() {
 check_context_budget AGENTS.md 180 9000
 check_context_budget .pi/APPEND_SYSTEM.md 180 12000
 
-for reference in 'docs/HARNESS.md' 'docs/QUALITY.md' 'verification-routing'; do
+combined_context_lines="$(cat AGENTS.md .pi/APPEND_SYSTEM.md | wc -l | tr -d ' ')"
+combined_context_bytes="$(( $(wc -c <AGENTS.md) + $(wc -c <.pi/APPEND_SYSTEM.md) ))"
+if (( combined_context_lines <= 220 && combined_context_bytes <= 12000 )); then
+  pass "combined always-loaded context stays within budget (${combined_context_lines} lines, ${combined_context_bytes} bytes)"
+else
+  fail "combined always-loaded context is too large (${combined_context_lines}/220 lines, ${combined_context_bytes}/12000 bytes)"
+fi
+
+for reference in 'docs/HARNESS.md' 'docs/QUALITY.md' 'verification-routing' 'test-design'; do
   if grep -Fq "$reference" AGENTS.md; then
     pass "AGENTS.md maps to $reference"
   else

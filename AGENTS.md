@@ -38,6 +38,7 @@ Read only what the current decision needs:
 - `docs/EVALUATION.md` — harness changes, regression benchmarks, and baseline/candidate promotion evidence
 - `docs/exec-plans/active/` — only when a complex task explicitly has an active execution plan
 - `verification-routing` skill — tests, builds, browser checks, CI, release gates
+- `test-design` skill — behavior-oriented regression tests, defect sensitivity, reliability, and test execution
 - `browser-qa` skill — rendered UI, interaction, responsive behavior, accessibility, visual evidence
 - `frontend-design` skill — distinctive visual direction, implementation craft, and aesthetic evaluation
 - `risk-review` skill — security, money, data integrity, migration, operational or release risk

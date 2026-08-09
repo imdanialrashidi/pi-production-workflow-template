@@ -76,6 +76,7 @@ Routes the primary session without duplicating all detail:
 ### 6. On-demand procedures: `.pi/skills/`
 
 - `verification-routing` — targeted, feature, and full verification lanes;
+- `test-design` — behavioral or boundary-oriented tests, defect sensitivity, reliability filters, and economical execution;
 - `risk-review` — security, correctness, data integrity, reliability, performance, UX, migration, and operational review;
 - `browser-qa` — low-resource browser, interaction, accessibility, responsive, and visual verification;
 - `frontend-design` — brief-specific visual direction, anti-template implementation, hard gates, and a scored studio review.
@@ -90,6 +91,7 @@ Keep specialized procedures here only when domain fit is real. Generic advice do
 - `/spec` — turn an outcome into a bounded implementation-ready feature contract;
 - `/adr` — record one evidence-backed durable architecture decision;
 - `/build` — acceptance-driven implementation and evaluator loop;
+- `/test` — add the smallest meaningful regression coverage without mirroring implementation;
 - `/build-ui` — implement a functional, visually exceptional UI slice and prove it in the browser;
 - `/design-review` — independently grade rendered hard gates and visual craft;
 - `/plan` — bounded design or durable execution plan;
@@ -186,7 +188,7 @@ When a defect class repeats, prefer encoding the fix in the environment:
 
 ### Targeted
 
-Repeated during implementation: exact tests, relevant type/static checks, affected browser spec.
+Repeated during implementation: exact tests, reviewed routes from `scripts/verify-affected.mjs`, relevant type/static checks, and the affected browser spec. Unknown paths use the canonical full fallback.
 
 ### Feature
 
@@ -211,6 +213,8 @@ Evaluate harness changes on realistic repository tasks using:
 - regressions caught before handoff;
 - user interventions required for routine reversible work;
 - peak local resource use where relevant.
+
+The v2 RPC runner adds deterministic completion/mutation/command checks, tool/error/duplicate/repair metrics, per-case medians, and baseline regression gates. Mechanical success still requires separate qualitative rubric scoring before promotion.
 
 A sophisticated harness component that does not improve representative outcomes should be removed.
 
