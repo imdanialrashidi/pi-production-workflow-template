@@ -15,7 +15,7 @@ Read `AGENTS.md`, `docs/HARNESS.md`, and inspect the real package manager, langu
 
 Then:
 
-1. Fill `docs/PRODUCT.md`, `docs/ARCHITECTURE.md`, `docs/QUALITY.md`, and project-level `docs/PLAN.md` only with confirmed project-specific facts or clearly marked unknowns/placeholders.
+1. Fill `docs/PRODUCT.md`, `docs/ARCHITECTURE.md`, `docs/QUALITY.md`, project-level `docs/PLAN.md`, and `docs/DESIGN.md` for an existing user-facing product only with confirmed project-specific facts or clearly marked unknowns/placeholders.
 2. Keep `AGENTS.md` as a map. Put detailed project knowledge in the appropriate docs instead of expanding always-loaded instructions.
 3. Identify the exact agent-legible development interfaces: install command, local start command, health/readiness signal, relevant logs/diagnostics, test entrypoints, browser entrypoints, database/test-state setup, and rollback/recovery mechanism where present.
 4. Create stack-specific targeted/fast, feature, and full verification lanes without weakening the canonical gate.
@@ -25,5 +25,7 @@ Then:
 8. Make failure evidence easy for an agent to inspect without exposing secrets: concise test output, local logs, browser console/network evidence, or existing health endpoints where available.
 9. Update project documentation with exact commands and relevant file/service pointers so later agents can retrieve context just in time.
 10. Run static validation plus the cheapest available smoke checks and report exact outcomes.
+
+For an existing frontend, also inventory the real token/component system, type/font licensing, supported viewports/locales/directions, critical screen states, current visual-regression evidence, and accepted performance/accessibility targets. Do not invent a new visual direction during bootstrap; use `/design` for that decision.
 
 Do not expose secrets, create commits, deploy, install speculative infrastructure, or modify Pi harness-policy files (`AGENTS.md`, `docs/HARNESS.md`, `.pi/**`, `.mcp.json`, launcher/safety/doctor files) unless the user explicitly requested harness maintenance.

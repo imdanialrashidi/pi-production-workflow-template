@@ -9,11 +9,11 @@ ${ARGUMENTS:-current working-tree change}
 
 Do not add features, deploy, push, publish, commit, or rewrite unrelated code.
 
-1. Read `AGENTS.md`, `docs/QUALITY.md`, and the accepted goal/active execution plan when one exists.
+1. Read `AGENTS.md`, `docs/QUALITY.md`, and the accepted goal/active execution plan when one exists. For a visually significant release also read `docs/DESIGN.md` and load `frontend-design`.
 2. Inspect the full working-tree diff and reconstruct the required acceptance criteria.
 3. Reject release readiness if accepted functionality is stubbed, display-only, backed by fake persistence, or lacks required proof.
 4. Confirm no secret, private specification, generated artifact, debug bypass, unrelated change, or accidental workflow-policy modification is included.
-5. For meaningful user-facing changes, require real-browser evidence for the critical journey when the application can be run safely.
+5. For meaningful user-facing changes, require real-browser evidence for the critical journey when the application can be run safely. For a material visual change, require named desktop/mobile/demanding-state evidence, all visual hard gates, and the accepted craft threshold.
 6. Require independent review for non-trivial user-facing, cross-module, production-bug, or material-regression work; require security review for High-risk work. No unresolved BLOCKER/MAJOR finding may remain.
 7. Load `verification-routing` and run the canonical full verification gate once when final delivery or the task class requires it.
 8. Map every required acceptance criterion to `PASS`, `FAIL`, `UNPROVEN`, or `BLOCKED` with exact evidence. `UNPROVEN` is not release-ready.

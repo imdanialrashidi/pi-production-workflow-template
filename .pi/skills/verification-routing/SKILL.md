@@ -87,6 +87,19 @@ For routine local execution:
 
 Full CI may use production builds, required projects, at most one retry, screenshots on failure, and trace on first retry. Keep video disabled unless explicitly justified.
 
+## Visual evidence adjunct
+
+For a material UI change, visual proof supplements rather than replaces the normal lane:
+
+- during implementation, rerun only the affected journey/state/viewport;
+- at feature completion, exercise the critical journey and capture named desktop/mobile/demanding-state evidence;
+- run accessibility structure/interaction checks before aesthetic screenshot review;
+- use deterministic fixtures or seeded state for comparisons;
+- record lab performance separately from field/RUM performance;
+- do not approve from static source, a component story, or a single happy-path screenshot when the acceptance contract covers responsive behavior or other states.
+
+Load `frontend-design` for the final hard-gate and craft verdict.
+
 ## Evidence
 
 Final reports must distinguish:

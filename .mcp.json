@@ -19,9 +19,10 @@
       "command": "npx",
       "args": [
         "-y",
-        "@playwright/mcp@0.0.78",
+        "@playwright/mcp@0.0.79",
         "--headless",
         "--isolated",
+        "--block-service-workers",
         "--image-responses",
         "omit",
         "--output-dir",

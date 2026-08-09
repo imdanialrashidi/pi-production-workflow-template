@@ -13,7 +13,7 @@ Record only durable constraints and decisions. Do not turn this into a diary.
 1.
 
 ## Non-negotiable invariants
-- 
+-
 
 ## Chosen patterns
 | Area | Decision | Why | Revisit when |
@@ -21,7 +21,7 @@ Record only durable constraints and decisions. Do not turn this into a diary.
 |  |  |  |  |
 
 ## Explicitly rejected complexity
-- 
+-
 
 ## Operational baseline
 - Configuration/secrets:
