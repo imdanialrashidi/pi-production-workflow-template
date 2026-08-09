@@ -16,17 +16,18 @@ Use Playwright MCP through the `mcp` proxy for interactive exploration:
 - click, type, form, keyboard, dialog, resize, and tab interactions;
 - console inspection;
 - network request inspection;
+- focused page evaluation when snapshots and normal interactions cannot expose the required state;
 - screenshots when appearance materially matters.
 
 Use repository-local Playwright Test or the project's browser-test scripts for durable regression coverage and CI evidence.
 
 Do not treat a successful MCP interaction as a replacement for a committed deterministic test.
 
-The MCP configuration intentionally does not expose arbitrary JavaScript evaluation, local file upload, drag-and-drop file injection, or MCP scripting. Do not attempt to work around those restrictions.
+Autonomous mode exposes `browser_evaluate`; keep it focused, read-oriented, and justified by an evidence gap. Local file upload, drag-and-drop file injection, and MCP scripting are intentionally unavailable. Strict mode additionally blocks page evaluation and public navigation; do not work around those boundaries.
 
 ## Order of operations
 
-1. Start or reuse the narrowest relevant local server.
+1. Start or reuse the narrowest relevant local server, or identify the exact public HTTP(S) page needed for external evidence.
 2. Reproduce the affected journey with Playwright MCP or the narrowest existing browser test.
 3. Prefer `browser_find` or `browser_snapshot` for locating controls and understanding state.
 4. Inspect console errors, failed requests, accessibility semantics, and visible state.

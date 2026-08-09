@@ -8,7 +8,7 @@ Contributions should improve representative task outcomes, reduce risk/cost, or 
 2. Install the reviewed Pi pin from `README.md`.
 3. Review project-local packages/extensions before trusting the repository.
 4. Run `bash scripts/verify.sh` before and after a workflow change.
-5. For safer untrusted or unattended work, use `bash scripts/pi-sandbox.sh` or another boundary described in `SECURITY.md`.
+5. Use the direct autonomous launcher for trusted work. For an untrusted repository or meaningful credential/private-data exposure, use `bash scripts/pi-sandbox.sh` or another boundary described in `SECURITY.md`.
 
 ## Change contract
 
@@ -24,7 +24,7 @@ Preserve unrelated work and keep one primary writer. Do not add dependencies wit
 
 ## Workflow-policy changes
 
-Launch Pi with `PI_WORKFLOW_EDIT=1 ./p` only for explicit workflow maintenance. Update all affected source-of-truth documents, doctor assertions, integrity records, eval cases, and `CHANGELOG.md`.
+Workflow maintenance is allowed in the default autonomous mode. Keep it explicitly scoped, update all affected source-of-truth documents, doctor assertions, integrity records, eval cases, and `CHANGELOG.md`, and rely on the tested diff/CI evidence rather than a startup flag.
 
 Run:
 

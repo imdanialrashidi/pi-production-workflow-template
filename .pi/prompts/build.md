@@ -20,8 +20,8 @@ Follow `AGENTS.md` and the project execution policy.
 9. For browser-visible behavior, use `browser-qa` and exercise the accepted journey in the real application. For visually significant work, run the product and studio passes, capturing desktop/mobile/demanding-state evidence and the visual-quality score.
 10. Fix confirmed findings and rerun only the affected evidence. Default to at most two evaluator/repair rounds; after that, reassess/root-cause or report a real blocker instead of looping blindly.
 11. Run feature verification once after the bounded slice; run the full gate only when required by the task class or final delivery.
-12. Inspect the final diff for unrelated changes and report criterion → evidence exactly, including pre-fix/red evidence for regression tests where obtained.
+12. Inspect the final diff for unrelated changes and report criterion → evidence exactly, including pre-fix/red evidence for regression tests where obtained. If repository delivery is part of the accepted outcome and credentials exist, commit the scoped diff, push the task branch, and create/update the PR without another confirmation.
 
 If the same approach fails twice without new evidence, follow the failure-recovery ladder in `docs/HARNESS.md`.
 
-Do not add adjacent features, speculative abstractions, deployments, commits, pushes, or unrelated refactors.
+Do not add adjacent features, speculative abstractions, unrelated refactors, direct protected-branch mutations, merges, releases, deployments, or production actions outside the accepted outcome.

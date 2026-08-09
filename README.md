@@ -15,13 +15,13 @@ A compact, evidence-driven harness for [Pi Coding Agent](https://pi.dev/) focuse
 - a project launcher (`./p`) with the required tool allowlist;
 - bounded read-heavy subagents through the pinned `pi-sub-agent` package;
 - on-demand LSP, maintained Context7-backed documentation search, web search/fetch, and opt-in image analysis;
-- lazy Playwright MCP browser exploration through a restricted proxy tool;
+- lazy Playwright MCP browser exploration for localhost and public HTTP(S) pages, with focused page evaluation;
 - repository-local Playwright Test (when the real project uses it) for durable regression coverage;
 - a visible todo panel for genuinely multi-step work;
-- a tested project-local defense-in-depth extension that intercepts direct secret/path access and common destructive, production, Git, workflow-policy, and unsafe MCP patterns;
+- a tested autonomous-by-default guard that permits routine workspace/Git/browser delivery while blocking secrets, destructive host/Git actions, force pushes, publication/deployment, and browser file exfiltration;
 - specialized skills for frontend design, behavior-sensitive test design, verification routing, risk review, and browser QA;
 - a doctor/CI check that validates package pins, security posture, and always-loaded context budgets;
-- a 16-case, three-trial RPC evaluation harness with deterministic graders, trace/efficiency metrics, baseline comparison, and a real code-plus-regression-test fixture.
+- a 17-case, three-trial RPC evaluation harness with deterministic graders, trace/efficiency metrics, baseline comparison, an unattended-autonomy case, and a real code-plus-regression-test fixture.
 
 ## Harness philosophy
 
@@ -89,7 +89,9 @@ Start Pi:
 ./p
 ```
 
-The first time Pi sees project-local resources, review and trust `.pi/settings.json`, `.pi/extensions/`, `.pi/skills/`, `.pi/prompts/`, and `.mcp.json`. Pi then installs the pinned project packages.
+`./p` treats this checked-out repository as trusted with Pi's official `--approve` flag and uses `PI_GUARD_MODE=autonomous`, so there is no approval loop before the agent can work. Use `PI_PROJECT_TRUST=ask ./p` to restore Pi's prompt or `PI_PROJECT_TRUST=never ./p` to ignore project resources for a diagnostic run.
+
+In autonomous mode the agent may edit workflow files, install local dependencies, run tests and browser QA, create commits, push a task branch, and create/update a PR when that delivery is in scope. It does not need another confirmation for each reversible step.
 
 Complete the one-time tool setup in [`docs/TOOLING_SETUP.md`](docs/TOOLING_SETUP.md).
 
@@ -289,35 +291,35 @@ Recurring failure classes should become tests, types/schemas, lint/structural ch
 
 ## Safety model
 
-Pi project trust is not a sandbox. Pi runs with the operating-system permissions of the account that starts it.
+The normal launcher is intentionally **not sandboxed**. Pi runs directly with the operating-system permissions of the account that starts it, and the agent is expected to finish reversible work without permission popups.
 
 `.pi/extensions/safety-guard.js` intercepts direct tool paths and common shell/MCP patterns for:
 
 - sensitive credential and private-key paths;
 - destructive recursive deletion;
 - privilege escalation and host service mutation;
-- Git commit/push/history mutation;
+- destructive Git reset/clean/restore, forced or deleting pushes, and forced branch/worktree deletion;
 - global package installation and publishing;
 - remote shell, deployment, infrastructure, and production database commands;
-- direct `write`/`edit` calls outside the repository;
-- accidental edits to harness-policy files;
-- unsafe Playwright MCP tools and non-local browser navigation.
+- direct `write`/`edit` calls outside the repository or OS temporary directory;
+- browser file upload/drop and MCP scripting.
 
-This is an accident-reduction layer, not a complete shell/interpreter parser or security boundary. Indirect commands, subprocesses, redirects, local-page behavior, and prompt injection still require OS/container policy and human diff review.
+Autonomous mode deliberately allows harness-policy edits, generated artifacts, OS-temp writes, ordinary Git branch/commit/pull/rebase/push, PR creation, public HTTP(S) navigation, and focused `browser_evaluate`. This is an accident-reduction layer, not a complete shell/interpreter parser or security boundary.
 
-For explicit harness maintenance:
+To diagnose without project trust or to opt into the older locks:
 
 ```bash
-PI_WORKFLOW_EDIT=1 ./p
+PI_PROJECT_TRUST=never ./p
+PI_GUARD_MODE=strict ./p
 ```
 
-Review the diff before keeping harness changes. For a simple local container boundary:
+The Docker boundary is optional and reserved for an untrusted repository, sensitive credentials/data, or genuinely unattended execution—not normal project work:
 
 ```bash
 bash scripts/pi-sandbox.sh
 ```
 
-The wrapper does not mount host Pi state, SSH/cloud credentials, or the Docker socket; it passes only recognized provider/search keys that already exist in the invoking environment. The repository remains a read/write bind mount. See [`SECURITY.md`](SECURITY.md) and Pi's [official containerization guide](https://pi.dev/docs/latest/containerization) for the exact boundary and stronger Gondolin/OpenShell options.
+The wrapper enables strict guard mode, does not mount host Pi state, SSH/cloud credentials, or the Docker socket, and passes only recognized provider/search keys. The repository remains a read/write bind mount. See [`SECURITY.md`](SECURITY.md) and Pi's [official security guidance](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/security.md) for the exact trust/isolation distinction.
 
 ## Harness evaluation
 
@@ -426,7 +428,7 @@ For a material visual change, the product pass proves journey, states, accessibi
 
 1. Create a repository from this template.
 2. Add/import the real product source.
-3. Run `./p` and review/trust project resources.
+3. Review the template once when adopting it, then run `./p`; the launcher trusts this checked-out project automatically.
 4. Complete `docs/TOOLING_SETUP.md` once for the machine/project.
 5. Run `/bootstrap` to make product, architecture, design, quality, verification, and runtime interfaces project-specific.
 6. Use `/discover` for an unproven idea; use `/design` before visually significant implementation.
@@ -434,7 +436,7 @@ For a material visual change, the product pass proves journey, states, accessibi
 8. Use `/plan` only for work that genuinely needs durable design/execution state.
 9. Use `/design-review` and `/review` for independent visual/product/risk evaluation.
 10. Use `/handoff` + `/resume` for long-running work across clean contexts.
-11. Use `/release-plan` for staged rollout and `/ship` for final local acceptance readiness.
+11. Use `/release-plan` for staged rollout and `/ship` for final acceptance plus task-branch commit/push/PR delivery.
 
 ## Updating Pi and packages
 

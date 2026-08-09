@@ -92,6 +92,7 @@ required=(
   scripts/lib/workflow-evals.mjs
   scripts/verify-affected.mjs
   tests/safety-guard.test.mjs
+  tests/launcher.test.mjs
   tests/workflow-evals.test.mjs
   tests/verify-affected.test.mjs
 )
@@ -243,15 +244,20 @@ if (!server.args.includes('--block-service-workers')) {
 }
 if (server.lifecycle !== 'lazy') throw new Error('Playwright MCP must be lazy');
 const included = new Set(server.includeTools || []);
-for (const unsafe of ['browser_evaluate', 'browser_file_upload', 'browser_drop']) {
+const excluded = new Set(server.excludeTools || []);
+for (const unsafe of ['browser_file_upload', 'browser_drop']) {
   if (included.has(unsafe)) throw new Error(`Unsafe browser tool exposed: ${unsafe}`);
+  if (!excluded.has(unsafe)) throw new Error(`Unsafe browser tool must be explicitly excluded: ${unsafe}`);
 }
-for (const required of ['browser_snapshot', 'browser_find', 'browser_navigate', 'browser_take_screenshot']) {
+for (const required of ['browser_snapshot', 'browser_find', 'browser_navigate', 'browser_take_screenshot', 'browser_evaluate']) {
   if (!included.has(required)) throw new Error(`Required browser tool missing: ${required}`);
+}
+if (server.args.includes('--allowed-origins')) {
+  throw new Error('Autonomous browser mode must not be limited to localhost by MCP config');
 }
 NODE
 then
-  pass "Playwright MCP is pinned, lazy, and restricted"
+  pass "Playwright MCP is pinned, lazy, autonomous, and blocks file injection"
 else
   fail "Playwright MCP policy validation failed"
 fi
@@ -274,6 +280,15 @@ for tool in "${launcher_tools[@]}"; do
     fail "launcher does not allow $tool"
   fi
 done
+
+if grep -Fq 'PI_PROJECT_TRUST:-always' p && \
+   grep -Fq 'args+=(--approve)' p && \
+   grep -Fq 'PI_GUARD_MODE:-autonomous' p && \
+   grep -Fq 'PI_GUARD_MODE=${PI_GUARD_MODE:-strict}' scripts/pi-sandbox.sh; then
+  pass "launcher defaults to trusted autonomous mode and sandbox launcher opts into strict mode"
+else
+  fail "launcher autonomy/trust defaults are inconsistent"
+fi
 
 if grep -Fq '/vision-use' docs/TOOLING_SETUP.md && \
    grep -Fq '["text", "image"]' docs/TOOLING_SETUP.md && \

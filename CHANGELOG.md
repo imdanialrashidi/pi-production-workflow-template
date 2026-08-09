@@ -6,6 +6,7 @@ All notable workflow changes are documented here. This project follows the spiri
 
 ### Added
 
+- Behavioral coverage for autonomous/strict guard modes and launcher trust overrides.
 - Product design contract, distinctive frontend-design skill, visual hard gates, and scored craft rubric.
 - Idea-to-production prompts: discover, design, spec, ADR, build UI, design review, release plan, and incident response.
 - Evidence-gated product roadmap template.
@@ -18,6 +19,8 @@ All notable workflow changes are documented here. This project follows the spiri
 
 ### Changed
 
+- Made `./p` trust the checked-out project and run autonomously by default: routine workflow edits, task-branch Git delivery, public browser navigation, and focused page evaluation no longer require intermediate approval; the optional Docker launcher selects strict mode.
+- Narrowed the safety guard to high-blast-radius actions such as secret access, destructive host/Git commands, force/deleting pushes, publication/deployment/production mutation, and browser file exfiltration.
 - Replaced archived `pi-context7` with maintained `pi-doc-search`.
 - Corrected the vision integration: replaced `@bytetrue/pi-vision` with capability-aware `@getpipher/vision`, added explicit primary/vision model switching, and renamed the delegated tool to `describe_image`.
 - Removed the template's forced model/provider selection.

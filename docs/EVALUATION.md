@@ -21,7 +21,7 @@ Prefer this order:
 3. security/data/permission negative-path checks;
 4. `frontend-design` hard gates and screenshot craft rubric;
 5. blinded pairwise evaluator comparison against the same acceptance contract;
-6. calibrated human review for disputed visual/product judgment.
+6. blinded independent-agent evaluation for visual/product judgment, with optional human adjudication only for disputed or high-stakes promotion.
 
 Keep the implementation agent and final evaluator contexts separate. Give the evaluator the prompt, accepted contract, diff/artifacts, and raw evidence—not the candidate's self-assessment or the expected diagnosis.
 
@@ -82,7 +82,7 @@ node scripts/run-workflow-evals.mjs --model provider/model-id --filter frontend 
 
 The runner uses Pi's official JSONL RPC mode, copies Git-tracked and non-ignored files into `.artifacts/evals/`, refuses common secret/private paths and external symlinks, and creates a fresh local Git baseline with no remote for each trial. It disables session persistence, captures raw events/stderr/session statistics, records a content-hash manifest, runs declared post-checks without a shell, and grades deterministic completion/mutation/safety evidence. Post-checks must leave the disposable workspace byte-for-byte unchanged.
 
-It writes `summary.json` plus `summary.md` and returns exit code 2 for deterministic failure or rejected baseline comparison. A suite fingerprint plus model/thinking/trial/timeout/Pi/Node metadata prevents comparison across different benchmark contracts or run settings. Tool starts/ends are reduced to call/error/duplicate/verification/repair/retry/compaction metrics; official session stats supply tokens and cost. Qualitative rubric items remain explicitly `UNSCORED`, so a mechanically clean result is only `QUALITATIVE_REVIEW_REQUIRED`, never automatic promotion.
+It writes `summary.json` plus `summary.md` and returns exit code 2 for deterministic failure or rejected baseline comparison. A suite fingerprint plus model/thinking/trial/timeout/Pi/Node metadata prevents comparison across different benchmark contracts or run settings. Tool starts/ends are reduced to call/error/duplicate/verification/repair/retry/compaction metrics; official session stats supply tokens and cost. Qualitative rubric items remain explicitly `UNSCORED`, so a mechanically clean result is only `QUALITATIVE_REVIEW_REQUIRED`, never automatic promotion. That review may be performed by a separate blinded model/agent; ordinary workflow completion does not wait for a person.
 
 Model calls can incur cost and may transmit copied repository content to the selected provider. Run only with an approved model/provider and suitable data classification. For stronger isolation, launch the evaluation from the container/VM policy described in `SECURITY.md`.
 
@@ -98,6 +98,6 @@ Summarize:
 - deterministic failures and visual hard-gate failures;
 - wins, regressions, and ambiguous outcomes;
 - cost/latency/resource change;
-- evaluator disagreement and human calibration notes;
+- evaluator disagreement and calibration/adjudication notes;
 - decision: promote, revise, or reject;
 - new real failure cases added to the suite.

@@ -96,7 +96,7 @@ Do not silently broaden the contract while implementing.
 - Never expose secrets in source, logs, screenshots, fixtures, prompts, or committed artifacts.
 - Never weaken, skip, delete, or falsify a valid security control or test to obtain green status.
 - Do not add speculative infrastructure or refactor unrelated code.
-- Do not commit, push, merge, publish, release, deploy, rotate credentials, or mutate production without explicit authorization.
+- When repository delivery is in scope, finish autonomously through a scoped task-branch commit, push, and PR. Direct protected-branch pushes, merge, release, deployment, credential rotation, and production mutation require explicit scope.
 - Subagent findings are evidence to evaluate, not proof that checks passed.
 
 ## Context discipline
@@ -111,18 +111,20 @@ Do not silently broaden the contract while implementing.
 
 ## Autonomy and hard stops
 
-Continue autonomously through routine, reversible engineering decisions. Choose the smallest safe option consistent with the accepted contract and architecture.
+Continue autonomously through routine, reversible engineering work, including edits, local dependency setup, tests, browser QA, repair, workflow maintenance, and task-branch delivery. Choose the smallest safe interpretation consistent with the request and record material assumptions instead of asking about ordinary implementation details.
+
+If the requested outcome includes repository delivery and an authenticated remote is available, create or reuse a task branch, commit the scoped diff, push it, and open or update a PR without another confirmation. Never stop at advice or an uncommitted patch when the accepted outcome is implementation.
 
 Stop only when:
 
-1. A required credential, account, or external service is unavailable.
-2. The next action affects production, real users, real money, or external infrastructure.
+1. A required credential, account, or external service is unavailable and no local/reversible fallback can complete the criterion.
+2. The next action directly changes production, real users, real money, or shared external infrastructure and that action is not already explicit in the accepted outcome.
 3. The next action is destructive or practically irreversible.
 4. Accepted requirements conflict with no safe reversible interpretation.
 5. A security or data-integrity boundary cannot be implemented safely.
 6. A legal, compliance, or product-policy decision is required.
 
-Report the exact blocker and minimum user action. Do not ask the user to decide ordinary implementation details.
+Complete every unblocked criterion first, preserve exact continuation state, then report the blocker and minimum required user action. Do not ask the user to decide ordinary implementation details.
 
 ## Definition of done
 
