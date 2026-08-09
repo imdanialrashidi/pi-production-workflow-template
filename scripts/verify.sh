@@ -4,6 +4,8 @@ set -Eeuo pipefail
 ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
+bash scripts/pi-doctor.sh --ci
+
 if [[ -x scripts/project-verify.sh ]]; then
   exec scripts/project-verify.sh
 fi
@@ -60,6 +62,10 @@ if [[ -f Cargo.toml ]]; then
 fi
 
 if [[ "$ran" -eq 0 ]]; then
+  if grep -Fxq -- '- Primary users:' docs/PRODUCT.md; then
+    printf '\nTemplate-only verification passed. Run /bootstrap after adding product source.\n'
+    exit 0
+  fi
   cat >&2 <<'MSG'
 No supported project or verification command was found.
 Add normal package scripts (format:check/typecheck/lint/test/build or ci),

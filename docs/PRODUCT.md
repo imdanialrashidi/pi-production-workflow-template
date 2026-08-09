@@ -4,11 +4,15 @@ Keep this document short. It is the durable source of truth for what the product
 
 ## Users and problem
 - Primary users:
+- Context, ability, language, and device assumptions:
 - Problem being solved:
+- Current alternative / workaround:
 - Why now:
 
 ## MVP outcome
 - Measurable outcome:
+- Riskiest product assumption:
+- Smallest experiment that tests it:
 - Deadline / hard constraints:
 - Supported platforms and environments:
 
@@ -18,7 +22,7 @@ Keep this document short. It is the durable source of truth for what the product
 3.
 
 ## Non-goals
-- 
+-
 
 ## Acceptance criteria
 - [ ]
@@ -33,6 +37,16 @@ Keep this document short. It is the durable source of truth for what the product
 - Core page/API target:
 - Supported device/network baseline:
 - Accessibility target:
+- Brand character (`x, not y`):
+- Visual ambition (utility / product / flagship):
+- Required locales and directions (LTR/RTL):
+- Link to accepted visual contract: `docs/DESIGN.md`
+
+## Measurement and operations
+- Activation / success event:
+- Guardrail metrics:
+- Required product telemetry:
+- Support / recovery expectation:
 
 ## Open product decisions
-- 
+-

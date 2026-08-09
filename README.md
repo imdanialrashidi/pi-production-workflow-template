@@ -1,24 +1,27 @@
 # Pi Production Workflow Template
 
-A compact, evidence-driven harness for [Pi Coding Agent](https://pi.dev/) focused on high-quality autonomous implementation, bounded independent evaluation, low-resource verification, and production-safe guardrails.
+A compact, evidence-driven harness for [Pi Coding Agent](https://pi.dev/) focused on high-quality autonomous implementation, distinctive production-grade frontend design, bounded independent evaluation, low-resource verification, and production-safe guardrails.
 
 ## What this template provides
 
 - a short progressive-disclosure map in `AGENTS.md` instead of a giant always-loaded manual;
 - a detailed on-demand harness playbook in `docs/HARNESS.md`;
 - a project quality/evaluator contract in `docs/QUALITY.md`;
+- a durable product-specific visual contract in `docs/DESIGN.md`;
 - acceptance-driven `/build`, `/review`, and `/ship` workflows;
+- `/discover` → `/design` → `/build-ui` → `/design-review` workflows for moving from idea to a functional, visually distinctive interface;
 - durable execution plans plus `/handoff` and `/resume` for long-running work across fresh contexts;
 - Pi-native project settings in `.pi/settings.json`;
 - a project launcher (`./p`) with the required tool allowlist;
 - bounded read-heavy subagents through the pinned `pi-sub-agent` package;
-- on-demand LSP, Context7 documentation, web search/fetch, and image analysis;
+- on-demand LSP, maintained Context7-backed documentation search, web search/fetch, and opt-in image analysis;
 - lazy Playwright MCP browser exploration through a restricted proxy tool;
 - repository-local Playwright Test (when the real project uses it) for durable regression coverage;
 - a visible todo panel for genuinely multi-step work;
-- a project-local safety extension that blocks secrets, destructive commands, production mutation, Git history mutation, unsafe MCP calls, and accidental harness-policy edits;
-- specialized skills for verification routing, risk review, and browser QA;
-- a doctor/CI check that validates package pins, security posture, and always-loaded context budgets.
+- a tested project-local defense-in-depth extension that intercepts direct secret/path access and common destructive, production, Git, workflow-policy, and unsafe MCP patterns;
+- specialized skills for frontend design, verification routing, risk review, and browser QA;
+- a doctor/CI check that validates package pins, security posture, and always-loaded context budgets;
+- a 15-case, three-trial RPC evaluation scaffold for measuring workflow changes instead of judging prompt text by intuition.
 
 ## Harness philosophy
 
@@ -47,16 +50,31 @@ execution plan
 → /resume
 ```
 
+For a visually significant product slice:
+
+```text
+product thesis
+→ design contract
+→ functional UI slice
+→ browser product pass
+→ independent studio pass
+→ hard gates + craft score
+```
+
 The design intentionally avoids agent swarms and giant skill packs. Extra orchestration is added only where it solves a demonstrated failure mode.
 
 See [`docs/PI_WORKFLOW.md`](docs/PI_WORKFLOW.md) and [`docs/HARNESS.md`](docs/HARNESS.md) for the architecture and operating playbook.
 
+Contribution and private vulnerability-reporting expectations live in [`CONTRIBUTING.md`](CONTRIBUTING.md) and [`SECURITY.md`](SECURITY.md).
+
 ## Install
+
+Use Node.js 22.19.0 or newer, matching the reviewed Pi package requirement.
 
 Install Pi:
 
 ```bash
-npm install -g --ignore-scripts @earendil-works/pi-coding-agent
+npm install -g --ignore-scripts @earendil-works/pi-coding-agent@0.84.1
 ```
 
 Validate the template:
@@ -113,14 +131,35 @@ Implement this behavior completely and verify it.
 Reusable workflows:
 
 ```text
+/discover <idea or problem>
+/design <surface or journey>
+/spec <accepted outcome>
 /build <accepted task>
+/build-ui <accepted UI slice>
+/design-review [route, flow, or diff]
 /plan <complex goal>
+/adr <architecture decision>
 /review [scope or acceptance contract]
+/release-plan [milestone]
 /ship [scope or execution plan]
+/incident <symptom or incident>
 /handoff <active execution plan or task>
 /resume <docs/exec-plans/active/...md>
 /bootstrap [project constraints]
 ```
+
+## Idea-to-product path
+
+| Stage | Command / artifact | Exit evidence |
+|---|---|---|
+| Discovery | `/discover` → `docs/PRODUCT.md`, `docs/PLAN.md` | Target user/problem, riskiest assumption, measurable MVP outcome |
+| Experience direction | `/design` → `docs/DESIGN.md` | Product-specific thesis, signature, tokens, states, responsive/browser proof plan |
+| Feature contract | `/spec` or `/plan` | 3–7 observable criteria with proof and explicit non-goals |
+| Walking skeleton | `/build` | One real end-to-end path, canonical start/test interfaces, observability |
+| Visual MVP slice | `/build-ui` | Functional journey, required states, desktop/mobile evidence, hard gates and craft bar |
+| Alpha / beta | `/release-plan` | Controlled cohort, telemetry, support/recovery, field quality and rollback triggers |
+| Release candidate | `/review` then `/ship` | Every criterion proven; no unresolved BLOCKER/MAJOR; recovery/rollback ready |
+| Production learning | `/incident` plus eval/regression updates | Outcomes and failures become product decisions, tests, or harness eval cases |
 
 Reload project resources:
 
@@ -171,11 +210,11 @@ The template pins:
 ```text
 pi-sub-agent
 pi-mcp-adapter
-rpiv-todo
+@juicesharp/rpiv-todo
 pi-lsp-adapter
-pi-context7
-pi-image-subagent
-pi-web-search
+@dreki-gg/pi-doc-search
+@bytetrue/pi-vision
+@bytetrue/pi-web-search
 ```
 
 The launcher exposes only the required tools. The MCP adapter exposes a compact `mcp` proxy, and Playwright schemas are discovered only when needed.
@@ -189,7 +228,7 @@ Useful checks:
 /web --show
 ```
 
-See [`docs/TOOLING_SETUP.md`](docs/TOOLING_SETUP.md) for LSP, Context7, search, vision, and Playwright setup.
+See [`docs/TOOLING_SETUP.md`](docs/TOOLING_SETUP.md) for LSP, documentation search, web search, vision, and Playwright setup.
 
 ## Context and long-running work
 
@@ -228,7 +267,7 @@ Recurring failure classes should become tests, types/schemas, lint/structural ch
 
 Pi project trust is not a sandbox. Pi runs with the operating-system permissions of the account that starts it.
 
-`.pi/extensions/safety-guard.js` blocks:
+`.pi/extensions/safety-guard.js` intercepts direct tool paths and common shell/MCP patterns for:
 
 - sensitive credential and private-key paths;
 - destructive recursive deletion;
@@ -236,9 +275,11 @@ Pi project trust is not a sandbox. Pi runs with the operating-system permissions
 - Git commit/push/history mutation;
 - global package installation and publishing;
 - remote shell, deployment, infrastructure, and production database commands;
-- writes outside the repository;
+- direct `write`/`edit` calls outside the repository;
 - accidental edits to harness-policy files;
 - unsafe Playwright MCP tools and non-local browser navigation.
+
+This is an accident-reduction layer, not a complete shell/interpreter parser or security boundary. Indirect commands, subprocesses, redirects, local-page behavior, and prompt injection still require OS/container policy and human diff review.
 
 For explicit harness maintenance:
 
@@ -246,7 +287,23 @@ For explicit harness maintenance:
 PI_WORKFLOW_EDIT=1 ./p
 ```
 
-Review the diff before keeping harness changes. For stronger isolation, use a container, VM, or dedicated development account.
+Review the diff before keeping harness changes. For a simple local container boundary:
+
+```bash
+bash scripts/pi-sandbox.sh
+```
+
+The wrapper does not mount host Pi state, SSH/cloud credentials, or the Docker socket; it passes only recognized provider/search keys that already exist in the invoking environment. The repository remains a read/write bind mount. See [`SECURITY.md`](SECURITY.md) and Pi's [official containerization guide](https://pi.dev/docs/latest/containerization) for the exact boundary and stronger Gondolin/OpenShell options.
+
+## Harness evaluation
+
+Validate the starter benchmark without making model calls:
+
+```bash
+node scripts/run-workflow-evals.mjs --dry-run
+```
+
+For a real comparison, run at least three isolated trials per case with the same approved model/thinking level for baseline and candidate, then grade deterministic behavior before independent visual judgment. Model calls can incur cost and transmit repository content to the selected provider. See [`docs/EVALUATION.md`](docs/EVALUATION.md).
 
 ## Verification
 
@@ -292,7 +349,7 @@ Local development policy:
 - reuse servers;
 - run a specific spec.
 
-Use screenshots only when appearance materially matters; use the image subagent only when visual interpretation adds value.
+For a material visual change, the product pass proves journey, states, accessibility, responsiveness, console/network health, and budgets. The studio pass compares deterministic screenshots with `docs/DESIGN.md` and scores the `frontend-design` rubric. Use `image_ask` only when a focused visual interpretation adds value.
 
 ## Repository layout
 
@@ -308,18 +365,16 @@ Use screenshots only when appearance materially matters; use the image subagent 
 │   ├── extensions/
 │   │   └── safety-guard.js
 │   ├── prompts/
-│   │   ├── bootstrap.md
-│   │   ├── build.md
-│   │   ├── plan.md
-│   │   ├── review.md
-│   │   ├── ship.md
-│   │   ├── handoff.md
-│   │   └── resume.md
+│   │   ├── discover.md / design.md / spec.md / adr.md
+│   │   ├── build.md / build-ui.md / design-review.md
+│   │   └── plan.md / release-plan.md / review.md / ship.md / incident.md / handoff.md / resume.md
 │   └── skills/
 │       ├── browser-qa/
+│       ├── frontend-design/
 │       ├── risk-review/
 │       └── verification-routing/
 ├── docs/
+│   ├── PRODUCT.md / DESIGN.md / ARCHITECTURE.md / PLAN.md
 │   ├── HARNESS.md
 │   ├── QUALITY.md
 │   ├── PI_WORKFLOW.md
@@ -336,33 +391,30 @@ Use screenshots only when appearance materially matters; use the image subagent 
 2. Add/import the real product source.
 3. Run `./p` and review/trust project resources.
 4. Complete `docs/TOOLING_SETUP.md` once for the machine/project.
-5. Run `/bootstrap` to make product, architecture, quality, verification, and runtime interfaces project-specific.
-6. Deliver bounded slices with `/build`.
-7. Use `/plan` only for work that genuinely needs durable design/execution state.
-8. Use `/review` when independent evaluation adds value.
-9. Use `/handoff` + `/resume` for long-running work across clean contexts.
-10. Use `/ship` for final local acceptance/release readiness.
+5. Run `/bootstrap` to make product, architecture, design, quality, verification, and runtime interfaces project-specific.
+6. Use `/discover` for an unproven idea; use `/design` before visually significant implementation.
+7. Deliver ordinary slices with `/build` and flagship/frontend slices with `/build-ui`.
+8. Use `/plan` only for work that genuinely needs durable design/execution state.
+9. Use `/design-review` and `/review` for independent visual/product/risk evaluation.
+10. Use `/handoff` + `/resume` for long-running work across clean contexts.
+11. Use `/release-plan` for staged rollout and `/ship` for final local acceptance readiness.
 
 ## Updating Pi and packages
 
-Pi:
+Pi is intentionally pinned. After reviewing a release, update the exact version in the install command, `Dockerfile.pi`, doctor requirement, and integrity manifest together; then reinstall explicitly. Do not use an unreviewed floating self-update as the template's upgrade path.
+
+Project packages are exact pins in `.pi/settings.json`; `pi update --extensions` does not advance versioned npm specs. Change one exact pin only after reviewing its source/release and testing it in a disposable branch/container.
+
+The reviewed npm tarball integrities live in `.pi/package-integrity.json`. Verify them against the registry during an intentional update:
 
 ```bash
-pi update --self
+node scripts/verify-package-integrity.mjs --online
 ```
-
-Project packages:
-
-```bash
-pi update --extensions
-```
-
-Packages are pinned in `.pi/settings.json`. Update a pin only after reviewing the release and testing it in a disposable branch.
 
 ## Research basis
 
-The harness design is informed by public engineering work from OpenAI and Anthropic on harness engineering, context engineering, long-running agents, evaluator/optimizer loops, tool design, and repository-as-system-of-record practices, plus SWE-agent research on agent-computer interfaces. See `docs/HARNESS.md` for the specific design mapping.
+The harness design is informed by public engineering work from OpenAI and Anthropic on harness engineering, context engineering, long-running agents, evaluator/optimizer loops, tool design, and repository-as-system-of-record practices, plus SWE-agent research on agent-computer interfaces. The visual workflow additionally maps primary guidance from [W3C WCAG 2.2](https://www.w3.org/TR/WCAG22/), [Google Web Vitals](https://web.dev/articles/vitals), [Material Design foundations/tokens](https://m3.material.io/styles), and Anthropic's [frontend-design skill](https://github.com/anthropics/skills/blob/main/skills/frontend-design/SKILL.md) into executable gates. See `docs/HARNESS.md` and the `frontend-design` rubric for the specific mapping.
 
 ## License
 
-Use this template under the repository's chosen license.
+No license has been selected yet. The repository owner must choose and add one before presenting the template as reusable; this legal/product decision is intentionally not guessed by the workflow.

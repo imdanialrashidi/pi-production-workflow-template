@@ -13,33 +13,81 @@ pass() { printf 'PASS  %s\n' "$1"; }
 warn() { printf 'WARN  %s\n' "$1" >&2; }
 fail() { printf 'FAIL  %s\n' "$1" >&2; failures=$((failures + 1)); }
 
+version_at_least() {
+  node -e '
+    const parse = (value) => value.split(".").map((part) => Number.parseInt(part, 10) || 0);
+    const current = parse(process.argv[1]);
+    const minimum = parse(process.argv[2]);
+    const length = Math.max(current.length, minimum.length);
+    for (let index = 0; index < length; index += 1) {
+      const left = current[index] || 0;
+      const right = minimum[index] || 0;
+      if (left > right) process.exit(0);
+      if (left < right) process.exit(1);
+    }
+    process.exit(0);
+  ' "$1" "$2"
+}
+
 required=(
   AGENTS.md
+  CHANGELOG.md
+  CONTRIBUTING.md
+  SECURITY.md
+  Dockerfile.pi
+  .dockerignore
+  .github/dependabot.yml
+  .github/pull_request_template.md
   p
   .mcp.json
   .pi/settings.json
+  .pi/package-integrity.json
   .pi/models.env
   .pi/APPEND_SYSTEM.md
   .pi/extensions/safety-guard.js
   .pi/prompts/bootstrap.md
+  .pi/prompts/discover.md
+  .pi/prompts/design.md
+  .pi/prompts/spec.md
+  .pi/prompts/adr.md
   .pi/prompts/build.md
+  .pi/prompts/build-ui.md
+  .pi/prompts/design-review.md
   .pi/prompts/plan.md
+  .pi/prompts/release-plan.md
   .pi/prompts/review.md
   .pi/prompts/ship.md
+  .pi/prompts/incident.md
   .pi/prompts/handoff.md
   .pi/prompts/resume.md
   .pi/skills/risk-review/SKILL.md
   .pi/skills/verification-routing/SKILL.md
   .pi/skills/browser-qa/SKILL.md
+  .pi/skills/frontend-design/SKILL.md
+  .pi/skills/frontend-design/references/visual-quality-rubric.md
   docs/HARNESS.md
+  docs/DESIGN.md
+  docs/EVALUATION.md
   docs/QUALITY.md
   docs/exec-plans/README.md
   docs/TOOLING_SETUP.md
+  evals/cases.json
+  scripts/pi-sandbox.sh
+  scripts/verify-package-integrity.mjs
+  scripts/run-workflow-evals.mjs
+  tests/safety-guard.test.mjs
 )
 
 for file in "${required[@]}"; do
   [[ -f "$file" ]] && pass "$file exists" || fail "$file is missing"
 done
+
+node_version="$(node -p 'process.versions.node' 2>/dev/null || true)"
+if [[ -n "$node_version" ]] && version_at_least "$node_version" "22.19.0"; then
+  pass "Node $node_version satisfies Pi 0.84.1 requirement (>=22.19.0)"
+else
+  fail "Node >=22.19.0 is required for the reviewed Pi pin"
+fi
 
 if node -e 'JSON.parse(require("fs").readFileSync(".pi/settings.json","utf8")); JSON.parse(require("fs").readFileSync(".mcp.json","utf8"))' >/dev/null 2>&1; then
   pass "Pi settings and MCP config are valid JSON"
@@ -53,10 +101,28 @@ else
   fail "safety guard has a JavaScript syntax error"
 fi
 
-if bash -n p scripts/verify.sh scripts/pi-doctor.sh; then
+if node --test tests/safety-guard.test.mjs; then
+  pass "safety guard behavior tests pass"
+else
+  fail "safety guard behavior tests failed"
+fi
+
+if bash -n p scripts/verify.sh scripts/pi-doctor.sh scripts/pi-sandbox.sh scripts/ci-install.sh; then
   pass "shell entrypoints parse"
 else
   fail "shell syntax validation failed"
+fi
+
+if node scripts/run-workflow-evals.mjs --dry-run >/dev/null; then
+  pass "workflow evaluation suite is structurally valid"
+else
+  fail "workflow evaluation suite validation failed"
+fi
+
+if node scripts/verify-package-integrity.mjs >/dev/null; then
+  pass "configured package pins have reviewed integrity records"
+else
+  fail "package integrity manifest validation failed"
 fi
 
 check_context_budget() {
@@ -100,8 +166,8 @@ const required = [
   'npm:pi-mcp-adapter@2.20.1',
   'npm:@juicesharp/rpiv-todo@2.1.0',
   'npm:pi-lsp-adapter@0.1.3',
-  'npm:@dreki-gg/pi-context7@0.2.0',
-  'npm:pi-image-subagent@1.0.0',
+  'npm:@dreki-gg/pi-doc-search@0.3.2',
+  'npm:@bytetrue/pi-vision@0.2.0',
   'npm:@bytetrue/pi-web-search@0.1.3',
 ];
 const missing = required.filter((item) => !installed.has(item));
@@ -129,8 +195,11 @@ const config = JSON.parse(fs.readFileSync('.mcp.json', 'utf8'));
 const server = config.mcpServers?.playwright;
 if (!server) throw new Error('Playwright MCP server is missing');
 if (config.settings?.scriptMode !== false) throw new Error('MCP scripting must be disabled');
-if (!Array.isArray(server.args) || !server.args.includes('@playwright/mcp@0.0.78')) {
+if (!Array.isArray(server.args) || !server.args.includes('@playwright/mcp@0.0.79')) {
   throw new Error('Playwright MCP version pin is missing');
+}
+if (!server.args.includes('--block-service-workers')) {
+  throw new Error('Playwright MCP must block service workers in isolated QA sessions');
 }
 if (server.lifecycle !== 'lazy') throw new Error('Playwright MCP must be lazy');
 const included = new Set(server.includeTools || []);
@@ -152,8 +221,8 @@ launcher_tools=(
   todo
   mcp
   lsp_diagnostics
-  context7_get_library_docs
-  analyze_image
+  doc_search_get_library_docs
+  image_ask
   web_search
   web_fetch
 )
@@ -166,14 +235,31 @@ for tool in "${launcher_tools[@]}"; do
   fi
 done
 
+doctor_tmp_dir=".artifacts/pi-doctor"
+mkdir -p "$doctor_tmp_dir"
+frontmatter_scan_file="$(mktemp "$doctor_tmp_dir/frontmatter.XXXXXX")"
+secret_scan_file=""
+cleanup() {
+  [[ -z "$frontmatter_scan_file" ]] || rm -f "$frontmatter_scan_file"
+  [[ -z "$secret_scan_file" ]] || rm -f "$secret_scan_file"
+  rmdir "$doctor_tmp_dir" 2>/dev/null || true
+}
+trap cleanup EXIT
+
 missing_frontmatter=0
+{
+  find .pi/prompts -type f -name '*.md' -print0
+  find .pi/skills -type f -name 'SKILL.md' -print0
+} >"$frontmatter_scan_file"
 while IFS= read -r -d '' file; do
   first_line="$(head -n 1 "$file" || true)"
   if [[ "$first_line" != "---" ]]; then
     printf 'Missing frontmatter: %s\n' "$file" >&2
     missing_frontmatter=1
   fi
-done < <(find .pi/prompts .pi/skills -type f -name '*.md' -print0)
+done <"$frontmatter_scan_file"
+rm -f "$frontmatter_scan_file"
+frontmatter_scan_file=""
 
 if [[ "$missing_frontmatter" -eq 0 ]]; then
   pass "prompt and skill frontmatter markers found"
@@ -181,11 +267,29 @@ else
   fail "one or more prompt/skill files have no YAML frontmatter"
 fi
 
-secret_scan_file="$(mktemp)"
-trap 'rm -f "$secret_scan_file"' EXIT
+if grep -Fq 'Visual excellence' docs/QUALITY.md && \
+   grep -Fq '3.25/4' docs/QUALITY.md && \
+   grep -Fq 'Anti-template review' .pi/skills/frontend-design/references/visual-quality-rubric.md && \
+   grep -Fq 'LCP ≤ 2.5 s' .pi/skills/frontend-design/references/visual-quality-rubric.md; then
+  pass "frontend design contract includes hard gates, anti-template review, and craft thresholds"
+else
+  fail "frontend design quality contract is incomplete"
+fi
 
-if find . -maxdepth 5 -type f \
-  \( -path './.pi/*' -o -name '.mcp.json' -o -name 'p' -o -path './docs/*' \) \
+if grep -Eq '^export PI_MAIN_MODEL=""$' .pi/models.env && \
+   grep -Eq '^export PI_MAIN_THINKING=""$' .pi/models.env; then
+  pass "generic template does not force a model/provider"
+else
+  fail "generic template must leave PI_MAIN_MODEL and PI_MAIN_THINKING empty"
+fi
+
+secret_scan_file="$(mktemp "$doctor_tmp_dir/secrets.XXXXXX")"
+
+if find . -maxdepth 6 -type f \
+  ! -path './.git/*' \
+  ! -path './.artifacts/*' \
+  ! -path './node_modules/*' \
+  ! -path './.pi/npm/*' \
   -print0 |
   xargs -0 grep -En \
     'sk-[A-Za-z0-9_-]{16,}|(API_KEY|ACCESS_TOKEN|SECRET|PASSWORD)[[:space:]]*=[[:space:]]*[^"<${][^[:space:]]+' \
@@ -205,10 +309,13 @@ fi
 if command -v pi >/dev/null 2>&1; then
   version="$(pi --version 2>/dev/null | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+' | head -1 || true)"
   if [[ -n "$version" ]]; then
-    if [[ "$(printf '%s\n%s\n' "0.74.0" "$version" | sort -V | head -n1)" == "0.74.0" ]]; then
-      pass "Pi $version satisfies minimum 0.74.0"
+    if version_at_least "$version" "0.84.1"; then
+      pass "Pi $version satisfies minimum 0.84.1"
+      if [[ "$version" != "0.84.1" ]]; then
+        warn "Pi $version differs from the reviewed template pin 0.84.1; revalidate package/tool compatibility"
+      fi
     else
-      fail "Pi $version is older than required 0.74.0"
+      fail "Pi $version is older than required 0.84.1"
     fi
   else
     warn "Pi is installed but its version could not be parsed"

@@ -31,7 +31,7 @@ The MCP configuration intentionally does not expose arbitrary JavaScript evaluat
 3. Prefer `browser_find` or `browser_snapshot` for locating controls and understanding state.
 4. Inspect console errors, failed requests, accessibility semantics, and visible state.
 5. Capture screenshots only when layout or appearance is materially relevant.
-6. Use `analyze_image` on a saved screenshot when visual interpretation is needed.
+6. Use `image_ask` on a saved screenshot with a focused question when visual interpretation is needed.
 7. Fix the smallest confirmed defect.
 8. Add or update a deterministic regression test.
 9. Rerun the affected spec or last failed tests.
@@ -66,12 +66,26 @@ Use screenshots as visual evidence, not as the primary interaction mechanism. Ac
 
 Check:
 
-- mobile and desktop critical viewport;
+- a named mobile and desktop critical viewport; add a middle breakpoint only when composition changes there;
 - RTL/LTR where applicable;
 - overflow, clipping, spacing, hierarchy, and typography;
 - loading, empty, error, disabled, success, and permission states;
 - keyboard navigation, focus, labels, semantics, contrast, touch targets, and reduced motion;
 - long text and realistic data.
+
+For a material visual change, read `docs/DESIGN.md`, load `frontend-design`, and separate two passes:
+
+1. **Product pass:** real journey, semantics, input modes, required states, console/network evidence, responsive behavior, and measurable budgets.
+2. **Studio pass:** screenshots judged against the accepted thesis, signature element, anti-template check, and visual-quality rubric.
+
+Capture the smallest reproducible evidence set:
+
+- route and named state/fixture;
+- exact viewport;
+- theme and locale/direction;
+- desktop, narrow mobile, and one demanding state when relevant.
+
+Use the same deterministic state when comparing iterations. Do not use a screenshot from an unspecified or transient state as release proof. If appearance cannot be rendered, mark visual acceptance `UNPROVEN`.
 
 Do not create decorative copy merely to explain obvious UI. Supporting text must prevent ambiguity or error and must add information.
 

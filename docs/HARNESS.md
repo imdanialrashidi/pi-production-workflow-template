@@ -11,6 +11,7 @@ This document contains the detailed operating model for non-trivial Pi coding se
 5. **Prefer mechanical constraints over repeated prose.** If an invariant can be linted, tested, typed, validated, or blocked by tooling, encode it there.
 6. **Evaluation needs a contract.** Independent review is most useful when it judges explicit observable criteria, not vague taste.
 7. **Complexity must earn its cost.** Add agents, skills, tools, loops, or persistent artifacts only for demonstrated failure modes.
+8. **Visual quality needs an explicit direction.** Aesthetic evaluation is useful only when it judges a product-specific thesis, rendered states, and measurable usability constraints rather than generic taste.
 
 ## Execution protocol
 
@@ -43,6 +44,7 @@ Additional rules:
 - Bug: capture the failure or a precise characterization before changing code when practical.
 - Performance: capture a reproducible baseline and target.
 - UI: include the critical user journey plus important loading/error/empty/permission states.
+- Visual UI: include the accepted `docs/DESIGN.md` thesis/signature, desktop/mobile proof, accessibility/performance hard gates, and craft threshold.
 - Security/data: include rejection/tampering/idempotency/ownership evidence where relevant.
 - Do not accept placeholder buttons, stub handlers, fake persistence, TODO implementations, or display-only controls as satisfying functional criteria.
 
@@ -59,7 +61,7 @@ Preferred order:
 3. focused source ranges and affected tests;
 4. LSP definitions/references/diagnostics;
 5. installed types and local dependency source;
-6. Context7 for version-sensitive official docs;
+6. `doc_search_*` for version-sensitive official docs;
 7. web search for current upstream issues, advisories, regressions, or release notes.
 
 Use `scout` when the relevant surface or cross-module flow is genuinely unclear. Do not delegate the same discovery twice.
@@ -84,6 +86,8 @@ After the slice is functionally complete and targeted checks pass, evaluate agai
 Use an independent `reviewer` for non-trivial user-facing, cross-module, production-bug, or material-regression work. Use `security-auditor` for High-risk work.
 
 For browser-visible behavior, use the real application through the `browser-qa` workflow. Accessibility snapshots and interaction evidence come before screenshots; screenshots plus vision analysis are used when appearance materially matters.
+
+For visually significant work, load `frontend-design` and evaluate in two passes. The product pass proves journey, states, accessibility, responsiveness, and measurable budgets. The studio pass compares rendered evidence with `docs/DESIGN.md`, runs the anti-template review, and scores visual craft. Novelty never cancels a hard-gate failure.
 
 The evaluator should answer:
 
@@ -193,6 +197,8 @@ Judge harness changes against realistic tasks, not toy prompts. Useful measures 
 - token/context growth;
 - unnecessary broad reads/searches;
 - regressions caught by reviewer/browser/security evaluation;
+- visual hard-gate pass rate and craft-score distribution for frontend eval cases;
+- generic-design failure rate (interchangeable palettes, type, cards, hero, copy, or motion);
 - number of user interventions required for routine reversible work.
 
 Do not keep a harness feature because it feels sophisticated. Keep it because it improves outcomes or reduces cost/risk on representative tasks.

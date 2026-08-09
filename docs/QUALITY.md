@@ -45,9 +45,33 @@ For rendered interfaces:
 - exercise the critical journey in the real browser when browser behavior matters;
 - preserve keyboard access, visible focus, semantic controls, labels, contrast, touch targets, and reduced-motion behavior;
 - check realistic data, long text, localization/RTL when relevant, and at least one narrow viewport for mobile-facing surfaces;
-- use existing design tokens/components and avoid unrelated redesign;
+- follow the accepted `docs/DESIGN.md`; use existing design tokens/components when they remain sound and change them deliberately when the accepted direction requires it;
 - do not add explanatory copy that merely restates obvious UI;
 - visual polish cannot compensate for missing interaction depth or broken behavior.
+
+Default accessibility baseline when the product has not chosen a stricter target:
+
+- WCAG 2.2 AA;
+- text contrast at least 4.5:1, or 3:1 for qualifying large text;
+- non-text UI/state contrast at least 3:1 where WCAG requires it;
+- reflow without loss of information/functionality at 320 CSS px where the content is not inherently two-dimensional;
+- usable at 200% text zoom, with clear visible focus and meaning that does not depend on color alone.
+
+### Visual excellence
+
+For a new interface, redesign, launch surface, or explicitly high-aesthetic task, load `frontend-design` and evaluate the rendered result using its visual-quality rubric.
+
+Require:
+
+- a product-specific visual thesis and one restrained signature element;
+- typography, palette, composition, geometry, media, and motion derived from the product/audience rather than interchangeable defaults;
+- semantic tokens and coherent components without turning every section into the same card;
+- mobile recomposition rather than simple shrinkage;
+- real content and deliberately designed loading, empty, error, success, focus, selected, disabled, and permission states as relevant;
+- one product/interaction browser pass and one independent studio/aesthetic pass;
+- named desktop, mobile, and demanding-state evidence when the application can run.
+
+Hard-gate failures cannot be offset by aesthetic scoring. The ordinary production craft threshold is 2.75/4 with no dimension below 2; an explicitly flagship surface requires 3.25/4 with every dimension at least 3. Any criterion that depends on rendered evidence is `UNPROVEN` when only code was inspected.
 
 ## Reliability and performance
 
@@ -58,6 +82,8 @@ Apply only where relevant to the changed path:
 - preserve meaningful non-sensitive logs or diagnostics for critical transitions;
 - performance claims require a reproducible baseline and after-measurement;
 - a flaky test or intermittent runtime path is a reliability defect, not automatic permission to weaken the gate.
+
+For production web surfaces without accepted product-specific field budgets, use current Core Web Vitals `good` thresholds as targets at the 75th percentile, segmented by mobile and desktop: LCP ≤ 2.5 s, INP ≤ 200 ms, and CLS ≤ 0.1. Before field data exists, require an accepted repeatable lab budget, RUM instrumentation, and a staged-rollout check. Lab results are pre-production signals; do not present them as field/RUM proof.
 
 ## Maintainability and architecture
 

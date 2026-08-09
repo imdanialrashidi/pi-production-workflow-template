@@ -17,7 +17,7 @@ When information conflicts, use this order:
 1. Current user request and explicitly accepted acceptance criteria
 2. Active execution plan when the user/task explicitly points to one
 3. `docs/PRODUCT.md`
-4. `docs/ARCHITECTURE.md` and accepted public contracts
+4. `docs/ARCHITECTURE.md`, `docs/DESIGN.md` for user-facing experience, and accepted public contracts
 5. `docs/QUALITY.md`
 6. Existing implementation and tests
 7. Version-matched official documentation
@@ -32,11 +32,14 @@ Read only what the current decision needs:
 - `docs/HARNESS.md` — non-trivial work, repeated failure, multi-session work, evaluator loop, handoff/recovery
 - `docs/QUALITY.md` — user-facing work, meaningful feature work, review, and release readiness
 - `docs/PRODUCT.md` — product intent and scope
+- `docs/DESIGN.md` — accepted visual direction, tokens, interaction language, and screen-level proof
 - `docs/ARCHITECTURE.md` — boundaries, data flow, dependencies, and architectural invariants
 - `docs/PLAN.md` — current project plan when relevant
+- `docs/EVALUATION.md` — harness changes, regression benchmarks, and baseline/candidate promotion evidence
 - `docs/exec-plans/active/` — only when a complex task explicitly has an active execution plan
 - `verification-routing` skill — tests, builds, browser checks, CI, release gates
 - `browser-qa` skill — rendered UI, interaction, responsive behavior, accessibility, visual evidence
+- `frontend-design` skill — distinctive visual direction, implementation craft, and aesthetic evaluation
 - `risk-review` skill — security, money, data integrity, migration, operational or release risk
 
 ## Task classes
@@ -76,7 +79,7 @@ For Standard, Complex, and High-risk work, define before implementation:
 - 3–7 observable acceptance criteria;
 - the proof expected for each criterion.
 
-For a bug, reproduce or characterize the failing behavior before fixing it when practical. For performance work, capture a baseline metric before optimizing. For user-facing work, include the critical user journey and relevant error/empty/permission states.
+For a bug, reproduce or characterize the failing behavior before fixing it when practical. For performance work, capture a baseline metric before optimizing. For user-facing work, include the critical user journey and relevant error/empty/permission states. For visually significant work, include the accepted design thesis/signature plus rendered desktop/mobile proof.
 
 Keep the contract transient in the todo state for ordinary tasks. Persist it in an active execution plan only for complex or multi-session work.
 
@@ -128,6 +131,7 @@ A task is complete only when:
 - relevant targeted checks passed;
 - the appropriate feature/full gate ran when required;
 - meaningful user-facing behavior was exercised through the real browser when browser behavior matters;
+- visually significant work satisfies `docs/DESIGN.md` and the `frontend-design` hard gates/craft bar using rendered evidence;
 - the final diff contains no accidental or unrelated changes;
 - no unresolved BLOCKER or MAJOR finding remains for required independent review;
 - security, data, migration, accessibility, reliability, performance, recovery, and rollback implications were handled where relevant;
