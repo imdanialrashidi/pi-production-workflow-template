@@ -11,7 +11,7 @@ The reviewed Pi pin requires Node.js 22.19.0 or newer. The included CI pins Node
 - `@juicesharp/rpiv-todo@2.1.0`
 - `pi-lsp-adapter@0.1.3`
 - `@dreki-gg/pi-doc-search@0.3.2`
-- `@bytetrue/pi-vision@0.2.0`
+- `@getpipher/vision@0.5.2`
 - `@bytetrue/pi-web-search@0.1.3`
 
 The project MCP configuration pins `@playwright/mcp@0.0.79` and exposes a restricted browser tool set through the single `mcp` proxy.
@@ -136,27 +136,90 @@ The agent has two tools:
 - `web_search` for current external information;
 - `web_fetch` for a specific public URL.
 
-## Vision setup
+## Vision models: primary plus delegate
 
-List image-capable models available in your Pi installation:
+`@getpipher/vision` supports two model roles without forcing a provider:
 
-```bash
-pi --list-models | rg -i 'image|vision|luna|gemini|gpt'
-```
+The exact reviewed release is independently visible on [npm](https://www.npmjs.com/package/@getpipher/vision/v/0.5.2), with source and command documentation in the [`getpipher/vision`](https://github.com/getpipher/vision) repository.
 
-Configure the maintained vision package from Pi:
+| Active primary | Image path | Delegated model |
+| --- | --- | --- |
+| Text-only | `describe_image` sends the image to the configured vision model and returns text | Used |
+| Image-capable | The image is attached to the primary model natively | Not called; `describe_image` is hidden |
+
+This avoids a second paid request when the selected primary already understands images. It also means that a true text-model-plus-vision-model setup requires a text-only primary and a separately configured image-capable delegate.
+
+### Configure both roles
+
+1. Authenticate each provider you intend to use:
+
+   ```text
+   /login
+   ```
+
+2. Choose the primary coding/text model:
+
+   ```text
+   /model
+   ```
+
+3. Open the authenticated, image-capable model picker for the delegate:
+
+   ```text
+   /vision model
+   ```
+
+4. Verify the resolved configuration:
+
+   ```text
+   /vision show
+   ```
+
+The picker filters Pi's available model registry to models whose `input` includes `image`. The delegated choice is saved to `~/.pi/agent/vision.json`; credentials remain in Pi's normal credential store. Do not commit either file or any provider key.
+
+### Change either model
+
+| Intent | Command |
+| --- | --- |
+| Change primary model now | `/model` |
+| Limit primary-model cycling | `/scoped-models`, then Ctrl+P / Shift+Ctrl+P |
+| Pin the primary for this repository | Set `PI_MAIN_MODEL="provider/model-id"` in `.pi/models.env` |
+| Pick a delegated vision model | `/vision model` |
+| Switch the delegate directly | `/vision-use provider/model-id` |
+| Switch the delegate by hotkey | Ctrl+Shift+I |
+| Configure a failure fallback | `/vision fallback provider/model-id` |
+| Inspect effective vision settings | `/vision show` |
+
+Current image-capable examples in Pi's catalog (checked 2026-08-09) are [`openai/gpt-5.4-nano`](https://pi.dev/models/openai/gpt-5-4-nano), an economical delegate, and [`google/gemini-3.5-flash`](https://pi.dev/models/google/gemini-3-5-flash), a larger-context alternative. These are examples rather than template defaults: availability, capability metadata, and pricing can change, so confirm with the [live Pi model catalog](https://pi.dev/models) and your provider before adoption.
+
+Direct-switch examples after provider authentication:
 
 ```text
-/vision
+/vision-use openai/gpt-5.4-nano
+/vision fallback google/gemini-3.5-flash
+/vision show
 ```
 
-Choose an exact image-capable model already present in `models.json`. Automatic attachment analysis is intentionally off by default; enable it only when wanted:
+### Custom or local vision models
 
-```text
-/vision auto on
+Pi loads custom models from `~/.pi/agent/models.json`. The model entry must include image input explicitly:
+
+```json
+{
+  "id": "my-vision-model",
+  "input": ["text", "image"]
+}
 ```
 
-For deterministic visual QA, keep automatic mode off and call `image_ask` with one or more local screenshot paths plus a focused question. The package stores no provider credentials. Authenticate providers through Pi's normal `/login` flow and do not commit keys.
+Place that entry inside the appropriate provider's `models` array and configure the provider and authentication as described in Pi's [custom-model documentation](https://pi.dev/docs/latest/models). If `input` is omitted, Pi defaults it to `["text"]`, so the vision picker will correctly exclude it. Reopen `/model` to reload `models.json`, then run `/vision model`.
+
+### Paste, cost, and privacy posture
+
+The package defaults text-only paste handling to `hint`: it marks referenced images and lets the primary decide whether `describe_image` is necessary. Keep that for deterministic, bounded QA. `/vision paste-mode auto` delegates every referenced image automatically and can increase cost or disclose more screenshots than intended; use it only for an accepted workflow.
+
+Before analyzing sensitive images, check routing with `/vision show`. Delegation sends image bytes to the selected vision provider; native pass-through sends them to the active primary provider. `/vision audit show` displays recent routing metadata without image bytes or full prompts. `/vision local-only on` blocks new network delegation (local cache hits still work), so a new image will be refused rather than analyzed remotely.
+
+For visual QA with a text-only primary, ask Pi to call `describe_image` with a local screenshot path and a focused question. For an image-capable primary, reference or paste the screenshot directly.
 
 ## Recommended smoke checks
 
@@ -167,6 +230,7 @@ After setup:
 /lsp status
 /mcp status
 /web --show
+/vision show
 ```
 
 Then test capabilities with bounded requests:
@@ -183,7 +247,7 @@ Use `doc_search_resolve_library_id` to resolve the React documentation library I
 Use the MCP proxy to locate the Playwright snapshot tool. Do not navigate.
 ```
 
-For image analysis, provide a small local screenshot path and ask Pi to call `image_ask` with a focused visual question.
+For image analysis with a text-only primary, provide a small local screenshot path and ask Pi to call `describe_image` with a focused visual question. Confirm the audit entry afterward with `/vision audit show`. No provider call is needed when the primary is image-capable; reference the screenshot directly.
 
 ## Updating packages
 

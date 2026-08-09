@@ -31,7 +31,7 @@ The MCP configuration intentionally does not expose arbitrary JavaScript evaluat
 3. Prefer `browser_find` or `browser_snapshot` for locating controls and understanding state.
 4. Inspect console errors, failed requests, accessibility semantics, and visible state.
 5. Capture screenshots only when layout or appearance is materially relevant.
-6. Use `image_ask` on a saved screenshot with a focused question when visual interpretation is needed.
+6. With a text-only primary model, use `describe_image` on a saved screenshot with a focused question when visual interpretation is needed; with a multimodal primary, reference the screenshot directly.
 7. Fix the smallest confirmed defect.
 8. Add or update a deterministic regression test.
 9. Rerun the affected spec or last failed tests.

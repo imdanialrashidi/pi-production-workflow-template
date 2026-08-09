@@ -105,7 +105,7 @@ Select a model:
 /model
 ```
 
-To pin a model for this repository, edit `.pi/models.env`:
+That is the primary coding/text model. To pin it for this repository, edit `.pi/models.env`:
 
 ```bash
 export PI_MAIN_MODEL="provider/model-id"
@@ -113,6 +113,28 @@ export PI_MAIN_THINKING="high"
 ```
 
 Do not put API keys in `.pi/models.env`.
+
+### Primary model plus a vision model
+
+The template includes `@getpipher/vision@0.5.2` for a capability-aware second model. Authenticate the provider(s), select the primary model, then select the delegated vision model:
+
+```text
+/login
+/model
+/vision model
+/vision show
+```
+
+Change the two roles independently:
+
+| Role | Change interactively | Change directly / persistently |
+| --- | --- | --- |
+| Primary coding/text model | `/model` | `PI_MAIN_MODEL="provider/model-id"` in `.pi/models.env` |
+| Delegated vision model | `/vision model` | `/vision-use provider/model-id` (saved to `~/.pi/agent/vision.json`) |
+
+For example, after authenticating OpenAI, `/vision-use openai/gpt-5.4-nano` selects a current image-capable Pi model. Treat model IDs and prices as time-sensitive and verify them in Pi's [model catalog](https://pi.dev/models) before standardizing a production profile.
+
+If the primary model advertises image input, the extension sends images to it natively and hides `describe_image`; the second model is used only when the primary is text-only. Custom vision models must declare `"input": ["text", "image"]` in `~/.pi/agent/models.json`, otherwise Pi and the extension treat them as text-only. See [`docs/TOOLING_SETUP.md`](docs/TOOLING_SETUP.md#vision-models-primary-plus-delegate) for fallback, privacy, custom-model, and smoke-test guidance.
 
 ## Daily usage
 
@@ -213,7 +235,7 @@ pi-mcp-adapter
 @juicesharp/rpiv-todo
 pi-lsp-adapter
 @dreki-gg/pi-doc-search
-@bytetrue/pi-vision
+@getpipher/vision
 @bytetrue/pi-web-search
 ```
 
@@ -226,6 +248,7 @@ Useful checks:
 /lsp status
 /mcp status
 /web --show
+/vision show
 ```
 
 See [`docs/TOOLING_SETUP.md`](docs/TOOLING_SETUP.md) for LSP, documentation search, web search, vision, and Playwright setup.
@@ -349,7 +372,7 @@ Local development policy:
 - reuse servers;
 - run a specific spec.
 
-For a material visual change, the product pass proves journey, states, accessibility, responsiveness, console/network health, and budgets. The studio pass compares deterministic screenshots with `docs/DESIGN.md` and scores the `frontend-design` rubric. Use `image_ask` only when a focused visual interpretation adds value.
+For a material visual change, the product pass proves journey, states, accessibility, responsiveness, console/network health, and budgets. The studio pass compares deterministic screenshots with `docs/DESIGN.md` and scores the `frontend-design` rubric. With a text-only primary, use `describe_image` only when focused visual interpretation adds value; with a multimodal primary, reference screenshots directly.
 
 ## Repository layout
 
