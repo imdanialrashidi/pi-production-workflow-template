@@ -1,6 +1,6 @@
 # Production Tooling Setup
 
-This template pins a small production-oriented Pi tool stack. Project packages are installed by Pi after the repository is trusted.
+This repository pins a small production-oriented Pi tool stack. Pi installs the project packages after the repository is trusted.
 
 The reviewed Pi pin requires Node.js 22.19.0 or newer. The included CI pins Node 22.23.2; the container pins Node 24.19.0 on Debian Bookworm slim.
 
@@ -11,7 +11,7 @@ The reviewed Pi pin requires Node.js 22.19.0 or newer. The included CI pins Node
 - `@juicesharp/rpiv-todo@2.1.0`
 - `pi-lsp-adapter@0.1.3`
 - `@dreki-gg/pi-doc-search@0.3.2`
-- `@getpipher/vision@0.5.2`
+- `pi-vision-tool@1.3.7`
 - `@bytetrue/pi-web-search@0.1.3`
 
 The project MCP configuration pins `@playwright/mcp@0.0.79` and exposes a restricted browser tool set through the single `mcp` proxy.
@@ -22,9 +22,9 @@ The project MCP configuration pins `@playwright/mcp@0.0.79` and exposes a restri
 ./p
 ```
 
-The repository launcher passes Pi's official `--approve` trust override, so it loads the project resources and installs missing pinned packages without a trust prompt. Use `PI_PROJECT_TRUST=ask ./p` only when you intentionally want the interactive trust decision.
+The repository launcher passes Pi's official `--approve` trust override, so it loads project resources and installs missing pinned packages without a trust prompt. Use `PI_PROJECT_TRUST=ask ./p` only when you intentionally want the interactive trust decision.
 
-Reload after installation:
+Reload after package changes:
 
 ```text
 /reload
@@ -44,7 +44,7 @@ Confirm the extension:
 /todos
 ```
 
-The agent should use todos only for work with at least four meaningful steps, cross-module work, sessions likely to exceed fifteen minutes, or work that may survive compaction.
+Use todos only for genuinely multi-step work.
 
 ## MCP and Playwright browser tools
 
@@ -62,15 +62,9 @@ A useful smoke request is:
 Use the mcp proxy to find the Playwright page snapshot tool. Do not navigate anywhere.
 ```
 
-For actual browser QA, start the project's local application and navigate to its URL. Public HTTP(S) navigation is also available for documentation, references, and comparison evidence. Browser actions should begin with accessibility snapshots; screenshots are reserved for appearance-related evidence and are saved under `.artifacts/playwright/`.
+For actual browser QA, start the project's local application and navigate to its URL. Begin with accessibility snapshots; use screenshots when appearance materially matters. Screenshots are stored under `.artifacts/playwright/`.
 
-Autonomous mode exposes focused `browser_evaluate` for state that snapshots and normal interactions cannot reveal. It still hides:
-
-- file upload;
-- drag-and-drop file injection;
-- MCP JavaScript scripting.
-
-It also uses an isolated in-memory profile and blocks service workers. `PI_GUARD_MODE=strict` disables page evaluation and restricts navigation to localhost. Neither mode is a network sandbox or redirect containment; use `SECURITY.md` isolation guidance when egress is sensitive.
+Autonomous mode exposes focused `browser_evaluate` when snapshots and normal interactions cannot reveal the required state. File upload, drag-and-drop file injection, and MCP scripting remain unavailable. `PI_GUARD_MODE=strict` disables page evaluation and restricts navigation to localhost.
 
 If Playwright reports that no browser executable is available, install Chromium once outside the normal agent session:
 
@@ -78,7 +72,7 @@ If Playwright reports that no browser executable is available, install Chromium 
 npx -y playwright install chromium
 ```
 
-Use the version already installed by a real project when possible.
+Use the browser version already installed by a real project when possible.
 
 ## Language server setup
 
@@ -88,23 +82,25 @@ Check available servers:
 /lsp status
 ```
 
-Install only the server required by the current project. Examples:
+Install only the server required by the current project, for example:
 
 ```text
 /lsp install vtsls
 /lsp doctor vtsls
 ```
 
+or:
+
 ```text
 /lsp install pyright
 /lsp doctor pyright
 ```
 
-The default install mode is explicit/prompted; missing language servers are not silently installed.
+Missing language servers are not silently installed.
 
 ## Documentation search
 
-The maintained `pi-doc-search` package queries Context7 directly and keeps a persistent local cache. It works without a key at lower rate limits. For higher limits, set the key in your shell or user environment, never in the repository:
+`pi-doc-search` queries Context7 directly and keeps a persistent local cache. It works without a key at lower rate limits. For higher limits, set the key in your shell or user environment, never in the repository:
 
 ```bash
 export CONTEXT7_API_KEY="ctx7sk-..."
@@ -114,9 +110,9 @@ Use `doc_search_resolve_library_id`, `doc_search_get_library_docs`, and `doc_sea
 
 ## Web search
 
-The included search extension does not require DeepSeek or a model-native search provider.
+The included search extension does not require a model-native search provider.
 
-Default search is keyless Exa with automatic fallback to keyless Bing. Inspect or change the provider with:
+Inspect or change the provider with:
 
 ```text
 /web
@@ -128,97 +124,120 @@ Show current configuration:
 /web --show
 ```
 
-For a restricted network, configure a proxy through `/web` or the package's user-level configuration. Do not commit search API keys or proxy credentials.
-
-The agent has two tools:
+The agent has two web tools:
 
 - `web_search` for current external information;
 - `web_fetch` for a specific public URL.
 
-## Vision models: primary plus delegate
+Do not commit search API keys or proxy credentials.
 
-`@getpipher/vision` supports two model roles without forcing a provider:
+## Vision: DeepSeek primary plus delegated image model
 
-The exact reviewed release is independently visible on [npm](https://www.npmjs.com/package/@getpipher/vision/v/0.5.2), with source and command documentation in the [`getpipher/vision`](https://github.com/getpipher/vision) repository.
-
-| Active primary | Image path | Delegated model |
-| --- | --- | --- |
-| Text-only | `describe_image` sends the image to the configured vision model and returns text | Used |
-| Image-capable | The image is attached to the primary model natively | Not called; `describe_image` is hidden |
-
-This avoids a second paid request when the selected primary already understands images. It also means that a true text-model-plus-vision-model setup requires a text-only primary and a separately configured image-capable delegate.
-
-### Configure both roles
-
-1. Authenticate each provider you intend to use:
-
-   ```text
-   /login
-   ```
-
-2. Choose the primary coding/text model:
-
-   ```text
-   /model
-   ```
-
-3. Open the authenticated, image-capable model picker for the delegate:
-
-   ```text
-   /vision model
-   ```
-
-4. Verify the resolved configuration:
-
-   ```text
-   /vision show
-   ```
-
-The picker filters Pi's available model registry to models whose `input` includes `image`. The delegated choice is saved to `~/.pi/agent/vision.json`; credentials remain in Pi's normal credential store. Do not commit either file or any provider key.
-
-### Change either model
-
-| Intent | Command |
-| --- | --- |
-| Change primary model now | `/model` |
-| Limit primary-model cycling | `/scoped-models`, then Ctrl+P / Shift+Ctrl+P |
-| Pin the primary for this repository | Set `PI_MAIN_MODEL="provider/model-id"` in `.pi/models.env` |
-| Pick a delegated vision model | `/vision model` |
-| Switch the delegate directly | `/vision-use provider/model-id` |
-| Switch the delegate by hotkey | Ctrl+Shift+I |
-| Configure a failure fallback | `/vision fallback provider/model-id` |
-| Inspect effective vision settings | `/vision show` |
-
-Current image-capable examples in Pi's catalog (checked 2026-08-09) are [`openai/gpt-5.4-nano`](https://pi.dev/models/openai/gpt-5-4-nano), an economical delegate, and [`google/gemini-3.5-flash`](https://pi.dev/models/google/gemini-3-5-flash), a larger-context alternative. These are examples rather than template defaults: availability, capability metadata, and pricing can change, so confirm with the [live Pi model catalog](https://pi.dev/models) and your provider before adoption.
-
-Direct-switch examples after provider authentication:
+The primary coding model stays:
 
 ```text
-/vision-use openai/gpt-5.4-nano
-/vision fallback google/gemini-3.5-flash
-/vision show
+opencode-go/deepseek-v4-flash
 ```
 
-### Custom or local vision models
+DeepSeek V4 Flash is text-only, so image understanding is delegated through `describe_image` provided by `pi-vision-tool@1.3.7`.
 
-Pi loads custom models from `~/.pi/agent/models.json`. The model entry must include image input explicitly:
+The repository profile uses:
+
+```text
+Primary: opencode-go/deepseek-v4-flash
+Vision:  opencode-go/qwen3.6-plus
+```
+
+`qwen3.6-plus` is intentionally used instead of `qwen3.7-plus` for this delegate path. The current Pi catalog exposes `qwen3.6-plus` as `openai-completions` with `text` and `image` input, while `pi-vision-tool` makes a direct OpenAI-compatible `/chat/completions` request. A delegate with a different API transport may not work through this extension even if the model itself is multimodal.
+
+The model entry used for delegation must advertise image input:
 
 ```json
 {
-  "id": "my-vision-model",
   "input": ["text", "image"]
 }
 ```
 
-Place that entry inside the appropriate provider's `models` array and configure the provider and authentication as described in Pi's [custom-model documentation](https://pi.dev/docs/latest/models). If `input` is omitted, Pi defaults it to `["text"]`, so the vision picker will correctly exclude it. Reopen `/model` to reload `models.json`, then run `/vision model`.
+### Default project profile
 
-### Paste, cost, and privacy posture
+`.pi/models.env` pins the primary and delegate:
 
-The package defaults text-only paste handling to `hint`: it marks referenced images and lets the primary decide whether `describe_image` is necessary. Keep that for deterministic, bounded QA. `/vision paste-mode auto` delegates every referenced image automatically and can increase cost or disclose more screenshots than intended; use it only for an accepted workflow.
+```bash
+export PI_MAIN_MODEL="opencode-go/deepseek-v4-flash"
+export PI_MAIN_THINKING="max"
+export PI_VISION_PROVIDER="opencode-go"
+export PI_VISION_MODEL="qwen3.6-plus"
+export PI_VISION_REASONING_EFFORT="low"
+```
 
-Before analyzing sensitive images, check routing with `/vision show`. Delegation sends image bytes to the selected vision provider; native pass-through sends them to the active primary provider. `/vision audit show` displays recent routing metadata without image bytes or full prompts. `/vision local-only on` blocks new network delegation (local cache hits still work), so a new image will be refused rather than analyzed remotely.
+The same authenticated `opencode-go` provider can therefore serve the text-only primary and the image-capable delegate.
 
-For visual QA with a text-only primary, ask Pi to call `describe_image` with a local screenshot path and a focused question. For an image-capable primary, reference or paste the screenshot directly.
+### Configure interactively
+
+`pi-vision-tool` also supports a persistent user-level configuration. In Pi:
+
+```text
+/vision config provider opencode-go
+/vision config model qwen3.6-plus
+/vision config reasoning-effort low
+/vision
+```
+
+Persistent settings are stored in:
+
+```text
+~/.pi/agent/vision-tool.json
+```
+
+If that file exists, its values take priority over the legacy `PI_VISION_*` environment variables. Credentials remain in Pi's normal authentication store and must never be committed.
+
+Enable or disable the delegate tool with:
+
+```text
+/vision on
+/vision off
+```
+
+### Using `describe_image`
+
+For a saved screenshot, ask the text-only primary to call `describe_image` with a focused question. Example:
+
+```text
+Use describe_image on .artifacts/playwright/page.png and identify layout, RTL, overflow, spacing, and visible interaction defects.
+```
+
+The calling model controls the image request. Typical choices:
+
+- `compress: true` for ordinary UI screenshots and faster calls;
+- `compress: false` when small text or pixel-level detail matters;
+- `reasoning: low` for basic UI inspection;
+- `reasoning: medium` or `high` only for genuinely complex visual analysis.
+
+Supported image inputs include PNG, JPEG, GIF, WebP, BMP, file paths, data URLs, and raw base64. SVG should be rendered to PNG first when visual inspection is required.
+
+### Vision smoke test
+
+After startup:
+
+```text
+/vision
+```
+
+Then test a small PNG:
+
+```text
+Use describe_image on /tmp/test.png and report exactly what is visible.
+```
+
+If delegation fails, verify these in order:
+
+1. `opencode-go` authentication works for the primary;
+2. the delegate resolves as `opencode-go/qwen3.6-plus`;
+3. the delegate advertises `input: ["text", "image"]`;
+4. no stale `~/.pi/agent/vision-tool.json` overrides the project profile;
+5. the image is a supported raster format or has been rendered to PNG first.
+
+Do not add `@getpipher/vision` alongside `pi-vision-tool`; both expose image-routing behavior and duplicate vision extensions can conflict.
 
 ## Recommended smoke checks
 
@@ -229,34 +248,32 @@ After setup:
 /lsp status
 /mcp status
 /web --show
-/vision show
+/vision
 ```
 
 Then test capabilities with bounded requests:
 
 ```text
-Search the web for the current official Pi package documentation and return source links.
-```
-
-```text
-Use `doc_search_resolve_library_id` to resolve the React documentation library ID. Do not fetch broad documentation yet.
+Use doc_search_resolve_library_id to resolve the React documentation library ID. Do not fetch broad documentation yet.
 ```
 
 ```text
 Use the MCP proxy to locate the Playwright snapshot tool. Do not navigate.
 ```
 
-For image analysis with a text-only primary, provide a small local screenshot path and ask Pi to call `describe_image` with a focused visual question. Confirm the audit entry afterward with `/vision audit show`. No provider call is needed when the primary is image-capable; reference the screenshot directly.
+```text
+Use describe_image on a small local PNG with a focused visual question.
+```
 
 ## Updating packages
 
-Package versions are pinned for reproducibility. Review release notes before changing a pin. After intentionally updating the pins:
+Package versions are pinned for reproducibility. Review release notes before changing a pin. After intentionally updating pins:
 
 ```text
 /reload
 ```
 
-and run:
+then run:
 
 ```bash
 bash scripts/pi-doctor.sh
