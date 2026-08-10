@@ -89,9 +89,9 @@ After the slice is functionally complete and targeted checks pass, evaluate agai
 
 Use an independent `reviewer` for non-trivial user-facing, cross-module, production-bug, or material-regression work. Use `security-auditor` for High-risk work.
 
-For browser-visible behavior, use the real application through the `browser-qa` workflow. Accessibility snapshots and interaction evidence come before screenshots; screenshots plus vision analysis are used when appearance materially matters.
+For browser-visible behavior, use the real application through the `browser-qa` workflow. Accessibility snapshots and interaction evidence come before screenshots. Screenshots are captured as reproducible artifacts; only make appearance claims that the active primary model can actually verify, otherwise mark appearance-dependent criteria `UNPROVEN`.
 
-For visually significant work, load `frontend-design` and evaluate in two passes. The product pass proves journey, states, accessibility, responsiveness, and measurable budgets. The studio pass compares rendered evidence with `docs/DESIGN.md`, runs the anti-template review, and scores visual craft. Novelty never cancels a hard-gate failure.
+For visually significant work, load `frontend-design` and evaluate in two passes. The product pass proves journey, states, accessibility, responsiveness, and measurable budgets. The studio pass compares rendered evidence with `docs/DESIGN.md`, runs the anti-template review, and scores visual craft where the evidence is actually inspectable. Novelty never cancels a hard-gate failure.
 
 The evaluator should answer:
 
