@@ -67,7 +67,9 @@ if (online) {
     });
     const published = JSON.parse(output);
     if (published["dist.integrity"] !== entry.integrity) {
-      throw new Error(`registry integrity mismatch for ${source}`);
+      throw new Error(
+        `registry integrity mismatch for ${source}: reviewed=${entry.integrity} published=${published["dist.integrity"]}`,
+      );
     }
     if (published.license !== entry.license) throw new Error(`registry license mismatch for ${source}`);
     process.stdout.write(`PASS ${source}\n`);
