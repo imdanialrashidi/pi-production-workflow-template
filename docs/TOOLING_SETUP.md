@@ -11,7 +11,6 @@ The reviewed Pi pin requires Node.js 22.19.0 or newer. The included CI pins Node
 - `@juicesharp/rpiv-todo@2.1.0`
 - `pi-lsp-adapter@0.1.3`
 - `@dreki-gg/pi-doc-search@0.3.2`
-- `pi-vision-tool@1.3.7`
 - `@bytetrue/pi-web-search@0.1.3`
 
 The project MCP configuration pins `@playwright/mcp@0.0.79` and exposes a restricted browser tool set through the single `mcp` proxy.
@@ -74,6 +73,14 @@ npx -y playwright install chromium
 
 Use the browser version already installed by a real project when possible.
 
+### Visual evidence with a text-only primary
+
+The default project model is text-only. The workflow does not install or call a separate image model.
+
+Use browser-observable evidence first: accessibility snapshots, DOM structure, element geometry, computed state, console output, network evidence, and deterministic browser tests. Screenshots may still be captured as reproducible artifacts for human review or for a primary model that is explicitly switched to an image-capable model.
+
+Do not claim pixel-level or aesthetic screenshot findings that the active model cannot actually inspect. Mark those acceptance criteria `UNPROVEN` and report the saved screenshot path instead.
+
 ## Language server setup
 
 Check available servers:
@@ -131,114 +138,6 @@ The agent has two web tools:
 
 Do not commit search API keys or proxy credentials.
 
-## Vision: DeepSeek primary plus delegated image model
-
-The primary coding model stays:
-
-```text
-opencode-go/deepseek-v4-flash
-```
-
-DeepSeek V4 Flash is text-only, so image understanding is delegated through `describe_image` provided by `pi-vision-tool@1.3.7`.
-
-The repository profile uses:
-
-```text
-Primary: opencode-go/deepseek-v4-flash
-Vision:  opencode-go/qwen3.6-plus
-```
-
-`qwen3.6-plus` is intentionally used instead of `qwen3.7-plus` for this delegate path. The current Pi catalog exposes `qwen3.6-plus` as `openai-completions` with `text` and `image` input, while `pi-vision-tool` makes a direct OpenAI-compatible `/chat/completions` request. A delegate with a different API transport may not work through this extension even if the model itself is multimodal.
-
-The model entry used for delegation must advertise image input:
-
-```json
-{
-  "input": ["text", "image"]
-}
-```
-
-### Default project profile
-
-`.pi/models.env` pins the primary and delegate:
-
-```bash
-export PI_MAIN_MODEL="opencode-go/deepseek-v4-flash"
-export PI_MAIN_THINKING="max"
-export PI_VISION_PROVIDER="opencode-go"
-export PI_VISION_MODEL="qwen3.6-plus"
-export PI_VISION_REASONING_EFFORT="low"
-```
-
-The same authenticated `opencode-go` provider can therefore serve the text-only primary and the image-capable delegate.
-
-### Configure interactively
-
-`pi-vision-tool` also supports a persistent user-level configuration. In Pi:
-
-```text
-/vision config provider opencode-go
-/vision config model qwen3.6-plus
-/vision config reasoning-effort low
-/vision
-```
-
-Persistent settings are stored in:
-
-```text
-~/.pi/agent/vision-tool.json
-```
-
-If that file exists, its values take priority over the legacy `PI_VISION_*` environment variables. Credentials remain in Pi's normal authentication store and must never be committed.
-
-Enable or disable the delegate tool with:
-
-```text
-/vision on
-/vision off
-```
-
-### Using `describe_image`
-
-For a saved screenshot, ask the text-only primary to call `describe_image` with a focused question. Example:
-
-```text
-Use describe_image on .artifacts/playwright/page.png and identify layout, RTL, overflow, spacing, and visible interaction defects.
-```
-
-The calling model controls the image request. Typical choices:
-
-- `compress: true` for ordinary UI screenshots and faster calls;
-- `compress: false` when small text or pixel-level detail matters;
-- `reasoning: low` for basic UI inspection;
-- `reasoning: medium` or `high` only for genuinely complex visual analysis.
-
-Supported image inputs include PNG, JPEG, GIF, WebP, BMP, file paths, data URLs, and raw base64. SVG should be rendered to PNG first when visual inspection is required.
-
-### Vision smoke test
-
-After startup:
-
-```text
-/vision
-```
-
-Then test a small PNG:
-
-```text
-Use describe_image on /tmp/test.png and report exactly what is visible.
-```
-
-If delegation fails, verify these in order:
-
-1. `opencode-go` authentication works for the primary;
-2. the delegate resolves as `opencode-go/qwen3.6-plus`;
-3. the delegate advertises `input: ["text", "image"]`;
-4. no stale `~/.pi/agent/vision-tool.json` overrides the project profile;
-5. the image is a supported raster format or has been rendered to PNG first.
-
-Do not add `@getpipher/vision` alongside `pi-vision-tool`; both expose image-routing behavior and duplicate vision extensions can conflict.
-
 ## Recommended smoke checks
 
 After setup:
@@ -248,7 +147,6 @@ After setup:
 /lsp status
 /mcp status
 /web --show
-/vision
 ```
 
 Then test capabilities with bounded requests:
@@ -259,10 +157,6 @@ Use doc_search_resolve_library_id to resolve the React documentation library ID.
 
 ```text
 Use the MCP proxy to locate the Playwright snapshot tool. Do not navigate.
-```
-
-```text
-Use describe_image on a small local PNG with a focused visual question.
 ```
 
 ## Updating packages
