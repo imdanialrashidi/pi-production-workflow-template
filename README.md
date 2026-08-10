@@ -14,7 +14,7 @@ A compact, evidence-driven harness for [Pi Coding Agent](https://pi.dev/) focuse
 - Pi-native project settings in `.pi/settings.json`;
 - a project launcher (`./p`) with the required tool allowlist;
 - bounded read-heavy subagents through the pinned `pi-sub-agent` package;
-- on-demand LSP, maintained Context7-backed documentation search, web search/fetch, and opt-in image analysis;
+- on-demand LSP, maintained Context7-backed documentation search, and web search/fetch;
 - lazy Playwright MCP browser exploration for localhost and public HTTP(S) pages, with focused page evaluation;
 - repository-local Playwright Test (when the real project uses it) for durable regression coverage;
 - a visible todo panel for genuinely multi-step work;
@@ -116,28 +116,6 @@ export PI_MAIN_THINKING="high"
 
 Do not put API keys in `.pi/models.env`.
 
-### Primary model plus a vision model
-
-The template includes `@getpipher/vision@0.5.2` for a capability-aware second model. Authenticate the provider(s), select the primary model, then select the delegated vision model:
-
-```text
-/login
-/model
-/vision model
-/vision show
-```
-
-Change the two roles independently:
-
-| Role | Change interactively | Change directly / persistently |
-| --- | --- | --- |
-| Primary coding/text model | `/model` | `PI_MAIN_MODEL="provider/model-id"` in `.pi/models.env` |
-| Delegated vision model | `/vision model` | `/vision-use provider/model-id` (saved to `~/.pi/agent/vision.json`) |
-
-For example, after authenticating OpenAI, `/vision-use openai/gpt-5.4-nano` selects a current image-capable Pi model. Treat model IDs and prices as time-sensitive and verify them in Pi's [model catalog](https://pi.dev/models) before standardizing a production profile.
-
-If the primary model advertises image input, the extension sends images to it natively and hides `describe_image`; the second model is used only when the primary is text-only. Custom vision models must declare `"input": ["text", "image"]` in `~/.pi/agent/models.json`, otherwise Pi and the extension treat them as text-only. See [`docs/TOOLING_SETUP.md`](docs/TOOLING_SETUP.md#vision-models-primary-plus-delegate) for fallback, privacy, custom-model, and smoke-test guidance.
-
 ## Daily usage
 
 Start:
@@ -238,7 +216,6 @@ pi-mcp-adapter
 @juicesharp/rpiv-todo
 pi-lsp-adapter
 @dreki-gg/pi-doc-search
-@getpipher/vision
 @bytetrue/pi-web-search
 ```
 
@@ -251,10 +228,9 @@ Useful checks:
 /lsp status
 /mcp status
 /web --show
-/vision show
 ```
 
-See [`docs/TOOLING_SETUP.md`](docs/TOOLING_SETUP.md) for LSP, documentation search, web search, vision, and Playwright setup.
+See [`docs/TOOLING_SETUP.md`](docs/TOOLING_SETUP.md) for LSP, documentation search, web search, and Playwright setup.
 
 ## Context and long-running work
 
@@ -385,7 +361,7 @@ Local development policy:
 - reuse servers;
 - run a specific spec.
 
-For a material visual change, the product pass proves journey, states, accessibility, responsiveness, console/network health, and budgets. The studio pass compares deterministic screenshots with `docs/DESIGN.md` and scores the `frontend-design` rubric. With a text-only primary, use `describe_image` only when focused visual interpretation adds value; with a multimodal primary, reference screenshots directly.
+For a material visual change, the product pass proves journey, states, accessibility, responsiveness, console/network health, and budgets. The studio pass uses deterministic rendered evidence and the `frontend-design` rubric. With the default text-only primary, browser-observable evidence is authoritative; screenshots are retained as artifacts and appearance-only criteria are reported `UNPROVEN` when the active model cannot inspect them.
 
 ## Repository layout
 

@@ -53,6 +53,14 @@ test("launcher trusts this repository and enables autonomous guard mode by defau
   assert.equal(result.guardMode, "autonomous");
 });
 
+test("launcher exposes no delegated image-analysis tool", () => {
+  const result = parsed(runLauncher());
+  const toolsIndex = result.args.indexOf("--tools");
+  assert.notEqual(toolsIndex, -1);
+  const tools = result.args[toolsIndex + 1].split(",");
+  assert.equal(tools.includes("describe_image"), false);
+});
+
 test("launcher keeps explicit trust and guard overrides", () => {
   const ask = parsed(runLauncher({ PI_PROJECT_TRUST: "ask", PI_GUARD_MODE: "strict" }));
   assert.equal(ask.args.includes("--approve"), false);

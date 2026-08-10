@@ -39,12 +39,6 @@
       "repository": "https://github.com/jalbarrang/pi-doc-search"
     },
     {
-      "source": "npm:pi-vision-tool@1.3.7",
-      "integrity": "sha512-BmmAnOF6d/NL/P2SMjJQVz1isMRXBJRY6/UzfuiuLOFuFeUHoiDIGDA5iE64ERFe8qrcLyOlw7Df0GUWUjAziw==",
-      "license": "MIT",
-      "repository": "https://github.com/xezpeleta/pi-vision-tool"
-    },
-    {
       "source": "npm:@bytetrue/pi-web-search@0.1.3",
       "integrity": "sha512-TZLwkh7HEabRKdanXVEaBTxL2hMU65e/9cnDMLcnViOcUBzzojFWZ4j2Fo8U0cwZ4BVSeG9ETMv9JCpK6UPifw==",
       "license": "MIT",

@@ -204,7 +204,6 @@ const required = [
   'npm:@juicesharp/rpiv-todo@2.1.0',
   'npm:pi-lsp-adapter@0.1.3',
   'npm:@dreki-gg/pi-doc-search@0.3.2',
-  'npm:pi-vision-tool@1.3.7',
   'npm:@bytetrue/pi-web-search@0.1.3',
 ];
 const missing = required.filter((item) => !installed.has(item));
@@ -212,12 +211,14 @@ if (missing.length) {
   console.error(`Missing package pins: ${missing.join(', ')}`);
   process.exit(1);
 }
-for (const obsolete of [
+for (const removed of [
+  'npm:pi-vision-tool@1.3.7',
   'npm:@getpipher/vision@0.5.2',
   'npm:@bytetrue/pi-vision@0.2.0',
+  'npm:pi-image-subagent@1.0.0',
 ]) {
-  if (installed.has(obsolete)) {
-    console.error(`Obsolete vision package is still configured: ${obsolete}; use npm:pi-vision-tool@1.3.7 only.`);
+  if (installed.has(removed)) {
+    console.error(`Delegated image-analysis package must not be configured: ${removed}`);
     process.exit(1);
   }
 }
@@ -230,7 +231,7 @@ if (!mcpPackage || !Array.isArray(mcpPackage.skills) || mcpPackage.skills.length
 }
 NODE
 then
-  pass "production package pins are present"
+  pass "production package pins are present and delegated image-analysis packages are absent"
 else
   fail "production package pin validation failed"
 fi
@@ -273,7 +274,6 @@ launcher_tools=(
   mcp
   lsp_diagnostics
   doc_search_get_library_docs
-  describe_image
   web_search
   web_fetch
 )
@@ -295,13 +295,11 @@ else
   fail "launcher autonomy/trust defaults are inconsistent"
 fi
 
-if grep -Fq '/vision config model' docs/TOOLING_SETUP.md && \
-   grep -Fq 'vision-tool.json' docs/TOOLING_SETUP.md && \
-   grep -Fq '["text", "image"]' docs/TOOLING_SETUP.md && \
-   ! grep -Fq 'image_ask' p README.md .pi/APPEND_SYSTEM.md docs/TOOLING_SETUP.md .pi/skills/browser-qa/SKILL.md; then
-  pass "delegated vision setup and describe_image contract are documented"
+if ! grep -Eq 'describe_image|PI_VISION_|/vision|pi-vision-tool|@getpipher/vision|@bytetrue/pi-vision|pi-image-subagent' \
+  p .pi/models.env .pi/settings.json README.md docs/TOOLING_SETUP.md docs/HARNESS.md .pi/skills/browser-qa/SKILL.md; then
+  pass "delegated image-analysis tooling is absent from active workflow configuration and guidance"
 else
-  fail "vision setup must document pi-vision-tool configuration and describe_image"
+  fail "delegated image-analysis tooling is still referenced by the active workflow"
 fi
 
 doctor_tmp_dir=".artifacts/pi-doctor"
@@ -347,11 +345,10 @@ fi
 
 if grep -Eq '^export PI_MAIN_MODEL="opencode-go/deepseek-v4-flash"$' .pi/models.env && \
    grep -Eq '^export PI_MAIN_THINKING="max"$' .pi/models.env && \
-   grep -Eq '^export PI_VISION_PROVIDER="opencode-go"$' .pi/models.env && \
-   grep -Eq '^export PI_VISION_MODEL="qwen3\.6-plus"$' .pi/models.env; then
-  pass "DeepSeek primary and Qwen vision delegate profile are pinned"
+   ! grep -Eq '^export PI_VISION_' .pi/models.env; then
+  pass "DeepSeek primary profile is pinned without a delegated image model"
 else
-  fail "expected DeepSeek primary plus opencode-go/qwen3.6-plus vision delegate profile is missing"
+  fail "expected DeepSeek primary-only model profile is missing"
 fi
 
 secret_scan_file="$(mktemp "$doctor_tmp_dir/secrets.XXXXXX")"
