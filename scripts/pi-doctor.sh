@@ -204,7 +204,7 @@ const required = [
   'npm:@juicesharp/rpiv-todo@2.1.0',
   'npm:pi-lsp-adapter@0.1.3',
   'npm:@dreki-gg/pi-doc-search@0.3.2',
-  'npm:@getpipher/vision@0.5.2',
+  'npm:pi-vision-tool@1.3.7',
   'npm:@bytetrue/pi-web-search@0.1.3',
 ];
 const missing = required.filter((item) => !installed.has(item));
@@ -212,9 +212,14 @@ if (missing.length) {
   console.error(`Missing package pins: ${missing.join(', ')}`);
   process.exit(1);
 }
-if (installed.has('npm:@bytetrue/pi-vision@0.2.0')) {
-  console.error('Obsolete vision package is still configured; use npm:@getpipher/vision@0.5.2 only.');
-  process.exit(1);
+for (const obsolete of [
+  'npm:@getpipher/vision@0.5.2',
+  'npm:@bytetrue/pi-vision@0.2.0',
+]) {
+  if (installed.has(obsolete)) {
+    console.error(`Obsolete vision package is still configured: ${obsolete}; use npm:pi-vision-tool@1.3.7 only.`);
+    process.exit(1);
+  }
 }
 const mcpPackage = (settings.packages || []).find((entry) =>
   entry && typeof entry === 'object' && entry.source === 'npm:pi-mcp-adapter@2.20.1'
@@ -290,12 +295,13 @@ else
   fail "launcher autonomy/trust defaults are inconsistent"
 fi
 
-if grep -Fq '/vision-use' docs/TOOLING_SETUP.md && \
+if grep -Fq '/vision config model' docs/TOOLING_SETUP.md && \
+   grep -Fq 'vision-tool.json' docs/TOOLING_SETUP.md && \
    grep -Fq '["text", "image"]' docs/TOOLING_SETUP.md && \
    ! grep -Fq 'image_ask' p README.md .pi/APPEND_SYSTEM.md docs/TOOLING_SETUP.md .pi/skills/browser-qa/SKILL.md; then
-  pass "dual-model vision setup and capability contract are documented"
+  pass "delegated vision setup and describe_image contract are documented"
 else
-  fail "vision setup must document model switching and use describe_image"
+  fail "vision setup must document pi-vision-tool configuration and describe_image"
 fi
 
 doctor_tmp_dir=".artifacts/pi-doctor"
@@ -339,11 +345,13 @@ else
   fail "frontend design quality contract is incomplete"
 fi
 
-if grep -Eq '^export PI_MAIN_MODEL=""$' .pi/models.env && \
-   grep -Eq '^export PI_MAIN_THINKING=""$' .pi/models.env; then
-  pass "generic template does not force a model/provider"
+if grep -Eq '^export PI_MAIN_MODEL="opencode-go/deepseek-v4-flash"$' .pi/models.env && \
+   grep -Eq '^export PI_MAIN_THINKING="max"$' .pi/models.env && \
+   grep -Eq '^export PI_VISION_PROVIDER="opencode-go"$' .pi/models.env && \
+   grep -Eq '^export PI_VISION_MODEL="qwen3\.6-plus"$' .pi/models.env; then
+  pass "DeepSeek primary and Qwen vision delegate profile are pinned"
 else
-  fail "generic template must leave PI_MAIN_MODEL and PI_MAIN_THINKING empty"
+  fail "expected DeepSeek primary plus opencode-go/qwen3.6-plus vision delegate profile is missing"
 fi
 
 secret_scan_file="$(mktemp "$doctor_tmp_dir/secrets.XXXXXX")"
