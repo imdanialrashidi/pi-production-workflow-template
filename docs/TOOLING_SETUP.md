@@ -7,11 +7,11 @@ The reviewed Pi pin requires Node.js 22.19.0 or newer. The included CI pins Node
 ## Included packages
 
 - `pi-sub-agent@0.1.5`
-- `pi-mcp-adapter@2.20.1`
-- `@juicesharp/rpiv-todo@2.1.0`
+- `pi-mcp-adapter@2.26.1`
+- `@juicesharp/rpiv-todo@2.6.2`
 - `pi-lsp-adapter@0.1.3`
 - `@dreki-gg/pi-doc-search@0.3.2`
-- `@bytetrue/pi-web-search@0.1.3`
+- `@bytetrue/pi-web-search@0.2.1`
 
 The project MCP configuration pins `@playwright/mcp@0.0.79` and exposes a restricted browser tool set through the single `mcp` proxy.
 
@@ -21,7 +21,7 @@ The project MCP configuration pins `@playwright/mcp@0.0.79` and exposes a restri
 ./p
 ```
 
-The repository launcher passes Pi's official `--approve` trust override, so it loads project resources and installs missing pinned packages without a trust prompt. Use `PI_PROJECT_TRUST=ask ./p` only when you intentionally want the interactive trust decision.
+The repository launcher passes Pi's official `--approve` trust override, so it loads project resources and installs missing pinned packages without a trust prompt. It grants normal implementation access across the writable workspace, while Git/GitHub mutations remain disabled independently. Use `PI_PROJECT_TRUST=ask ./p` only when you intentionally want the interactive trust decision.
 
 Reload after package changes:
 
@@ -73,11 +73,11 @@ npx -y playwright install chromium
 
 Use the browser version already installed by a real project when possible.
 
-### Visual evidence with a text-only primary
+### Visual evidence across model capabilities
 
-The default project model is text-only. The workflow does not install or call a separate image model.
+The workflow does not assume that the active model can inspect images and does not install or call a separate image model.
 
-Use browser-observable evidence first: accessibility snapshots, DOM structure, element geometry, computed state, console output, network evidence, and deterministic browser tests. Screenshots may still be captured as reproducible artifacts for human review or for a primary model that is explicitly switched to an image-capable model.
+Use browser-observable evidence first: accessibility snapshots, DOM structure, element geometry, computed state, console output, network evidence, and deterministic browser tests. Screenshots may still be captured as reproducible artifacts for human review or when the active model supports image inputs.
 
 Do not claim pixel-level or aesthetic screenshot findings that the active model cannot actually inspect. Mark those acceptance criteria `UNPROVEN` and report the saved screenshot path instead.
 
@@ -113,7 +113,7 @@ Missing language servers are not silently installed.
 export CONTEXT7_API_KEY="ctx7sk-..."
 ```
 
-Use `doc_search_resolve_library_id`, `doc_search_get_library_docs`, and `doc_search_get_cached_doc_raw` only when local source, installed types, and repository patterns do not answer a version-sensitive framework question.
+Use `doc_search_resolve_library_id` and `doc_search_get_library_docs` only when local source, installed types, and repository patterns do not answer a version-sensitive framework question. The raw-cache helper remains installed but is intentionally omitted from the default tool surface because the normal documentation result already covers routine use.
 
 ## Web search
 

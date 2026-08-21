@@ -1,6 +1,6 @@
 # Pi Production Workflow Template
 
-A compact, evidence-driven harness for [Pi Coding Agent](https://pi.dev/) focused on high-quality autonomous implementation, distinctive production-grade frontend design, bounded independent evaluation, low-resource verification, and production-safe guardrails.
+A compact, evidence-driven harness for [Pi Coding Agent](https://pi.dev/) focused on high-quality implementation, model-neutral routing, bounded independent evaluation, low-resource verification, distinctive production-grade frontend design, and owner-controlled delivery.
 
 ## What this template provides
 
@@ -18,10 +18,10 @@ A compact, evidence-driven harness for [Pi Coding Agent](https://pi.dev/) focuse
 - lazy Playwright MCP browser exploration for localhost and public HTTP(S) pages, with focused page evaluation;
 - repository-local Playwright Test (when the real project uses it) for durable regression coverage;
 - a visible todo panel for genuinely multi-step work;
-- a tested autonomous-by-default guard that permits routine workspace/Git/browser delivery while blocking secrets, destructive host/Git actions, force pushes, publication/deployment, and browser file exfiltration;
+- a tested full-workspace guard that blocks secrets, destructive host actions, publication/deployment, browser file exfiltration, and every Git/GitHub mutation unless the owner explicitly enables that exact action;
 - specialized skills for frontend design, behavior-sensitive test design, verification routing, risk review, and browser QA;
 - a doctor/CI check that validates package pins, security posture, and always-loaded context budgets;
-- a 17-case, three-trial RPC evaluation harness with deterministic graders, trace/efficiency metrics, baseline comparison, an unattended-autonomy case, and a real code-plus-regression-test fixture.
+- a 17-case RPC evaluation harness with deterministic safety/scope graders, trace/efficiency metrics, baseline comparison, a one-trial default smoke run, and opt-in repeated trials for promotion decisions.
 
 ## Harness philosophy
 
@@ -63,7 +63,7 @@ product thesis
 
 The design intentionally avoids agent swarms and giant skill packs. Extra orchestration is added only where it solves a demonstrated failure mode.
 
-See [`docs/PI_WORKFLOW.md`](docs/PI_WORKFLOW.md) and [`docs/HARNESS.md`](docs/HARNESS.md) for the architecture and operating playbook.
+See [`docs/HARNESS.md`](docs/HARNESS.md) for the operating playbook and [`docs/GIT_POLICY.md`](docs/GIT_POLICY.md) for the owner-controlled Git boundary.
 
 Contribution and private vulnerability-reporting expectations live in [`CONTRIBUTING.md`](CONTRIBUTING.md) and [`SECURITY.md`](SECURITY.md).
 
@@ -74,7 +74,7 @@ Use Node.js 22.19.0 or newer, matching the reviewed Pi package requirement.
 Install Pi:
 
 ```bash
-npm install -g --ignore-scripts @earendil-works/pi-coding-agent@0.84.1
+npm install -g --ignore-scripts @earendil-works/pi-coding-agent@0.84.2
 ```
 
 Validate the template:
@@ -89,9 +89,9 @@ Start Pi:
 ./p
 ```
 
-`./p` treats this checked-out repository as trusted with Pi's official `--approve` flag and uses `PI_GUARD_MODE=autonomous`, so there is no approval loop before the agent can work. Use `PI_PROJECT_TRUST=ask ./p` to restore Pi's prompt or `PI_PROJECT_TRUST=never ./p` to ignore project resources for a diagnostic run.
+`./p` treats this checked-out repository as trusted with Pi's official `--approve` flag, enables the full writable workspace, and uses `PI_GUARD_MODE=autonomous`, so normal implementation does not stall on approval loops. Use `PI_PROJECT_TRUST=ask ./p` to restore Pi's prompt or `PI_PROJECT_TRUST=never ./p` to ignore project resources for a diagnostic run.
 
-In autonomous mode the agent may edit workflow files, install local dependencies, run tests and browser QA, create commits, push a task branch, and create/update a PR when that delivery is in scope. It does not need another confirmation for each reversible step.
+In autonomous mode the agent may inspect, edit, install local dependencies, run tests, research, and perform browser QA within the available operating-system permissions. Git delivery remains with the repository owner: no branch creation/switch, stage, commit, fetch, pull, merge, rebase, push, tag, history/ref/config mutation, or GitHub write is permitted unless the owner explicitly requests that exact action in the current conversation.
 
 Complete the one-time tool setup in [`docs/TOOLING_SETUP.md`](docs/TOOLING_SETUP.md).
 
@@ -107,14 +107,13 @@ Select a model:
 /model
 ```
 
-That is the primary coding/text model. To pin it for this repository, edit `.pi/models.env`:
+That selects the active model for the session. The template intentionally does not pin a provider, model, or thinking level, so it works with any Pi-supported model and respects the user's selection. For a one-off launch override:
 
 ```bash
-export PI_MAIN_MODEL="provider/model-id"
-export PI_MAIN_THINKING="high"
+PI_MAIN_MODEL="provider/model-id" PI_MAIN_THINKING="high" ./p
 ```
 
-Do not put API keys in `.pi/models.env`.
+Do not commit API keys or personal model preferences to `.pi/models.env`.
 
 ## Daily usage
 
@@ -181,11 +180,11 @@ The harness distinguishes four levels:
 
 For Standard or larger work, the acceptance contract contains 3–7 observable criteria and proof required for each. This same contract drives implementation, review, browser QA, and the final report.
 
-## Automatic subagents
+## Conditional independent evaluation
 
 The main agent remains the only writer.
 
-It may automatically use:
+It may use a specialist only when the expected evidence is worth the extra model call:
 
 - `scout` when the relevant repository surface or cross-module flow is genuinely unclear;
 - `reviewer` after non-trivial user-facing work, cross-module changes, production-bug fixes, or material regression-risk changes;
@@ -199,12 +198,12 @@ Configure subagent models with:
 /sub-agent-settings
 ```
 
-Recommended posture:
+Optional role posture (capabilities matter more than vendor/model names):
 
-- Scout: cheap/fast model, low thinking
-- Reviewer: strong model, high thinking
-- Security auditor: strong model, high thinking
-- Parent implementation session: strongest cost-effective coding model
+- Scout: fast model with strong repository/tool use
+- Reviewer: model capable of independent code reasoning
+- Security auditor: model capable of adversarial trust-boundary analysis
+- Parent implementation session: best available coding model for the task's risk and budget
 
 ## Production tool stack
 
@@ -274,13 +273,13 @@ The normal launcher is intentionally **not sandboxed**. Pi runs directly with th
 - sensitive credential and private-key paths;
 - destructive recursive deletion;
 - privilege escalation and host service mutation;
-- destructive Git reset/clean/restore, forced or deleting pushes, and forced branch/worktree deletion;
+- every Git/GitHub mutation by default, while preserving read-only inspection such as `status`, `diff`, `log`, and `gh ... view/list/checks`;
 - global package installation and publishing;
 - remote shell, deployment, infrastructure, and production database commands;
-- direct `write`/`edit` calls outside the repository or OS temporary directory;
+- secret-bearing or protected paths even when the rest of the workspace is writable;
 - browser file upload/drop and MCP scripting.
 
-Autonomous mode deliberately allows harness-policy edits, generated artifacts, OS-temp writes, ordinary Git branch/commit/pull/rebase/push, PR creation, public HTTP(S) navigation, and focused `browser_evaluate`. This is an accident-reduction layer, not a complete shell/interpreter parser or security boundary.
+Autonomous mode deliberately allows harness-policy edits, generated artifacts, full-workspace writes, public HTTP(S) navigation, and focused `browser_evaluate`. Git mutation is a separate deny-by-default boundary and is not unlocked by autonomous mode. This is an accident-reduction layer, not a complete shell/interpreter parser or security boundary.
 
 To diagnose without project trust or to opt into the older locks:
 
@@ -305,7 +304,7 @@ Validate the starter benchmark without making model calls:
 node scripts/run-workflow-evals.mjs --dry-run
 ```
 
-The v2 runner grades completion, mutation scope, protected paths, executable post-checks, and trace efficiency; qualitative rubrics remain explicitly unscored. For a real comparison, run at least three isolated trials per case with the same approved model/thinking level for baseline and candidate and pass the first `summary.json` through `--baseline`. Model calls can incur cost and transmit repository content to the selected provider. See [`docs/EVALUATION.md`](docs/EVALUATION.md).
+The v2 runner grades completion, mutation scope, protected paths, owner-controlled Git, executable post-checks, and trace efficiency; qualitative rubrics remain explicitly unscored. The default single trial is a cheap smoke/regression signal. For a promotion decision, explicitly run repeated isolated trials with identical model/thinking settings for baseline and candidate and pass the first `summary.json` through `--baseline`. Model calls can incur cost and transmit repository content to the selected provider. See [`docs/EVALUATION.md`](docs/EVALUATION.md).
 
 ## Verification
 
@@ -361,7 +360,7 @@ Local development policy:
 - reuse servers;
 - run a specific spec.
 
-For a material visual change, the product pass proves journey, states, accessibility, responsiveness, console/network health, and budgets. The studio pass uses deterministic rendered evidence and the `frontend-design` rubric. With the default text-only primary, browser-observable evidence is authoritative; screenshots are retained as artifacts and appearance-only criteria are reported `UNPROVEN` when the active model cannot inspect them.
+For a material visual change, the product pass proves journey, states, accessibility, responsiveness, console/network health, and budgets. The studio pass uses deterministic rendered evidence and the `frontend-design` rubric. Browser-observable evidence is authoritative; screenshots are retained as artifacts and appearance-only criteria are reported `UNPROVEN` whenever the active model cannot inspect image inputs.
 
 ## Repository layout
 
@@ -390,9 +389,9 @@ For a material visual change, the product pass proves journey, states, accessibi
 ├── docs/
 │   ├── PRODUCT.md / DESIGN.md / ARCHITECTURE.md / PLAN.md
 │   ├── HARNESS.md
+│   ├── GIT_POLICY.md
 │   ├── RESEARCH.md
 │   ├── QUALITY.md
-│   ├── PI_WORKFLOW.md
 │   ├── TOOLING_SETUP.md
 │   └── exec-plans/
 │       └── README.md
@@ -412,13 +411,13 @@ For a material visual change, the product pass proves journey, states, accessibi
 8. Use `/plan` only for work that genuinely needs durable design/execution state.
 9. Use `/design-review` and `/review` for independent visual/product/risk evaluation.
 10. Use `/handoff` + `/resume` for long-running work across clean contexts.
-11. Use `/release-plan` for staged rollout and `/ship` for final acceptance plus task-branch commit/push/PR delivery.
+11. Use `/release-plan` for staged rollout and `/ship` for final acceptance plus an owner-ready handoff; the owner performs Git delivery unless explicitly delegating a specific Git action.
 
 ## Updating Pi and packages
 
 Pi is intentionally pinned. After reviewing a release, update the exact version in the install command, `Dockerfile.pi`, doctor requirement, and integrity manifest together; then reinstall explicitly. Do not use an unreviewed floating self-update as the template's upgrade path.
 
-Project packages are exact pins in `.pi/settings.json`; `pi update --extensions` does not advance versioned npm specs. Change one exact pin only after reviewing its source/release and testing it in a disposable branch/container.
+Project packages are exact pins in `.pi/settings.json`; `pi update --extensions` does not advance versioned npm specs. Change one exact pin only after reviewing its source/release and testing it in a disposable copy/container.
 
 The reviewed npm tarball integrities live in `.pi/package-integrity.json`. Verify them against the registry during an intentional update:
 

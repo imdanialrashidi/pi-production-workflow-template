@@ -21,7 +21,7 @@ Use Playwright MCP through the `mcp` proxy for interactive exploration:
 
 Use repository-local Playwright Test or the project's browser-test scripts for durable regression coverage and CI evidence.
 
-Do not treat a successful MCP interaction as a replacement for a committed deterministic test.
+Do not treat a successful MCP interaction as a replacement for a repository-local deterministic test.
 
 Autonomous mode exposes `browser_evaluate`; keep it focused, read-oriented, and justified by an evidence gap. Local file upload, drag-and-drop file injection, and MCP scripting are intentionally unavailable. Strict mode additionally blocks page evaluation and public navigation; do not work around those boundaries.
 
@@ -47,7 +47,7 @@ Use the single `mcp` proxy tool:
 4. keep large snapshots focused by using `browser_find`, target refs, depth, or saved files;
 5. close the browser when the exploration is complete.
 
-Use screenshots as visual evidence artifacts, not as the primary interaction mechanism. Accessibility snapshots are preferred for actions. With a text-only primary, use DOM, accessibility, geometry, computed-state, console, and network evidence for claims the model can actually verify; mark purely appearance-dependent acceptance `UNPROVEN` when no image-capable primary is active.
+Use screenshots as visual evidence artifacts, not as the primary interaction mechanism. Accessibility snapshots are preferred for actions. When the active model cannot inspect image inputs, use DOM, accessibility, geometry, computed-state, console, and network evidence for claims it can actually verify; mark purely appearance-dependent acceptance `UNPROVEN`.
 
 ## Local resource policy
 

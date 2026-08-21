@@ -1,29 +1,9 @@
 # Project execution policy
 
-You are the primary write-capable agent. Own implementation, working-tree safety, verification, repair, autonomous delivery, and criterion → evidence reporting. Use `AGENTS.md` as the authoritative map and retrieve detail only through its routes.
+Follow `AGENTS.md` as the repository map and load detail only when the current decision needs it.
 
-## Execute
+Classify before ceremony. For non-trivial work, align a compact observable acceptance contract, implement one coherent slice with one primary writer, run the cheapest faithful evidence first, inspect the final diff, and report criterion → evidence. Use specialist skills or independent subagents only when available and justified by a named ambiguity or risk; otherwise use a separate self-review pass. Never claim an unexecuted check, unseen rendering, or unsupported external fact passed.
 
-Classify before ceremony. Localized work is inspect → change → targeted check → diff review. Standard+ needs a compact acceptance contract; Complex uses `/plan` only when continuity needs it; High-risk also needs `risk-review`, negative-path proof, independent security review, and the full gate.
+Routine reversible implementation may proceed without intermediate confirmation. Git and GitHub mutation are always owner-controlled: read-only inspection is allowed, but no branch/worktree, stage/commit, fetch/pull/push, ref/history/config, or PR write occurs unless the current user explicitly authorizes that exact action under `docs/GIT_POLICY.md`.
 
-Before editing, map accepted behavior to entry contracts, dependents, nearest tests, and cheapest commands. Implement one coherent vertical slice in the current architecture—no stubs, fake persistence, display-only controls, speculative abstraction, or unrelated cleanup. Reproduce bugs first when practical and measure a performance baseline.
-
-When tests change, load `test-design`, assert behavior/boundaries, and prove defect sensitivity with red-before-green or a safe equivalent when practical. Run the exact test, then affected verification.
-
-## Independent evidence
-
-Keep one primary writer. Use `scout` once only while the relevant surface is unclear; use `reviewer` for material regression risk and `security-auditor` for security/data/money/deployment boundaries. Findings require repository evidence. Default to at most two evaluator/repair rounds.
-
-Load `verification-routing` for meaningful test/build/browser/CI/release work: targeted during edits, affected after a coherent change, feature once after the slice, and full once for final delivery/required risk. Never claim an unexecuted check passed.
-
-Load `browser-qa` for rendered behavior and `frontend-design` for material UI. Prefer snapshots/normal interactions; use page evaluation only for a focused evidence gap. File upload/drop and MCP scripting remain disabled.
-
-## Autonomous completion
-
-Finish routine reversible work without intermediate confirmation: edits, local dependency setup, tests, browser QA, repair, workflow maintenance, and scoped task-branch commit/push/PR delivery. Make the smallest reversible assumption and record it instead of asking about ordinary choices.
-
-Do not overwrite unrelated work or expose secrets. Direct protected-branch pushes, merge, release, deployment, credential rotation, destructive/irreversible actions, and production/real-money mutation require explicit scope. If blocked, finish all unblocked work, preserve exact continuation state, and request only the missing prerequisite.
-
-When the same check or implementation approach fails twice without materially new evidence, stop, preserve the failure/current state, form competing hypotheses, and gather the cheapest discriminating observation. Use `/handoff` only when fresh context needs durable state.
-
-End with delivered result, criterion → PASS/FAIL/UNPROVEN/BLOCKED evidence, main files, exact checks, and remaining risk/skipped work.
+When the same approach fails twice without new evidence, stop repeating it, preserve the failure, form competing hypotheses, and gather the cheapest discriminating observation. Finish all unblocked work before requesting a missing prerequisite.

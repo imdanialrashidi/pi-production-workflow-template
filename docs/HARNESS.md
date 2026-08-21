@@ -4,7 +4,7 @@ This document contains the detailed operating model for non-trivial Pi coding se
 
 ## Design principles
 
-1. **Intent steers; the agent finishes.** Convert the request into observable acceptance criteria, then execute reversible implementation and delivery decisions without intermediate approval loops.
+1. **Intent steers; the agent finishes.** Convert the request into observable acceptance criteria, then execute reversible implementation and evidence gathering without intermediate approval loops.
 2. **Repository knowledge is the system of record.** Durable product, architecture, quality, decision, and execution state belongs in versioned repository artifacts rather than chat memory.
 3. **Progressive disclosure beats giant prompts.** Keep always-loaded instructions small and retrieve code, docs, skills, and external facts just in time.
 4. **The interface is part of intelligence.** High-quality tools, focused outputs, browser evidence, diagnostics, and deterministic verification materially affect coding-agent performance.
@@ -20,7 +20,7 @@ This document contains the detailed operating model for non-trivial Pi coding se
 Use the task classes in `AGENTS.md`.
 
 - Localized: no ceremony.
-- Standard: compact acceptance contract and one evaluator pass.
+- Standard: compact acceptance contract, focused implementation, and material self-review; add an independent evaluator only when its evidence justifies the cost.
 - Complex: planning plus persistent execution state when continuity is needed.
 - High risk: threat-boundary analysis, independent review, negative-path proof, full gate.
 
@@ -66,7 +66,7 @@ Preferred order:
 6. `doc_search_*` for version-sensitive official docs;
 7. web search for current upstream issues, advisories, regressions, or release notes.
 
-Use `scout` when the relevant surface or cross-module flow is genuinely unclear. Do not delegate the same discovery twice.
+If subagents are available, use `scout` only when the relevant surface or cross-module flow is genuinely unclear. Otherwise investigate directly. Do not delegate the same discovery twice.
 
 ### 4. Implement one coherent vertical slice
 
@@ -87,7 +87,7 @@ During implementation:
 
 After the slice is functionally complete and targeted checks pass, evaluate against the acceptance contract and `docs/QUALITY.md`.
 
-Use an independent `reviewer` for non-trivial user-facing, cross-module, production-bug, or material-regression work. Use `security-auditor` for High-risk work.
+Use an independent `reviewer` for non-trivial user-facing, cross-module, production-bug, or material-regression work only when subagents are available and isolated context adds value. Use `security-auditor` for High-risk work under the same condition; otherwise perform a separate evidence-focused pass directly.
 
 For browser-visible behavior, use the real application through the `browser-qa` workflow. Accessibility snapshots and interaction evidence come before screenshots. Screenshots are captured as reproducible artifacts; only make appearance claims that the active primary model can actually verify, otherwise mark appearance-dependent criteria `UNPROVEN`.
 
@@ -115,11 +115,11 @@ Never convert these into the same status:
 - blocked by prerequisite;
 - not executed.
 
-### 7. Finish through reversible delivery
+### 7. Prepare the owner handoff
 
-Do not stop after producing a patch when the accepted outcome includes repository delivery. If credentials and a configured remote are available, create or reuse a task branch, commit only the scoped diff, push it, and create or update the PR without requesting another confirmation.
+Do not stop before the accepted implementation and verification are complete. Inspect the final diff, preserve unrelated work, and leave a clear owner handoff with exact evidence and optional next commands.
 
-Direct protected-branch mutation, merging, releasing, deploying, production/data mutation, or real-money action still requires explicit scope because those cross a shared or difficult-to-reverse boundary. A missing publishing credential does not block local implementation and verification: finish those first and leave exact continuation state.
+Git/GitHub writes are a separate authority boundary. Follow `docs/GIT_POLICY.md`: branch/worktree changes, staging, commits, fetch/pull/push, history/ref/config changes, and PR mutation remain with the repository owner unless the current user explicitly requests one exact action. A missing credential never blocks local implementation and verification.
 
 ## Failure-recovery ladder
 
@@ -131,7 +131,7 @@ Repeated blind retries are a harness failure. When the same check or approach fa
 4. Choose the cheapest discriminating observation for each hypothesis.
 5. Use semantic/local evidence first; use official/current external sources only when needed.
 6. Revert only the agent's own failed local experiment when a safe targeted reversal exists; never overwrite unrelated user work.
-7. If the task is still unclear, delegate one focused read-only investigation rather than another broad implementation attempt.
+7. If the task is still unclear and subagents are available, delegate one focused read-only investigation rather than another broad implementation attempt; otherwise run that focused investigation directly.
 8. If the context has become noisy, the goal changed materially, or progress must survive a fresh session, use the handoff protocol.
 
 A failure that recurs across different tasks should become a harness improvement: a regression test, clearer tool, structural check, documented invariant, or safety rule. Do not merely add another paragraph to the system prompt.

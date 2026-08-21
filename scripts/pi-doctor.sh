@@ -76,6 +76,7 @@ required=(
   .pi/skills/frontend-design/SKILL.md
   .pi/skills/frontend-design/references/visual-quality-rubric.md
   docs/HARNESS.md
+  docs/GIT_POLICY.md
   docs/RESEARCH.md
   docs/DESIGN.md
   docs/EVALUATION.md
@@ -84,6 +85,7 @@ required=(
   docs/TOOLING_SETUP.md
   evals/cases.json
   evals/fixtures/tiered-pricing/pricing.mjs
+  evals/fixtures/tiered-pricing/pricing.baseline.mjs
   evals/fixtures/tiered-pricing/pricing.test.mjs
   evals/fixtures/tiered-pricing/verify-regression.mjs
   scripts/pi-sandbox.sh
@@ -103,7 +105,7 @@ done
 
 node_version="$(node -p 'process.versions.node' 2>/dev/null || true)"
 if [[ -n "$node_version" ]] && version_at_least "$node_version" "22.19.0"; then
-  pass "Node $node_version satisfies Pi 0.84.1 requirement (>=22.19.0)"
+  pass "Node $node_version satisfies Pi 0.84.2 requirement (>=22.19.0)"
 else
   fail "Node >=22.19.0 is required for the reviewed Pi pin"
 fi
@@ -166,18 +168,18 @@ check_context_budget() {
   fi
 }
 
-check_context_budget AGENTS.md 180 9000
-check_context_budget .pi/APPEND_SYSTEM.md 180 12000
+check_context_budget AGENTS.md 120 8000
+check_context_budget .pi/APPEND_SYSTEM.md 30 2500
 
 combined_context_lines="$(cat AGENTS.md .pi/APPEND_SYSTEM.md | wc -l | tr -d ' ')"
 combined_context_bytes="$(( $(wc -c <AGENTS.md) + $(wc -c <.pi/APPEND_SYSTEM.md) ))"
-if (( combined_context_lines <= 220 && combined_context_bytes <= 12000 )); then
+if (( combined_context_lines <= 130 && combined_context_bytes <= 9000 )); then
   pass "combined always-loaded context stays within budget (${combined_context_lines} lines, ${combined_context_bytes} bytes)"
 else
-  fail "combined always-loaded context is too large (${combined_context_lines}/220 lines, ${combined_context_bytes}/12000 bytes)"
+  fail "combined always-loaded context is too large (${combined_context_lines}/130 lines, ${combined_context_bytes}/9000 bytes)"
 fi
 
-for reference in 'docs/HARNESS.md' 'docs/QUALITY.md' 'verification-routing' 'test-design'; do
+for reference in 'docs/HARNESS.md' 'docs/QUALITY.md' 'docs/GIT_POLICY.md' 'verification-routing' 'test-design'; do
   if grep -Fq "$reference" AGENTS.md; then
     pass "AGENTS.md maps to $reference"
   else
@@ -185,11 +187,12 @@ for reference in 'docs/HARNESS.md' 'docs/QUALITY.md' 'verification-routing' 'tes
   fi
 done
 
-if grep -Fq 'at most two evaluator/repair rounds' .pi/APPEND_SYSTEM.md && \
-   grep -Fq 'same check or implementation approach fails twice' .pi/APPEND_SYSTEM.md; then
-  pass "execution policy includes bounded evaluator and failure-recovery loops"
+if grep -Fq 'Git and GitHub mutation are always owner-controlled' .pi/APPEND_SYSTEM.md && \
+   grep -Fq 'same approach fails twice' .pi/APPEND_SYSTEM.md && \
+   grep -Fq 'at most **two evaluator/repair rounds**' docs/HARNESS.md; then
+  pass "execution policy includes owner-controlled Git and bounded recovery/evaluation loops"
 else
-  fail "execution policy is missing evaluator/failure-recovery bounds"
+  fail "execution policy is missing Git ownership or recovery/evaluation bounds"
 fi
 
 if node <<'NODE'
@@ -200,11 +203,11 @@ const installed = new Set((settings.packages || []).map((entry) =>
 ));
 const required = [
   'npm:pi-sub-agent@0.1.5',
-  'npm:pi-mcp-adapter@2.20.1',
-  'npm:@juicesharp/rpiv-todo@2.1.0',
+  'npm:pi-mcp-adapter@2.26.1',
+  'npm:@juicesharp/rpiv-todo@2.6.2',
   'npm:pi-lsp-adapter@0.1.3',
   'npm:@dreki-gg/pi-doc-search@0.3.2',
-  'npm:@bytetrue/pi-web-search@0.1.3',
+  'npm:@bytetrue/pi-web-search@0.2.1',
 ];
 const missing = required.filter((item) => !installed.has(item));
 if (missing.length) {
@@ -223,7 +226,7 @@ for (const removed of [
   }
 }
 const mcpPackage = (settings.packages || []).find((entry) =>
-  entry && typeof entry === 'object' && entry.source === 'npm:pi-mcp-adapter@2.20.1'
+  entry && typeof entry === 'object' && entry.source === 'npm:pi-mcp-adapter@2.26.1'
 );
 if (!mcpPackage || !Array.isArray(mcpPackage.skills) || mcpPackage.skills.length !== 0) {
   console.error('MCP adapter package skills must be disabled to avoid loading mcpScript guidance.');
@@ -286,13 +289,36 @@ for tool in "${launcher_tools[@]}"; do
   fi
 done
 
+if node <<'NODE'
+const fs = require('fs');
+const launcher = fs.readFileSync('p', 'utf8');
+const match = launcher.match(/--tools\s*\n\s*"([^"]+)"/);
+if (!match) throw new Error('launcher tool allowlist is missing');
+const tools = match[1].split(',').map((value) => value.trim()).filter(Boolean);
+if (new Set(tools).size !== tools.length) throw new Error('launcher tool allowlist contains duplicates');
+if (tools.length > 20) throw new Error(`launcher exposes ${tools.length} tools; expected at most 20`);
+for (const redundant of ['lsp_hover', 'lsp_document_symbols', 'doc_search_get_cached_doc_raw']) {
+  if (tools.includes(redundant)) throw new Error(`redundant default tool remains exposed: ${redundant}`);
+}
+NODE
+then
+  pass "launcher default surface is compact, unique, and omits redundant schemas"
+else
+  fail "launcher default tool surface is oversized or redundant"
+fi
+
 if grep -Fq 'PI_PROJECT_TRUST:-always' p && \
    grep -Fq 'args+=(--approve)' p && \
    grep -Fq 'PI_GUARD_MODE:-autonomous' p && \
-   grep -Fq 'PI_GUARD_MODE=${PI_GUARD_MODE:-strict}' scripts/pi-sandbox.sh; then
-  pass "launcher defaults to trusted autonomous mode and sandbox launcher opts into strict mode"
+   grep -Fq 'PI_GUARD_FILE_SCOPE:-full' p && \
+   grep -Fq 'PI_GIT_MUTATION:-deny' p && \
+   grep -Fq 'PI_GUARD_EXTERNAL_MUTATION:-deny' p && \
+   grep -Fq 'PI_GUARD_MODE=${PI_GUARD_MODE:-strict}' scripts/pi-sandbox.sh && \
+   grep -Fq 'PI_GUARD_FILE_SCOPE=repository' scripts/pi-sandbox.sh && \
+   grep -Fq 'PI_GIT_MUTATION=deny' scripts/pi-sandbox.sh; then
+  pass "launcher grants trusted workspace access while Git stays owner-controlled; sandbox opts into strict repository scope"
 else
-  fail "launcher autonomy/trust defaults are inconsistent"
+  fail "launcher trust, workspace, Git, or sandbox defaults are inconsistent"
 fi
 
 if ! grep -Eq 'describe_image|PI_VISION_|/vision|pi-vision-tool|@getpipher/vision|@bytetrue/pi-vision|pi-image-subagent' \
@@ -343,12 +369,24 @@ else
   fail "frontend design quality contract is incomplete"
 fi
 
-if grep -Eq '^export PI_MAIN_MODEL="opencode-go/deepseek-v4-flash"$' .pi/models.env && \
-   grep -Eq '^export PI_MAIN_THINKING="max"$' .pi/models.env && \
-   ! grep -Eq '^export PI_VISION_' .pi/models.env; then
-  pass "DeepSeek primary profile is pinned without a delegated image model"
+if node <<'NODE'
+const fs = require('fs');
+const env = fs.readFileSync('.pi/models.env', 'utf8')
+  .split(/\r?\n/)
+  .map((line) => line.trim())
+  .filter((line) => line && !line.startsWith('#'));
+if (env.some((line) => /^export PI_(?:MAIN_MODEL|MAIN_THINKING|ENABLED_MODELS)=/.test(line))) {
+  throw new Error('project-local model or thinking pin found');
+}
+const settings = JSON.parse(fs.readFileSync('.pi/settings.json', 'utf8'));
+for (const key of ['defaultProvider', 'defaultModel', 'defaultThinkingLevel']) {
+  if (Object.hasOwn(settings, key)) throw new Error(`project-local ${key} found`);
+}
+NODE
+then
+  pass "workflow is provider/model/thinking neutral"
 else
-  fail "expected DeepSeek primary-only model profile is missing"
+  fail "workflow contains a project-local provider, model, or thinking pin"
 fi
 
 secret_scan_file="$(mktemp "$doctor_tmp_dir/secrets.XXXXXX")"
@@ -377,13 +415,13 @@ fi
 if command -v pi >/dev/null 2>&1; then
   version="$(pi --version 2>/dev/null | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+' | head -1 || true)"
   if [[ -n "$version" ]]; then
-    if version_at_least "$version" "0.84.1"; then
-      pass "Pi $version satisfies minimum 0.84.1"
-      if [[ "$version" != "0.84.1" ]]; then
-        warn "Pi $version differs from the reviewed template pin 0.84.1; revalidate package/tool compatibility"
+    if version_at_least "$version" "0.84.2"; then
+      pass "Pi $version satisfies minimum 0.84.2"
+      if [[ "$version" != "0.84.2" ]]; then
+        warn "Pi $version differs from the reviewed template pin 0.84.2; revalidate package/tool compatibility"
       fi
     else
-      fail "Pi $version is older than required 0.84.1"
+      fail "Pi $version is older than required 0.84.2"
     fi
   else
     warn "Pi is installed but its version could not be parsed"
