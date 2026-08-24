@@ -44,6 +44,7 @@ For Standard, Complex, and High-risk work define the goal, non-goals, 3–7 obse
 - Validate untrusted data at boundaries, enforce authorization server-side, and never trust client-provided role, price, payment, subscription, ownership, or permission state.
 - Never expose secrets in source, logs, screenshots, fixtures, prompts, traces, or artifacts.
 - Never weaken, skip, delete, or falsify a valid security control or test to obtain green status.
+- When tests are added or materially changed, use `test-design`: require a distinct failure model, independent oracle, cheapest faithful layer, and defect-sensitivity evidence; do not add coverage-only or redundant tests.
 - A subagent opinion, static inspection, or an unexecuted command is not proof that behavior passed.
 
 ## Owner-controlled Git

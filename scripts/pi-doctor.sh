@@ -97,6 +97,7 @@ required=(
   tests/safety-guard.test.mjs
   tests/launcher.test.mjs
   tests/quick-fix-skill.test.mjs
+  tests/test-design-contract.test.mjs
   tests/workflow-evals.test.mjs
   tests/verify-affected.test.mjs
 )

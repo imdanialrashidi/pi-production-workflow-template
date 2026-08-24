@@ -76,7 +76,7 @@ During implementation:
 
 - use the narrowest reliable verification after meaningful edits;
 - map the affected symbols/contracts/dependencies and nearest tests before editing;
-- when tests change, use `test-design` and require defect sensitivity where practical;
+- when tests change, use `test-design` and pass its Test Value Gate: distinct failure model, evidence gap, independent oracle, cheapest faithful layer, and defect sensitivity where practical; `no new test` is valid when existing evidence is already sufficient;
 - preserve existing architectural boundaries;
 - avoid speculative abstractions;
 - keep data validation at boundaries;

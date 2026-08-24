@@ -347,7 +347,7 @@ Generic full entrypoint:
 bash scripts/verify.sh
 ```
 
-A real project can provide `scripts/project-verify.sh` to replace the generic detector with its canonical gate. Use `/test` plus `test-design` when the task is specifically to add behavioral regression coverage with red/pre-fix or equivalent defect-sensitivity proof.
+A real project can provide `scripts/project-verify.sh` to replace the generic detector with its canonical gate. Use `/test` plus `test-design` when deciding whether behavior needs regression coverage: the Test Value Gate may add the smallest sensitive test, extend existing evidence, or intentionally add no test when the behavior is already proved.
 
 ## Browser and visual QA
 
