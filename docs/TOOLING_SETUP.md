@@ -15,6 +15,19 @@ The reviewed Pi pin requires Node.js 22.19.0 or newer. The included CI pins Node
 
 The project MCP configuration pins `@playwright/mcp@0.0.79` and exposes a restricted browser tool set through the single `mcp` proxy.
 
+The packages remain installed and their commands remain available, but their model-call schemas are deferred. `./p` starts with seven repository tools plus `harness_tools`:
+
+| `harness_tools` capability | Activated schemas |
+|---|---|
+| `planning` | `todo` |
+| `delegation` | `subagent` |
+| `browser` | `mcp` |
+| `code_intelligence` | `lsp_diagnostics`, `lsp_definition`, `lsp_references`, `lsp_workspace_symbols`, `lsp_more` |
+| `docs` | `doc_search_resolve_library_id`, `doc_search_get_library_docs` |
+| `web` | `web_search`, `web_fetch` |
+
+Ask the agent to activate all required groups together. Passing an empty capability list unloads the managed specialist schemas without removing unrelated custom tools. A restored session reactivates the groups in its latest continuity snapshot.
+
 ## First startup
 
 ```bash
@@ -22,6 +35,19 @@ The project MCP configuration pins `@playwright/mcp@0.0.79` and exposes a restri
 ```
 
 The repository launcher passes Pi's official `--approve` trust override, so it loads project resources and installs missing pinned packages without a trust prompt. It grants normal implementation access across the writable workspace, while Git/GitHub mutations remain disabled independently. Use `PI_PROJECT_TRUST=ask ./p` only when you intentionally want the interactive trust decision.
+
+For the reviewed Pi `0.84.2` pin, the launcher defaults to:
+
+| Variable | Default | Effect / opt-out |
+|---|---:|---|
+| `PI_EXPERIMENTAL` | `1` | Enables capability-gated strict-prefer JSON-schema sampling for supported built-ins plus Pi's official first-run setup; set `0` to compare legacy sampling. |
+| `PI_SMART_READ` | `1` | Bounds implicit reads of regular files at least 96 KiB; set `0` to disable. |
+| `PI_SMART_READ_BYTES` | `98304` | Size threshold in bytes. |
+| `PI_SMART_READ_LINES` | `400` | Injected limit for a qualifying read; explicit ranges are unchanged. |
+| `PI_BLIND_RETRY_LIMIT` | `2` | Blocks the next identical tool call after this many errored executions; set `0` to disable. |
+| `PI_CONTINUITY` | `1` | Persists/injects the bounded mechanical continuity capsule; set `0` to disable. |
+
+These controls are model/provider neutral. Review them with every Pi upgrade because `PI_EXPERIMENTAL` is intentionally tied to the exact tested pin.
 
 Reload after package changes:
 
@@ -63,12 +89,12 @@ Check the adapter:
 /mcp status
 ```
 
-The Playwright server is lazy. It starts only on the first browser-tool call and stops after an idle period.
+The Playwright server uses lazy lifecycle and stops after an idle period. When the MCP metadata cache is valid, sessions can defer the server until the first browser-tool call. A clean, missing, invalid, or stale cache triggers a startup catalog connection so the adapter can rebuild metadata.
 
 A useful smoke request is:
 
 ```text
-Use the mcp proxy to find the Playwright page snapshot tool. Do not navigate anywhere.
+Activate the browser capability, then use the mcp proxy to find the Playwright page snapshot tool. Do not navigate anywhere.
 ```
 
 For actual browser QA, start the project's local application and navigate to its URL. Begin with accessibility snapshots; use screenshots when appearance materially matters. Screenshots are stored under `.artifacts/playwright/`.
@@ -115,6 +141,8 @@ or:
 
 Missing language servers are not silently installed.
 
+The `/lsp` management command is always available. The model activates `code_intelligence` only when definitions, references, workspace symbols, or diagnostics add evidence beyond exact text search.
+
 ## Documentation search
 
 `pi-doc-search` queries Context7 directly and keeps a persistent local cache. It works without a key at lower rate limits. For higher limits, set the key in your shell or user environment, never in the repository:
@@ -124,6 +152,8 @@ export CONTEXT7_API_KEY="ctx7sk-..."
 ```
 
 Use `doc_search_resolve_library_id` and `doc_search_get_library_docs` only when local source, installed types, and repository patterns do not answer a version-sensitive framework question. The raw-cache helper remains installed but is intentionally omitted from the default tool surface because the normal documentation result already covers routine use.
+
+The model activates the `docs` capability before these calls; no documentation schema is paid for on an ordinary localized edit.
 
 ## Web search
 
@@ -146,6 +176,8 @@ The agent has two web tools:
 - `web_search` for current external information;
 - `web_fetch` for a specific public URL.
 
+The model activates the `web` capability before using them.
+
 Do not commit search API keys or proxy credentials.
 
 ## Recommended smoke checks
@@ -162,11 +194,11 @@ After setup:
 Then test capabilities with bounded requests:
 
 ```text
-Use doc_search_resolve_library_id to resolve the React documentation library ID. Do not fetch broad documentation yet.
+Activate the docs capability, then use doc_search_resolve_library_id to resolve the React documentation library ID. Do not fetch broad documentation yet.
 ```
 
 ```text
-Use the MCP proxy to locate the Playwright snapshot tool. Do not navigate.
+Activate the browser capability, then use the MCP proxy to locate the Playwright snapshot tool. Do not navigate.
 ```
 
 ## Updating packages

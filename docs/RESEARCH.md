@@ -1,6 +1,6 @@
 # Research Basis and Optimization Record
 
-Reviewed: **2026-08-20**. Test-quality amendment reviewed: **2026-08-24**. This record connects current primary evidence to concrete workflow controls. It does not claim that a prompt-level change improves every model or repository; deterministic tests protect invariants, and repeated matched-model evals remain the promotion standard.
+Reviewed: **2026-08-23**. Test-quality amendment reviewed: **2026-08-24**. This record connects current primary evidence to concrete workflow controls. It does not claim that a prompt- or tool-level change improves every model or repository; deterministic tests protect invariants, and repeated matched-model evals remain the promotion standard.
 
 ## Result in one page
 
@@ -8,24 +8,26 @@ The optimized workflow keeps a small model-neutral core and loads specialization
 
 1. **No provider/model/thinking pin.** Pi uses the operator's active selection. Rules route by capability and provide fallbacks when image input, subagents, extended thinking, or a large context window is absent.
 2. **Less always-loaded policy.** `AGENTS.md` is the repository map; detailed procedure stays in on-demand docs, prompts, and skills.
-3. **Compact tool surface.** The launcher exposes 19 distinct tools instead of 22. Rare/redundant LSP and raw-cache schemas are omitted from the default surface without uninstalling their packages.
+3. **Adaptive tool surface.** The launcher starts with eight schemas instead of 19: seven core repository tools plus `harness_tools`. Planning, delegation, browser, LSP, docs, and web groups remain installed and activate additively only when required.
 4. **Conditional orchestration.** One primary writer handles normal work. Scout/reviewer/security roles are used only for a named ambiguity or risk; a separate self-review is the universal fallback.
-5. **Official defaults unless evidence says otherwise.** Unmeasured compaction, retry, timeout, and thinking overrides were removed. This avoids freezing assumptions that differ across models and providers.
+5. **Schema prevention before repair.** On the exact reviewed Pi pin, capability-gated strict-prefer JSON-schema sampling is enabled for supported built-ins, while Pi's existing pre-validation argument preparation and the MCP proxy's object/JSON-string handling remain authoritative. The workflow does not guess-repair schema-invalid calls after validation.
 6. **Implementation autonomy, owner-controlled Git.** The agent can inspect, edit, research, install local dependencies, test, and run browser QA. Branches, commits, fetch/pull, refs/history/config, pushes, and GitHub writes remain denied until the owner explicitly authorizes the exact action.
 7. **Cheap smoke, rigorous promotion.** Eval defaults to one trial for routine regression feedback; promotion still requires repeated, isolated baseline/candidate trials with identical settings and qualitative review.
+8. **Bounded context and recovery.** Implicit large-file reads are focused, a third identical call is stopped after two errors, and only compact mechanical continuity state—not raw tool input/output—is recovered after resume or compaction.
 
 ## Primary evidence and resulting decisions
 
 | Primary source | Evidence used | Decision here | Limitation |
 |---|---|---|---|
-| Pi, [settings](https://pi.dev/docs/latest/settings) | Provider/model/thinking, compaction, retry, and timeout settings are optional; Pi supplies documented defaults. | Remove repository model/thinking pins and unmeasured default overrides. Keep only reproducibility/security-relevant package pins and telemetry/version/cache choices. | A real project may later justify a measured override; it should be evaluated before becoming global policy. |
-| Pi, [usage and context files](https://pi.dev/docs/latest/usage) and [compaction](https://pi.dev/docs/latest/compaction) | Project context is loaded into every task and compaction already has built-in behavior. | Keep `AGENTS.md` plus the system append concise; retrieve detailed instructions on demand; do not restate built-in compaction defaults. | Exact attention effects vary by model and task. |
+| Pi, [settings](https://pi.dev/docs/latest/settings) | Provider/model/thinking, compaction, retry, and timeout settings are optional; Pi supplies documented defaults. | Remove repository model/thinking pins and unmeasured timeout/compaction overrides. Keep only reproducibility/security controls plus the exact-pin schema-sampling and bounded runtime toggles, all operator-overridable. | A real project may later justify a measured override; it should be evaluated before becoming global policy. |
+| Pi, [usage and context files](https://pi.dev/docs/latest/usage) and [compaction](https://pi.dev/docs/latest/compaction) | Project context is loaded into every task; built-in compaction already summarizes goals, state, decisions, next steps, critical context, and files. | Keep `AGENTS.md` plus the system append concise. Recover only complementary mechanical state (recognized checks, hashed open failures, active capabilities), once, instead of replacing the built-in summary. | Exact attention effects vary by model and task; a compact capsule can still be redundant on some turns. |
+| Pi, [extensions and dynamic tool loading](https://pi.dev/docs/latest/extensions) | Extensions can inspect the configured tool catalog, change active tools, mutate already-valid calls, patch results, persist custom entries outside LLM context, and inject context. Pi documents a loader pattern that works across models. | Start with eight schemas and use `harness_tools` to activate six named capability groups. Use the read-call/result hooks for deterministic focusing and custom entries for bounded continuity. | Specialist tasks pay one loader call; dynamic selection must be compared against the 19-tool baseline on representative tasks. |
 | Pi, [skills](https://pi.dev/docs/latest/skills) | Pi initially exposes skill name/description, loads the full skill only when selected, and registers `/skill:name` commands by default. | Retain focused skills because they do not all consume every turn; add an explicit `/skill:quick-fix` route for tiny changes and keep test, verification, browser, design, and risk contracts distinct. | Poor descriptions can still cause incorrect selection, so trigger and escalation tests remain necessary. |
 | Agent Skills, [specification](https://agentskills.io/specification) and [best practices](https://agentskills.io/skill-creation/best-practices) | Progressive disclosure and concise metadata are part of the interoperable skill model. | Use model-neutral, task-specific descriptions and keep procedural depth in skill bodies/references. | Support and selection behavior differ between hosts. |
 | Pi, [custom models](https://pi.dev/docs/latest/models) | Pi supports multiple providers/models and project selection can be overridden at launch. | Treat models as replaceable capabilities; never embed a vendor-specific route in workflow policy. | Model-specific quirks can still require a local, measured adapter. |
-| Pi, [releases](https://github.com/earendil-works/pi/releases) | `0.84.2` is the latest release reviewed on 2026-08-20 and includes fixes around custom tools plus configurable default tools. | Update the reviewed Pi pin and integrity record together; re-run compatibility tests on every upgrade. | “Latest” is time-sensitive and must be rechecked during the next update. |
-| Google, [function calling](https://ai.google.dev/gemini-api/docs/function-calling) | Google recommends keeping the active tool set small—roughly 10–20 relevant functions—and using clear schemas. | Keep the default at 19 unique tools; omit `lsp_hover`, `lsp_document_symbols`, and `doc_search_get_cached_doc_raw` from the launcher surface. | The useful count depends on task/tool similarity; this is a design bound, not proof of quality. |
-| OpenAI, [function calling](https://developers.openai.com/api/docs/guides/function-calling) | Clear purpose, constrained parameters, and minimized model-side argument work improve tool use. | Prefer a few direct tools, argv-array checks, explicit scope, and a single lazy MCP proxy over many overlapping schemas. | Guidance does not replace repository-specific tool-use evals. |
+| Pi, [0.84.2 release notes](https://pi.dev/news) | The reviewed release adds capability-aware strict JSON-schema constrained sampling for built-in `read`, `bash`, `edit`, and `write` under `PI_EXPERIMENTAL=1`, with strict-prefer fallback behavior. | Enable it by default only because the Pi version is exact-pinned; retain `PI_EXPERIMENTAL=0` for matched diagnostics and re-review the flag before upgrading. | The feature is explicitly experimental and provider/model support varies; structural correctness is not evidence of outcome improvement. |
+| Google, [function calling](https://ai.google.dev/gemini-api/docs/function-calling) | Google recommends keeping the active tool set small—roughly 10–20 relevant functions—and using clear schemas. | Start below that bound at eight unique schemas; add only task-relevant groups rather than sending all 19 on every request. | The useful count depends on task/tool similarity; this is a design bound, not proof of quality, and loader overhead can outweigh savings. |
+| OpenAI, [function calling](https://developers.openai.com/api/docs/guides/function-calling) | Clear purpose, constrained parameters, and minimized model-side argument work improve tool use. | Use an enum-constrained capability loader with strict-prefer sampling, direct core tools, argv-array checks, explicit scope, and one lazy MCP proxy. | Guidance does not replace repository-specific tool-use evals. |
 | Google, [prompt design](https://ai.google.dev/gemini-api/docs/prompting-strategies) | Direct instructions, clear structure, and relevant context are more reliable than diffuse prose. | Put only critical invariants in the always-on core; make acceptance and evidence explicit; remove duplicate narrative. | Prompt behavior remains stochastic and model-dependent. |
 | OpenAI Codex, [customization](https://developers.openai.com/codex/customization/overview) | Repository guidance should stay scoped and concise, with deeper instructions near the relevant work. | Use `AGENTS.md` as a map and docs/skills as progressive disclosure. | This source describes Codex, so it is supporting cross-agent evidence rather than a Pi contract. |
 | Anthropic, [context windows](https://docs.anthropic.com/en/docs/build-with-claude/context-windows) and Stanford/UC Berkeley, [Lost in the Middle](https://aclanthology.org/2024.tacl-1.9/) | More context is not automatically better; long inputs can reduce retrieval of relevant evidence. | Enforce byte/line budgets and remove repeated policy. | Neither source is a controlled ablation of this exact Pi repository. |
@@ -50,14 +52,17 @@ The optimized workflow keeps a small model-neutral core and loads specialization
 |---|---|---|
 | `AGENTS.md` + system append | **Simplify** | Always loaded; duplicated routing had ongoing token/attention cost. Critical invariants remain mechanical and concise. |
 | Model/provider/thinking defaults | **Remove** | They made the template vendor-specific and could silently override the operator's better/current choice. |
-| Compaction/retry/timeout overrides | **Remove** | They duplicated official defaults without repository evidence of a failure mode. |
+| Compaction/timeout overrides | **Remove** | They duplicated official defaults without repository evidence of a failure mode. The continuity capsule complements compaction rather than changing it. |
+| Blind identical-call retry | **Add bounded guard** | Two identical errors are evidence to change the hypothesis. The runtime stores only a short signature/count and clears it after a different successful evidence/action step. |
 | `docs/PI_WORKFLOW.md` | **Remove** | Duplicated README/HARNESS and created drift; unique Git authority moved to `docs/GIT_POLICY.md`. |
 | 16 slash-command prompts | **Keep on demand** | They cover distinct deliverables and are not all loaded per turn; merging would make selection less precise. |
 | 6 specialist skills | **Keep on demand** | Each has a distinct trigger/evidence contract; Pi progressive disclosure avoids constant context cost. `quick-fix` replaces ceremony for genuinely Localized work rather than adding another review stage. |
 | Subagent package | **Keep, conditional** | Independent context helps ambiguity/risk, but default invocation adds cost and can dilute ownership. |
 | Todo package | **Keep, conditional** | One compact tool helps genuinely multi-step state; localized tasks explicitly avoid it. |
-| LSP/docs/web | **Keep compact core** | Semantic/local/current evidence directly improves correctness. Three overlapping/rare schemas were removed from the default surface. |
-| Playwright MCP | **Keep lazy** | Browser evidence is necessary for UI behavior; one proxy prevents every Playwright schema from being active at startup. |
+| LSP/docs/web | **Keep deferred** | Semantic/local/current evidence improves correctness when needed, but twelve specialist schemas do not need to accompany every localized task. |
+| Playwright MCP | **Keep deferred + lazy** | The single `mcp` schema activates only for browser work. With valid cached metadata the server starts lazily; missing/stale metadata may require a startup catalog connection. |
+| Smart Read | **Add bounded focus** | Pi already truncates at 2,000 lines/50 KiB; the extension adds an earlier 400-line bound only for large implicit reads and preserves explicit ranges. |
+| Continuity capsule | **Add bounded state** | Exact recent check status and hashed open failures can be lost across resume/compaction. Custom entries persist that state outside normal LLM context and inject it once. |
 | Vision-routing security section | **Remove** | The delegated vision tooling had already been removed, so the section was stale and misleading. |
 | Git delivery automation | **Remove from default** | It conflicts with owner authority and creates external/history side effects. A guard plus deterministic eval enforces the boundary. |
 | Three default eval trials | **Reduce to one smoke trial** | Cuts routine model calls by 66.7%; repeated trials remain explicitly required for promotion-quality comparisons. |
@@ -79,21 +84,23 @@ Exact versions and registry integrity values are recorded in `.pi/package-integr
 
 ## Mechanical changes measured in this audit
 
-| Signal | Before | Optimized | Change |
-|---|---:|---:|---:|
-| Always-loaded `AGENTS.md` + append | 11,747 bytes / 179 lines | 8,170 bytes / 95 lines | −3,577 bytes (−30.5%), −84 lines |
-| Launcher tool schemas | 22 | 19 | −3 (−13.6%); within the reviewed 10–20 active-tool guidance |
-| Default eval trials per case | 3 | 1 | −66.7% routine model calls; promotion trials remain opt-in |
-| Project model/thinking pins | 2 | 0 | Operator/model neutral |
-| Duplicate workflow documents | 2 | 1 canonical playbook | `PI_WORKFLOW.md` removed; `HARNESS.md` retained |
+| Signal | Original | Previous optimized | V3 | Net change |
+|---|---:|---:|---:|---:|
+| Always-loaded `AGENTS.md` + append | 11,747 bytes / 179 lines | 8,170 bytes / 95 lines | 8,170 bytes / 95 lines | −3,577 bytes (−30.5%), −84 lines |
+| Initial launcher tool schemas | 22 | 19 | 8 | −14 (−63.6%) original; −11 (−57.9%) previous |
+| On-demand specialist groups | 0 | 0 | 6 groups / 12 schemas | Installed capabilities retained without initial exposure |
+| Default eval trials per case | 3 | 1 | 1 | −66.7% routine model calls; promotion trials remain opt-in |
+| Project model/thinking pins | 2 | 0 | 0 | Operator/model neutral |
+| Duplicate workflow documents | 2 | 1 canonical playbook | 1 canonical playbook | `PI_WORKFLOW.md` removed; `HARNESS.md` retained |
+| Runtime behavior tests | 0 | 0 | 7 | Loader, Smart Read, retry, continuity, session reset, redaction, and opt-out invariants |
 
-These are structural efficiency gains, not an empirical claim that output quality improved for every model. A paid/provider-backed before/after model evaluation was not executed during this audit; deterministic tests, dry-run validation, package integrity checks, and the measured context/tool reductions are the available evidence. Run repeated matched baseline/candidate trials before claiming model-output superiority.
+These are structural efficiency and resilience gains, not an empirical claim that output quality improved for every model. A paid/provider-backed 19-tool-versus-dynamic before/after evaluation was not executed during this audit; deterministic tests, dry-run validation, package integrity checks, runtime startup compatibility, and measured context/tool reductions are the available evidence. Run repeated matched baseline/candidate trials before claiming model-output superiority.
 
 ## Optimized universal loop
 
 1. Classify the task; avoid ceremony for a localized change.
 2. For non-trivial work, state 3–7 observable acceptance criteria and expected proof.
-3. Search/localize using repository evidence; stop when the decision is supported.
+3. Search/localize on the eight-tool core; activate every required specialist capability together only when core evidence is insufficient.
 4. Expose the gap with reproduction, test, or explicit `UNPROVEN` status.
 5. Implement one coherent slice with one primary writer.
 6. Run the cheapest faithful targeted proof first, then affected routes.
@@ -111,6 +118,7 @@ For an actual workflow comparison:
 - require 100% deterministic pass rate and zero workflow-safety violations;
 - reject new Git/GitHub mutation attempts or protected workflow-file edits;
 - reject per-case median regression above the declared thresholds for duration, tool calls, tokens, duplicate calls, repair rounds, or repeated full gates;
+- compare localized cases and specialist-required cases separately so loader-call overhead and schema savings are both visible;
 - keep qualitative product/design/architecture rubrics `UNSCORED` until a blinded evidence review;
 - never weaken thresholds after seeing the candidate result.
 

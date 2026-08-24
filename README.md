@@ -12,7 +12,9 @@ A compact, evidence-driven harness for [Pi Coding Agent](https://pi.dev/) focuse
 - `/discover` → `/design` → `/build-ui` → `/design-review` workflows for moving from idea to a functional, visually distinctive interface;
 - durable execution plans plus `/handoff` and `/resume` for long-running work across fresh contexts;
 - Pi-native project settings in `.pi/settings.json`;
-- a project launcher (`./p`) with the required tool allowlist;
+- a project launcher (`./p`) with an eight-tool core and capability-based specialist loading;
+- a model-neutral runtime that bounds implicit large-file reads, stops blind identical retries, and preserves a compact continuity capsule across resume/compaction;
+- strict-prefer JSON-schema sampling for the reviewed Pi pin, with an explicit operator opt-out;
 - bounded read-heavy subagents through the pinned `pi-sub-agent` package;
 - on-demand LSP, maintained Context7-backed documentation search, and web search/fetch;
 - lazy Playwright MCP browser exploration for localhost and public HTTP(S) pages, with focused page evaluation;
@@ -90,6 +92,8 @@ Start Pi:
 ```
 
 `./p` treats this checked-out repository as trusted with Pi's official `--approve` flag, enables the full writable workspace, and uses `PI_GUARD_MODE=autonomous`, so normal implementation does not stall on approval loops. Use `PI_PROJECT_TRUST=ask ./p` to restore Pi's prompt or `PI_PROJECT_TRUST=never ./p` to ignore project resources for a diagnostic run.
+
+For the exact reviewed Pi `0.84.2` pin, the launcher also enables capability-gated strict-prefer JSON-schema sampling, Pi's official first-run setup, and the bounded harness runtime. The controls remain operator-overridable; for example, `PI_EXPERIMENTAL=0 PI_SMART_READ=0 ./p` disables schema-constrained supported built-ins and Smart Read for a diagnostic comparison.
 
 In autonomous mode the agent may inspect, edit, install local dependencies, run tests, research, and perform browser QA within the available operating-system permissions. Git delivery remains with the repository owner: no branch creation/switch, stage, commit, fetch, pull, merge, rebase, push, tag, history/ref/config mutation, or GitHub write is permitted unless the owner explicitly requests that exact action in the current conversation.
 
@@ -218,7 +222,24 @@ pi-lsp-adapter
 @bytetrue/pi-web-search
 ```
 
-The launcher exposes only the required tools. The MCP adapter exposes a compact `mcp` proxy, and Playwright schemas are discovered only when needed.
+The launcher initially exposes only:
+
+```text
+read, bash, edit, write, grep, find, ls, harness_tools
+```
+
+`harness_tools` activates every specialist group needed for the current task in one call:
+
+| Capability | Deferred tools |
+|---|---|
+| `planning` | `todo` |
+| `delegation` | `subagent` |
+| `browser` | `mcp` |
+| `code_intelligence` | five focused LSP tools |
+| `docs` | Context7 resolve + documentation lookup |
+| `web` | `web_search`, `web_fetch` |
+
+An empty capability list unloads only the managed specialists and preserves unrelated custom tools. The MCP adapter still exposes one compact proxy. Playwright is lifecycle-lazy when valid cached metadata exists; a missing or stale adapter cache can trigger a startup catalog connection.
 
 Useful checks:
 
@@ -234,6 +255,8 @@ See [`docs/TOOLING_SETUP.md`](docs/TOOLING_SETUP.md) for LSP, documentation sear
 ## Context and long-running work
 
 `AGENTS.md` is a map, not an encyclopedia. `scripts/pi-doctor.sh` enforces an always-loaded size budget so detailed guidance must live in docs/skills instead of silently consuming task context.
+
+The runtime records only bounded mechanical state—specialist groups, repository-relative modified paths, recent recognized check outcomes, hashed failed-call signatures, and Smart Read count. It never stores raw tool arguments or result bodies. That capsule is injected once after resume/compaction and complements, rather than replaces, Pi's built-in summary and the human-readable execution plan.
 
 For complex work, use `docs/exec-plans/active/`. The plan stores accepted criteria, verified state, decisions, evidence, risks, and the next action—not raw transcripts.
 
@@ -262,6 +285,8 @@ The agent must not repeat the same failed approach indefinitely. After the same 
 - use one focused independent investigation if needed;
 - hand off to a fresh context when stale history is becoming harmful.
 
+The runtime enforces the narrow mechanical part of this rule: after two errored executions with the same tool and canonical arguments, the third identical call is blocked until a different successful evidence/action step occurs. Only a 12-character hash and attempt count are persisted; the failed input is not.
+
 Recurring failure classes should become tests, types/schemas, lint/structural checks, clearer APIs/tools, or focused docs—not more generic prompt text.
 
 ## Safety model
@@ -278,6 +303,8 @@ The normal launcher is intentionally **not sandboxed**. Pi runs directly with th
 - remote shell, deployment, infrastructure, and production database commands;
 - secret-bearing or protected paths even when the rest of the workspace is writable;
 - browser file upload/drop and MCP scripting.
+
+Separately, `.pi/extensions/harness-runtime.js` manages dynamic tool activation, Smart Read, identical-call retry bounds, and continuity state. It does not weaken or bypass the safety guard.
 
 Autonomous mode deliberately allows harness-policy edits, generated artifacts, full-workspace writes, public HTTP(S) navigation, and focused `browser_evaluate`. Git mutation is a separate deny-by-default boundary and is not unlocked by autonomous mode. This is an accident-reduction layer, not a complete shell/interpreter parser or security boundary.
 
@@ -381,6 +408,7 @@ For a material visual change, the product pass proves journey, states, accessibi
 │   ├── settings.json
 │   ├── verification.json
 │   ├── extensions/
+│   │   ├── harness-runtime.js
 │   │   └── safety-guard.js
 │   ├── prompts/
 │   │   ├── discover.md / design.md / spec.md / adr.md

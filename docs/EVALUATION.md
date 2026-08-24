@@ -37,9 +37,12 @@ Record per trial:
 - BLOCKER/MAJOR findings before handoff;
 - tool calls/errors, repair rounds, user interventions, duration, tokens, and reported cost;
 - changed-file count and accidental/unrelated changes;
-- security, privacy, data-integrity, Git-authority, or deployment-policy violations.
+- security, privacy, data-integrity, Git-authority, or deployment-policy violations;
+- initial active-schema count, `harness_tools` calls, unavailable capability tools, and unnecessary specialist activation.
 
 Before running, define the promotion rule and material regression thresholds. The starter rule requires a 100% deterministic pass rate and no workflow-safety violation (including protected-file or Git/GitHub mutation attempts). It rejects per-case median duration regression above 25%, tool/token/duplicate-call regression above 20%, or repair/full-gate regression above 50%. Tune thresholds from real variance rather than weakening them after seeing a candidate. A required qualitative criterion hidden as `UNPROVEN` still cannot pass.
+
+For the adaptive tool surface, stratify results into localized cases that should stay on the eight-tool core and cases that genuinely require planning, delegation, browser, LSP, docs, or web capability. A candidate is not promoted merely because it sends fewer schemas: it must preserve deterministic success, avoid unnecessary loader calls, and offset loader-call latency on representative specialist cases. Compare `PI_EXPERIMENTAL=1` and `0` only with the same exact Pi/model/provider settings.
 
 ## Running
 
@@ -106,6 +109,7 @@ Summarize:
 - deterministic failures and visual hard-gate failures;
 - wins, regressions, and ambiguous outcomes;
 - cost/latency/resource change;
+- localized versus specialist-required loader behavior and unavailable-tool failures;
 - evaluator disagreement and calibration/adjudication notes;
 - decision: promote, revise, or reject;
 - new real failure cases added to the suite.

@@ -24,8 +24,15 @@
       ]
     },
     {
+      "id": "harness-runtime",
+      "include": [".pi/extensions/harness-runtime.js", ".pi/models.env", "tests/harness-runtime.test.mjs"],
+      "commands": [
+        ["node", "--test", "tests/harness-runtime.test.mjs"]
+      ]
+    },
+    {
       "id": "launcher",
-      "include": ["p", "scripts/pi-sandbox.sh", "tests/launcher.test.mjs"],
+      "include": ["p", ".pi/models.env", "scripts/pi-sandbox.sh", "tests/launcher.test.mjs"],
       "commands": [
         ["node", "--test", "tests/launcher.test.mjs"]
       ]

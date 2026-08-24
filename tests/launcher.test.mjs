@@ -21,6 +21,12 @@ process.stdout.write(JSON.stringify({
   gitMutation: process.env.PI_GIT_MUTATION,
   externalMutation: process.env.PI_GUARD_EXTERNAL_MUTATION,
   projectRoot: process.env.PI_PROJECT_ROOT,
+  experimental: process.env.PI_EXPERIMENTAL,
+  smartRead: process.env.PI_SMART_READ,
+  smartReadBytes: process.env.PI_SMART_READ_BYTES,
+  smartReadLines: process.env.PI_SMART_READ_LINES,
+  blindRetryLimit: process.env.PI_BLIND_RETRY_LIMIT,
+  continuity: process.env.PI_CONTINUITY,
 }));
 `,
     { mode: 0o755 },
@@ -36,6 +42,12 @@ process.stdout.write(JSON.stringify({
         PI_MAIN_MODEL: "",
         PI_MAIN_THINKING: "",
         PI_ENABLED_MODELS: "",
+        PI_EXPERIMENTAL: "",
+        PI_SMART_READ: "",
+        PI_SMART_READ_BYTES: "",
+        PI_SMART_READ_LINES: "",
+        PI_BLIND_RETRY_LIMIT: "",
+        PI_CONTINUITY: "",
         ...overrides,
       },
     });
@@ -88,24 +100,42 @@ test("explicit model and thinking overrides pass through unchanged", () => {
   ]);
 });
 
-test("launcher exposes a compact unique model-agnostic tool surface", () => {
+test("launcher exposes only the model-agnostic core and capability loader", () => {
   const result = parsed(runLauncher());
   const toolsIndex = result.args.indexOf("--tools");
   assert.notEqual(toolsIndex, -1);
   const selected = result.args[toolsIndex + 1].split(",");
   assert.equal(new Set(selected).size, selected.length);
-  assert.ok(selected.length <= 20, `expected at most 20 tools, received ${selected.length}`);
-  for (const required of [
-    "read", "bash", "edit", "write", "subagent", "todo", "mcp",
-    "lsp_diagnostics", "lsp_definition", "lsp_references",
-    "doc_search_get_library_docs", "web_search", "web_fetch",
-  ]) assert.ok(selected.includes(required), required);
-  for (const redundant of [
-    "describe_image",
-    "lsp_hover",
-    "lsp_document_symbols",
-    "doc_search_get_cached_doc_raw",
-  ]) assert.equal(selected.includes(redundant), false, redundant);
+  assert.deepEqual(selected, [
+    "read", "bash", "edit", "write", "grep", "find", "ls", "harness_tools",
+  ]);
+  for (const deferred of [
+    "subagent", "todo", "mcp", "lsp_diagnostics", "lsp_definition",
+    "lsp_references", "lsp_workspace_symbols", "lsp_more",
+    "doc_search_resolve_library_id", "doc_search_get_library_docs",
+    "web_search", "web_fetch",
+  ]) assert.equal(selected.includes(deferred), false, deferred);
+});
+
+test("launcher enables bounded runtime optimization defaults with explicit opt-outs", () => {
+  const defaults = parsed(runLauncher());
+  assert.equal(defaults.experimental, "1");
+  assert.equal(defaults.smartRead, "1");
+  assert.equal(defaults.smartReadBytes, "98304");
+  assert.equal(defaults.smartReadLines, "400");
+  assert.equal(defaults.blindRetryLimit, "2");
+  assert.equal(defaults.continuity, "1");
+
+  const disabled = parsed(runLauncher({
+    PI_EXPERIMENTAL: "0",
+    PI_SMART_READ: "0",
+    PI_BLIND_RETRY_LIMIT: "0",
+    PI_CONTINUITY: "0",
+  }));
+  assert.equal(disabled.experimental, "0");
+  assert.equal(disabled.smartRead, "0");
+  assert.equal(disabled.blindRetryLimit, "0");
+  assert.equal(disabled.continuity, "0");
 });
 
 test("launcher preserves explicit trust and guard overrides", () => {

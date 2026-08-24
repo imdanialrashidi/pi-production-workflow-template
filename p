@@ -22,6 +22,12 @@ fi
 export PI_TELEMETRY="${PI_TELEMETRY:-0}"
 export PI_SKIP_VERSION_CHECK="${PI_SKIP_VERSION_CHECK:-1}"
 export PI_CACHE_RETENTION="${PI_CACHE_RETENTION:-long}"
+export PI_EXPERIMENTAL="${PI_EXPERIMENTAL:-1}"
+export PI_SMART_READ="${PI_SMART_READ:-1}"
+export PI_SMART_READ_BYTES="${PI_SMART_READ_BYTES:-98304}"
+export PI_SMART_READ_LINES="${PI_SMART_READ_LINES:-400}"
+export PI_BLIND_RETRY_LIMIT="${PI_BLIND_RETRY_LIMIT:-2}"
+export PI_CONTINUITY="${PI_CONTINUITY:-1}"
 export PI_GUARD_MODE="${PI_GUARD_MODE:-autonomous}"
 export PI_GUARD_FILE_SCOPE="${PI_GUARD_FILE_SCOPE:-full}"
 export PI_GUARD_EXTERNAL_MUTATION="${PI_GUARD_EXTERNAL_MUTATION:-deny}"
@@ -30,7 +36,7 @@ export PI_PROJECT_ROOT="$ROOT_DIR"
 
 args=(
   --tools
-  "read,bash,edit,write,grep,find,ls,subagent,todo,mcp,lsp_diagnostics,lsp_definition,lsp_references,lsp_workspace_symbols,lsp_more,doc_search_resolve_library_id,doc_search_get_library_docs,web_search,web_fetch"
+  "read,bash,edit,write,grep,find,ls,harness_tools"
 )
 
 case "${PI_PROJECT_TRUST:-always}" in

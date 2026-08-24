@@ -56,6 +56,10 @@ The agent derives the contract from available evidence. It asks a question only 
 
 Start from identifiers, not bulk context.
 
+The initial runtime surface is `read`, `bash`, `edit`, `write`, `grep`, `find`, `ls`, and `harness_tools`. Stay on that core for localized work. When the task needs planning, delegation, browser evidence, LSP, version-sensitive documentation, or current web evidence, call `harness_tools` once with every required capability instead of activating specialists one by one.
+
+An implicit read of a regular text file at or above 96 KiB is bounded to 400 lines and returns the next offset. An explicit `offset` or `limit` is always preserved. Prefer exact search/symbol lookup and focused ranges over walking the rest of a large file linearly.
+
 Preferred order:
 
 1. repository map and relevant project docs;
@@ -134,6 +138,8 @@ Repeated blind retries are a harness failure. When the same check or approach fa
 7. If the task is still unclear and subagents are available, delegate one focused read-only investigation rather than another broad implementation attempt; otherwise run that focused investigation directly.
 8. If the context has become noisy, the goal changed materially, or progress must survive a fresh session, use the handoff protocol.
 
+The runtime hashes the tool name plus canonical arguments and blocks a third identical call after two errored executions. It never persists the arguments themselves. A different successful evidence/action step clears the blind-retry counter; changing only wording without changing the actual tool input does not.
+
 A failure that recurs across different tasks should become a harness improvement: a regression test, clearer tool, structural check, documented invariant, or safety rule. Do not merely add another paragraph to the system prompt.
 
 ## Execution plans and long-running work
@@ -163,6 +169,8 @@ Handoff note
 ```
 
 Keep it concise and update facts, decisions, evidence, and next steps—not a transcript of every tool call.
+
+The runtime continuity capsule is a recovery aid, not the execution plan. It persists a bounded list of active specialist groups, repository-relative modified paths, recent recognized verification outcomes, hashed open failures, and Smart Read count. It is injected once after session restore or compaction. Pi's built-in compaction summary and the execution plan remain authoritative for goals, decisions, constraints, and unresolved reasoning.
 
 ## Handoff and context reset
 

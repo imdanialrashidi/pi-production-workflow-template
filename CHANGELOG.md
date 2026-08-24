@@ -19,6 +19,8 @@ All notable workflow changes are documented here. This project follows the spiri
 - Primary-source research and audit record in `docs/RESEARCH.md`.
 - Owner-controlled Git/GitHub policy with guard, launcher, prompt, and deterministic-eval enforcement.
 - Materialized-file filtering and a Git-independent pre-fix fixture for disposable workflow evaluations.
+- A model-neutral harness runtime with capability-group tool loading, Smart Read, bounded identical-call retries, and resume/compaction continuity snapshots.
+- Deterministic runtime tests for tool activation/reset, read focusing, retry recovery, state restoration, and secret redaction.
 
 ### Changed
 
@@ -33,5 +35,7 @@ All notable workflow changes are documented here. This project follows the spiri
 - Made the canonical full verification gate validate the template before product source is bootstrapped.
 - Reduced duplicate always-loaded policy by 30.5%, removed the duplicate `docs/PI_WORKFLOW.md`, and tightened the combined context-size ratchet.
 - Reduced the launcher from 22 to 19 active tool schemas and made subagents conditional with a universal self-review fallback.
+- Reduced the initial launcher surface again from 19 to eight schemas while retaining twelve specialist schemas across six on-demand capability groups.
+- Enabled capability-aware strict-prefer JSON-schema sampling for supported built-in tools on the exact Pi `0.84.2` pin, with explicit environment opt-outs.
 - Reduced routine eval default trials from three to one while retaining explicit repeated trials and stronger efficiency thresholds for promotion comparisons.
 - Updated reviewed pins to Pi `0.84.2`, `pi-mcp-adapter@2.26.1`, `@juicesharp/rpiv-todo@2.6.2`, and `@bytetrue/pi-web-search@0.2.1` with exact registry integrity records.

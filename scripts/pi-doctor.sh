@@ -52,6 +52,7 @@ required=(
   .pi/verification.json
   .pi/models.env
   .pi/APPEND_SYSTEM.md
+  .pi/extensions/harness-runtime.js
   .pi/extensions/safety-guard.js
   .pi/prompts/bootstrap.md
   .pi/prompts/discover.md
@@ -94,6 +95,7 @@ required=(
   scripts/run-workflow-evals.mjs
   scripts/lib/workflow-evals.mjs
   scripts/verify-affected.mjs
+  tests/harness-runtime.test.mjs
   tests/safety-guard.test.mjs
   tests/launcher.test.mjs
   tests/quick-fix-skill.test.mjs
@@ -119,10 +121,11 @@ else
   fail "a Pi, verification, MCP, or evaluation config is invalid JSON"
 fi
 
-if node --check .pi/extensions/safety-guard.js >/dev/null 2>&1; then
-  pass "safety guard parses"
+if node --check .pi/extensions/harness-runtime.js >/dev/null 2>&1 && \
+   node --check .pi/extensions/safety-guard.js >/dev/null 2>&1; then
+  pass "harness runtime and safety guard parse"
 else
-  fail "safety guard has a JavaScript syntax error"
+  fail "a harness runtime extension has a JavaScript syntax error"
 fi
 
 if [[ "$static_mode" -eq 1 ]]; then
@@ -274,21 +277,45 @@ else
   fail "Playwright MCP policy validation failed"
 fi
 
-launcher_tools=(
+core_launcher_tools=(
+  read
+  bash
+  edit
+  write
+  grep
+  find
+  ls
+  harness_tools
+)
+
+for tool in "${core_launcher_tools[@]}"; do
+  if grep -Fq "$tool" p; then
+    pass "launcher initially allows $tool"
+  else
+    fail "launcher does not initially allow $tool"
+  fi
+done
+
+specialist_tools=(
   subagent
   todo
   mcp
   lsp_diagnostics
+  lsp_definition
+  lsp_references
+  lsp_workspace_symbols
+  lsp_more
+  doc_search_resolve_library_id
   doc_search_get_library_docs
   web_search
   web_fetch
 )
 
-for tool in "${launcher_tools[@]}"; do
-  if grep -Fq "$tool" p; then
-    pass "launcher allows $tool"
+for tool in "${specialist_tools[@]}"; do
+  if grep -Fq "\"$tool\"" .pi/extensions/harness-runtime.js && ! grep -Fq "$tool" p; then
+    pass "$tool is deferred behind harness_tools"
   else
-    fail "launcher does not allow $tool"
+    fail "$tool must be mapped by harness_tools and absent from the initial launcher surface"
   fi
 done
 
@@ -298,16 +325,27 @@ const launcher = fs.readFileSync('p', 'utf8');
 const match = launcher.match(/--tools\s*\n\s*"([^"]+)"/);
 if (!match) throw new Error('launcher tool allowlist is missing');
 const tools = match[1].split(',').map((value) => value.trim()).filter(Boolean);
+const expected = ['read', 'bash', 'edit', 'write', 'grep', 'find', 'ls', 'harness_tools'];
 if (new Set(tools).size !== tools.length) throw new Error('launcher tool allowlist contains duplicates');
-if (tools.length > 20) throw new Error(`launcher exposes ${tools.length} tools; expected at most 20`);
-for (const redundant of ['lsp_hover', 'lsp_document_symbols', 'doc_search_get_cached_doc_raw']) {
-  if (tools.includes(redundant)) throw new Error(`redundant default tool remains exposed: ${redundant}`);
+if (JSON.stringify(tools) !== JSON.stringify(expected)) {
+  throw new Error(`launcher tools differ from the reviewed core: ${tools.join(',')}`);
 }
 NODE
 then
-  pass "launcher default surface is compact, unique, and omits redundant schemas"
+  pass "launcher exposes the exact eight-schema core and capability loader"
 else
-  fail "launcher default tool surface is oversized or redundant"
+  fail "launcher default tool surface differs from the reviewed adaptive core"
+fi
+
+if grep -Fq 'PI_EXPERIMENTAL:-1' p .pi/models.env && \
+   grep -Fq 'PI_SMART_READ:-1' p .pi/models.env && \
+   grep -Fq 'PI_SMART_READ_BYTES:-98304' p .pi/models.env && \
+   grep -Fq 'PI_SMART_READ_LINES:-400' p .pi/models.env && \
+   grep -Fq 'PI_BLIND_RETRY_LIMIT:-2' p .pi/models.env && \
+   grep -Fq 'PI_CONTINUITY:-1' p .pi/models.env; then
+  pass "adaptive runtime defaults are explicit and operator-overridable"
+else
+  fail "adaptive runtime defaults or opt-out controls are missing"
 fi
 
 if grep -Fq 'PI_PROJECT_TRUST:-always' p && \
