@@ -6,6 +6,7 @@ All notable workflow changes are documented here. This project follows the spiri
 
 ### Added
 
+- Pi-native `/skill:quick-fix` routing for obvious low-risk edits, with targeted-only verification and explicit escalation boundaries.
 - Behavioral coverage for autonomous/strict guard modes and launcher trust overrides.
 - Product design contract, distinctive frontend-design skill, visual hard gates, and scored craft rubric.
 - Idea-to-production prompts: discover, design, spec, ADR, build UI, design review, release plan, and incident response.

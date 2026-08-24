@@ -22,11 +22,11 @@ Read only what the current decision needs:
 - `docs/GIT_POLICY.md` before any authorized Git or GitHub write.
 - `docs/exec-plans/active/` only when continuity needs a durable plan.
 
-Load only a matching skill: `verification-routing` for check selection, `test-design` for behavior-sensitive coverage, and browser/frontend/risk only when triggered.
+Load only a matching skill: `/skill:quick-fix` for explicitly tiny low-risk edits, `verification-routing` for non-obvious check selection, `test-design` for behavior-sensitive coverage, and browser/frontend/risk only when triggered.
 
 ## Task classes
 
-- **Localized:** one obvious low-risk behavior/file; inspect → change → targeted check → diff review. No plan or subagent ceremony.
+- **Localized:** one obvious low-risk behavior/file; use `/skill:quick-fix` when minimal ceremony is requested: inspect → change → targeted check → diff review. No plan, formal contract, broad gate, todo, or subagent unless policy requires it or new evidence expands the task.
 - **Standard:** normal multi-step feature/bug; compact contract → coherent slice → narrow proof → material review.
 - **Complex:** cross-module, ambiguous, long, or multi-session; plan milestones and persist an ExecPlan only when continuity needs it.
 - **High risk:** auth/access, money, secrets/privacy, uploads/callbacks, schema/migration/deletion, public API, concurrency, infrastructure, deployment, or release; require risk analysis, negative paths, independent review, recovery/rollback, and the full gate.
@@ -74,7 +74,7 @@ Complete every unblocked criterion first, preserve exact continuation state, the
 
 ## Definition of done
 
-A task is complete only when every criterion has evidence or an explicit `BLOCKED`/`NOT EXECUTED` status; relevant targeted and final gates ran; browser/visual proof exists where applicable; the diff is scoped; required review has no unresolved BLOCKER/MAJOR; material security/data/migration/accessibility/reliability/performance/recovery concerns are handled; and durable docs, assumptions, and remaining risk are current.
+A task is complete only when every criterion has evidence or an explicit `BLOCKED`/`NOT EXECUTED` status; relevant targeted checks and required final gates ran; browser/visual proof exists where applicable; the diff is scoped; required review has no unresolved BLOCKER/MAJOR; material security/data/migration/accessibility/reliability/performance/recovery concerns are handled; and durable docs, assumptions, and remaining risk are current.
 
 End implementation work with:
 

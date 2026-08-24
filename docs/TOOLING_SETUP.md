@@ -35,6 +35,16 @@ Validate the repository configuration:
 bash scripts/pi-doctor.sh
 ```
 
+## Localized fast path
+
+For a tiny, obvious, low-risk change, invoke the project skill directly:
+
+```text
+/skill:quick-fix <small low-risk change>
+```
+
+Pi exposes project skills as `/skill:name` commands and also selects them from their descriptions. This path deliberately skips plans, todos, subagents, broad suites, and full gates unless scope, risk, or repository policy requires escalation.
+
 ## Todo panel
 
 Confirm the extension:

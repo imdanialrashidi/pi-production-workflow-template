@@ -70,6 +70,7 @@ required=(
   .pi/prompts/resume.md
   .pi/prompts/test.md
   .pi/skills/risk-review/SKILL.md
+  .pi/skills/quick-fix/SKILL.md
   .pi/skills/verification-routing/SKILL.md
   .pi/skills/test-design/SKILL.md
   .pi/skills/browser-qa/SKILL.md
@@ -95,6 +96,7 @@ required=(
   scripts/verify-affected.mjs
   tests/safety-guard.test.mjs
   tests/launcher.test.mjs
+  tests/quick-fix-skill.test.mjs
   tests/workflow-evals.test.mjs
   tests/verify-affected.test.mjs
 )
@@ -179,7 +181,7 @@ else
   fail "combined always-loaded context is too large (${combined_context_lines}/130 lines, ${combined_context_bytes}/9000 bytes)"
 fi
 
-for reference in 'docs/HARNESS.md' 'docs/QUALITY.md' 'docs/GIT_POLICY.md' 'verification-routing' 'test-design'; do
+for reference in 'docs/HARNESS.md' 'docs/QUALITY.md' 'docs/GIT_POLICY.md' 'quick-fix' 'verification-routing' 'test-design'; do
   if grep -Fq "$reference" AGENTS.md; then
     pass "AGENTS.md maps to $reference"
   else

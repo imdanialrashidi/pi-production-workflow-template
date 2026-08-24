@@ -19,7 +19,7 @@ A compact, evidence-driven harness for [Pi Coding Agent](https://pi.dev/) focuse
 - repository-local Playwright Test (when the real project uses it) for durable regression coverage;
 - a visible todo panel for genuinely multi-step work;
 - a tested full-workspace guard that blocks secrets, destructive host actions, publication/deployment, browser file exfiltration, and every Git/GitHub mutation unless the owner explicitly enables that exact action;
-- specialized skills for frontend design, behavior-sensitive test design, verification routing, risk review, and browser QA;
+- a low-ceremony `/skill:quick-fix` path plus specialized skills for frontend design, behavior-sensitive test design, verification routing, risk review, and browser QA;
 - a doctor/CI check that validates package pins, security posture, and always-loaded context budgets;
 - a 17-case RPC evaluation harness with deterministic safety/scope graders, trace/efficiency metrics, baseline comparison, a one-trial default smoke run, and opt-in repeated trials for promotion decisions.
 
@@ -173,7 +173,7 @@ Reload project resources:
 
 The harness distinguishes four levels:
 
-- **Localized:** direct inspect → change → targeted check; no ceremony.
+- **Localized:** `/skill:quick-fix <small low-risk change>` → direct inspect → change → targeted check; no plan, todo, subagent, or broad gate.
 - **Standard:** compact acceptance contract, one vertical slice, verification, independent evaluation where useful.
 - **Complex:** `/plan` plus a durable execution plan when work must survive context/session boundaries.
 - **High risk:** explicit acceptance, risk/security review, negative-path evidence, and full verification before completion.
@@ -310,6 +310,12 @@ The v2 runner grades completion, mutation scope, protected paths, owner-controll
 
 The `verification-routing` skill chooses the cheapest reliable lane.
 
+For an obvious low-risk edit, force the shorter Pi-native path directly:
+
+```text
+/skill:quick-fix <small low-risk change>
+```
+
 During implementation:
 
 - exact affected test;
@@ -383,6 +389,7 @@ For a material visual change, the product pass proves journey, states, accessibi
 │   └── skills/
 │       ├── browser-qa/
 │       ├── frontend-design/
+│       ├── quick-fix/
 │       ├── risk-review/
 │       ├── test-design/
 │       └── verification-routing/
@@ -407,7 +414,7 @@ For a material visual change, the product pass proves journey, states, accessibi
 4. Complete `docs/TOOLING_SETUP.md` once for the machine/project.
 5. Run `/bootstrap` to make product, architecture, design, quality, verification, and runtime interfaces project-specific.
 6. Use `/discover` for an unproven idea; use `/design` before visually significant implementation.
-7. Deliver ordinary slices with `/build` and flagship/frontend slices with `/build-ui`.
+7. Use `/skill:quick-fix` for tiny low-risk edits, `/build` for ordinary slices, and `/build-ui` for flagship/frontend slices.
 8. Use `/plan` only for work that genuinely needs durable design/execution state.
 9. Use `/design-review` and `/review` for independent visual/product/risk evaluation.
 10. Use `/handoff` + `/resume` for long-running work across clean contexts.

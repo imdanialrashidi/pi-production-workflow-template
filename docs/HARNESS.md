@@ -19,7 +19,7 @@ This document contains the detailed operating model for non-trivial Pi coding se
 
 Use the task classes in `AGENTS.md`.
 
-- Localized: no ceremony.
+- Localized: load `/skill:quick-fix` when minimal ceremony is requested; use one direct patch, one targeted proof, and scoped diff review.
 - Standard: compact acceptance contract, focused implementation, and material self-review; add an independent evaluator only when its evidence justifies the cost.
 - Complex: planning plus persistent execution state when continuity is needed.
 - High risk: threat-boundary analysis, independent review, negative-path proof, full gate.
