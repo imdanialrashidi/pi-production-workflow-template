@@ -393,7 +393,7 @@ Local development policy:
 - reuse servers;
 - run a specific spec.
 
-For a material visual change, the product pass proves journey, states, accessibility, responsiveness, console/network health, and budgets. The studio pass uses deterministic rendered evidence and the `frontend-design` rubric. Browser-observable evidence is authoritative; screenshots are retained as artifacts and appearance-only criteria are reported `UNPROVEN` whenever the active model cannot inspect image inputs.
+For a material visual change, the product pass proves journey, states, accessibility, responsiveness, console/network health, and budgets. The studio pass actually inspects reference/baseline and current desktop/mobile images, uses focused crops for detail, and re-captures affected states after repairs. Playwright returns native screenshot images to the active model; no separate image provider or tool schema is added. Runtime capability/image-count diagnostics are not proof of inspection. Disabled, unavailable, or unreadable image input leaves appearance-only criteria `UNPROVEN`. See `browser-qa` for the bounded pixel-inspection loop and [`docs/TOOLING_SETUP.md`](docs/TOOLING_SETUP.md#visual-evidence-across-model-capabilities) for image privacy, configuration, and restart requirements.
 
 ## Repository layout
 
