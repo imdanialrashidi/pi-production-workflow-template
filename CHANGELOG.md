@@ -24,6 +24,8 @@ All notable workflow changes are documented here. This project follows the spiri
 
 ### Changed
 
+- Adopted automatic scoped PR delivery on persistent `ai-changes`, with a tested helper, opt-out/eval isolation, owner-only main integration, and no per-task branches; this supersedes the earlier per-action Git approval default.
+
 - Reworked `test-design`, `/test`, and `/build` around a Test Value Gate that rejects redundant/coverage-only cases, permits a deliberate `no new test` outcome, and requires independent oracles plus defect-sensitivity evidence.
 - Made `./p` trust the checked-out project and grant full-workspace implementation access by default, while independently denying all Git/GitHub mutation until the owner authorizes an exact action; the optional Docker launcher selects strict repository scope.
 - Strengthened the safety guard around secrets, destructive host actions, Git metadata/commands, publication/deployment/production mutation, and browser file exfiltration while preserving read-only Git inspection.

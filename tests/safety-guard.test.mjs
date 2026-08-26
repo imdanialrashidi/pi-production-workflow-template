@@ -27,6 +27,7 @@ async function guard(toolName, input, overrides = {}) {
     "PI_GUARD_EXTERNAL_MUTATION",
     "PI_GIT_MUTATION",
     "PI_PROJECT_ROOT",
+    "AI_PR_DELIVERY",
   ];
   const previous = Object.fromEntries(keys.map((key) => [key, process.env[key]]));
   const environment = {
@@ -35,6 +36,7 @@ async function guard(toolName, input, overrides = {}) {
     PI_GUARD_EXTERNAL_MUTATION: "deny",
     PI_GIT_MUTATION: "deny",
     PI_PROJECT_ROOT: repositoryRoot,
+    AI_PR_DELIVERY: "on",
     ...overrides,
   };
   try {
@@ -272,4 +274,14 @@ test("invalid guard settings fail closed", async () => {
     (await guard("write", { path: "README.md" }, { PI_GUARD_FILE_SCOPE: "sometimes" })).reason,
     /full or repository/,
   );
+});
+
+test("automatic PR delivery is recognized, scoped, and disabled in isolated sessions", async () => {
+  const command = "node scripts/ai-pr.mjs prepare";
+  assert.equal(isGitMutationCommand(command), true);
+  assert.equal(await guard("bash", { command }), undefined);
+  for (const overrides of [{ PI_GUARD_MODE: "strict" }, { AI_PR_DELIVERY: "off" }]) {
+    assert.equal((await guard("bash", { command }, overrides)).block, true);
+  }
+  assert.equal((await guard("bash", { command: `${command} && git push origin main` })).block, true);
 });

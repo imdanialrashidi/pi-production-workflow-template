@@ -11,7 +11,7 @@ The optimized workflow keeps a small model-neutral core and loads specialization
 3. **Adaptive tool surface.** The launcher starts with eight schemas instead of 19: seven core repository tools plus `harness_tools`. Planning, delegation, browser, LSP, docs, and web groups remain installed and activate additively only when required.
 4. **Conditional orchestration.** One primary writer handles normal work. Scout/reviewer/security roles are used only for a named ambiguity or risk; a separate self-review is the universal fallback.
 5. **Schema prevention before repair.** On the exact reviewed Pi pin, capability-gated strict-prefer JSON-schema sampling is enabled for supported built-ins, while Pi's existing pre-validation argument preparation and the MCP proxy's object/JSON-string handling remain authoritative. The workflow does not guess-repair schema-invalid calls after validation.
-6. **Implementation autonomy, owner-controlled Git.** The agent can inspect, edit, research, install local dependencies, test, and run browser QA. Branches, commits, fetch/pull, refs/history/config, pushes, and GitHub writes remain denied until the owner explicitly authorizes the exact action.
+6. **Implementation autonomy, scoped PR delivery.** Owner-adopted policy on 2026-08-26 adds verified commit/push/PR handoff through a fixed `ai-changes` helper. Main integration and other external actions remain owner-controlled. This is a user authority choice, not a claim of improved model quality.
 7. **Cheap smoke, rigorous promotion.** Eval defaults to one trial for routine regression feedback; promotion still requires repeated, isolated baseline/candidate trials with identical settings and qualitative review.
 8. **Bounded context and recovery.** Implicit large-file reads are focused, a third identical call is stopped after two errors, and only compact mechanical continuity state—not raw tool input/output—is recovered after resume or compaction.
 
@@ -64,7 +64,7 @@ The optimized workflow keeps a small model-neutral core and loads specialization
 | Smart Read | **Add bounded focus** | Pi already truncates at 2,000 lines/50 KiB; the extension adds an earlier 400-line bound only for large implicit reads and preserves explicit ranges. |
 | Continuity capsule | **Add bounded state** | Exact recent check status and hashed open failures can be lost across resume/compaction. Custom entries persist that state outside normal LLM context and inject it once. |
 | Vision-routing security section | **Remove** | The delegated vision tooling had already been removed, so the section was stale and misleading. |
-| Git delivery automation | **Remove from default** | It conflicts with owner authority and creates external/history side effects. A guard plus deterministic eval enforces the boundary. |
+| Git delivery automation | **Scoped, owner-adopted** | A reviewed helper delivers only to persistent `ai-changes` and a matching PR; raw Git/main/merge remain protected and evals force delivery off. |
 | Three default eval trials | **Reduce to one smoke trial** | Cuts routine model calls by 66.7%; repeated trials remain explicitly required for promotion-quality comparisons. |
 
 ## Dependency review
@@ -107,7 +107,7 @@ These are structural efficiency and resilience gains, not an empirical claim tha
 7. Use a specialist/evaluator only for a named ambiguity or material risk; otherwise self-review independently.
 8. Run the final/full gate once when scope/risk requires it.
 9. Inspect the diff and report criterion → evidence/status.
-10. Leave all Git/GitHub mutation to the owner unless the current user explicitly delegates one exact action.
+10. Complete the scoped fixed-branch PR handoff for implementation; keep main integration and other external actions owner-controlled. Never publish from read-only/local-only work or evals.
 
 ## Promotion protocol
 

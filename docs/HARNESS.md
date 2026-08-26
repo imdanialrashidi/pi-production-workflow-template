@@ -119,11 +119,9 @@ Never convert these into the same status:
 - blocked by prerequisite;
 - not executed.
 
-### 7. Prepare the owner handoff
+### 7. Deliver the scoped pull request
 
-Do not stop before the accepted implementation and verification are complete. Inspect the final diff, preserve unrelated work, and leave a clear owner handoff with exact evidence and optional next commands.
-
-Git/GitHub writes are a separate authority boundary. Follow `docs/GIT_POLICY.md`: branch/worktree changes, staging, commits, fetch/pull/push, history/ref/config changes, and PR mutation remain with the repository owner unless the current user explicitly requests one exact action. A missing credential never blocks local implementation and verification.
+For implementation, follow `docs/GIT_POLICY.md`: prepare the persistent `ai-changes` branch before editing, finish accepted verification, then run the scoped PR helper with explicit file paths and exact evidence. It commits/pushes and creates the PR or updates the same related PR. Do not create per-task branches, mix unrelated work into an open PR, write to `main`, or merge automatically. Read-only/local-only tasks and evals do not deliver. A missing credential blocks delivery, not safe local implementation; report both states accurately.
 
 ## Failure-recovery ladder
 

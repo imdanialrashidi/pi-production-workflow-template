@@ -34,6 +34,7 @@ const workflowPaths = [
   "scripts/pi-doctor.sh",
   "scripts/run-workflow-evals.mjs",
   "scripts/lib/workflow-evals.mjs",
+  "scripts/ai-pr.mjs",
 ];
 
 const readOnlyGitSubcommands = new Set([
@@ -193,7 +194,7 @@ function commandMutatesProtectedWorkflow(command, config) {
     /(^|[\s"'=])\.github\/workflows\//,
     /(^|[\s"'=])docs\/(?:HARNESS|GIT_POLICY)\.md(?:[\s"'|;&]|$)/,
     /(^|[\s"'=])docs\/exec-plans\/README\.md(?:[\s"'|;&]|$)/,
-    /(^|[\s"'=])scripts\/(?:verify(?:-(?:fast|feature|full))?|pi-doctor|run-workflow-evals)\.(?:sh|mjs)/,
+    /(^|[\s"'=])scripts\/(?:verify(?:-(?:fast|feature|full))?|pi-doctor|run-workflow-evals|ai-pr)\.(?:sh|mjs)/,
     /(^|[\s"'=])p(?:[\s"'|;&]|$)/,
   ].some((pattern) => pattern.test(command));
   if (!referencesProtected) return false;
@@ -340,6 +341,7 @@ function hasGitMutation(text, depth = 0) {
   for (const segment of source.split(/[;&|\n]+/)) {
     const words = shellWords(segment);
     for (let index = 0; index < words.length; index += 1) {
+      if (/(?:^|[\\/])ai-pr\.mjs$/.test(words[index]) && /(?:^|[\\/])node(?:\.exe)?$/.test(words[index - 1] ?? "")) return true;
       if (/(?:^|[\\/])(?:ba|z|k|c|da)?sh(?:\.exe)?$/i.test(words[index])) {
         const commandOption = words.findIndex((word, optionIndex) =>
           optionIndex > index && /^-[^-]*c/.test(word)
@@ -394,7 +396,7 @@ function parseMcpArgs(value) {
 }
 
 function ownerGitReason() {
-  return "Repository Git/GitHub mutation is owner-controlled. Do not stage, commit, create/switch branches or worktrees, fetch, pull, push, merge, rebase, tag, change refs/remotes/config, or create/update a PR unless the current user explicitly authorizes that exact action and relaunches with PI_GIT_MUTATION=allow.";
+  return "Unscoped Git/GitHub mutation is owner-controlled. Routine verified implementation uses node scripts/ai-pr.mjs on the existing ai-changes branch under docs/GIT_POLICY.md. Other writes require the current user's exact authorization and a bounded PI_GIT_MUTATION=allow session; never use that override for routine PR delivery.";
 }
 
 function mcpCallReason(input, config) {
@@ -442,7 +444,13 @@ function blockedCommandReason(command, config) {
   if (!value) return null;
 
   const gitWrite = isGitMutationCommand(value);
-  if (gitWrite && config.gitMutation !== "allow") return ownerGitReason();
+  const words = shellWords(value);
+  const prHelper = words[0] === "node" && ["scripts/ai-pr.mjs", "./scripts/ai-pr.mjs"].includes(words[1]) &&
+    ["prepare", "deliver"].includes(words[2]) && !/[;&|<>`$\\\r\n]/.test(value);
+  if (prHelper && (config.strict || (process.env.AI_PR_DELIVERY ?? "on") !== "on")) {
+    return "Automatic PR delivery is disabled in strict, local-only, or evaluation sessions.";
+  }
+  if (gitWrite && config.gitMutation !== "allow" && !prHelper) return ownerGitReason();
   if (directGitMetadataWrite(value)) {
     return "Direct writes to .git metadata are blocked; leave history, refs, index, and configuration to the owner.";
   }

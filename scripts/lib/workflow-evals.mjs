@@ -317,7 +317,7 @@ export function runCaseChecks(workspace, checks = []) {
       cwd,
       encoding: "utf8",
       timeout: check.timeoutMs ?? 120_000,
-      env: { ...process.env, PI_EVAL_CHECK: "1" },
+      env: { ...process.env, PI_EVAL_CHECK: "1", AI_PR_DELIVERY: "off" },
       maxBuffer: 16 * 1024 * 1024,
     });
     return {

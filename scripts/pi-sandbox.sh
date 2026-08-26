@@ -46,6 +46,7 @@ docker run --rm "${tty_args[@]}" \
   --env "PI_GUARD_MODE=${PI_GUARD_MODE:-strict}" \
   --env PI_GUARD_FILE_SCOPE=repository \
   --env PI_GIT_MUTATION=deny \
+  --env AI_PR_DELIVERY=off \
   --env PI_GUARD_EXTERNAL_MUTATION=deny \
   --volume "$ROOT_DIR:/workspace" \
   --workdir /workspace \

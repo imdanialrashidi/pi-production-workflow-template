@@ -47,9 +47,9 @@ For Standard, Complex, and High-risk work define the goal, non-goals, 3–7 obse
 - When tests are added or materially changed, use `test-design`: require a distinct failure model, independent oracle, cheapest faithful layer, and defect-sensitivity evidence; do not add coverage-only or redundant tests.
 - A subagent opinion, static inspection, or an unexecuted command is not proof that behavior passed.
 
-## Owner-controlled Git
+## Automatic PR handoff
 
-Read `docs/GIT_POLICY.md` before any Git/GitHub write. Read-only inspection is allowed. Never create or switch a branch/worktree, stage, commit, fetch, pull, push, merge, rebase, cherry-pick, revert, reset, clean, stash, tag, change refs/remotes/config, or create/update/merge a PR unless the current user explicitly requests that exact action. “Finish,” “ship,” credentials, and remote availability are not authorization. By default, leave the verified working-tree diff and optional commands to the owner.
+For user-requested implementation, follow `docs/GIT_POLICY.md`: prepare the existing `ai-changes` lane before editing, then automatically commit the scoped verified change, push, and create/update its PR to `main` using `node scripts/ai-pr.mjs`. No per-task branches; pass the exact PR number only for related work. Read-only/local-only requests and evals do not publish. Main writes, PR merge/close, releases, deployment, other Git mutations, and changes to this policy still require exact owner authorization.
 
 ## Capability and evidence discipline
 
@@ -62,7 +62,7 @@ Read `docs/GIT_POLICY.md` before any Git/GitHub write. Read-only inspection is a
 
 ## Autonomy and stop conditions
 
-Continue through routine reversible engineering: inspect, edit, install local project dependencies, test, run browser QA, repair, update task docs, and prepare a verified handoff. Make the smallest safe reversible assumption and record it instead of asking about ordinary implementation choices. Git mutation remains excluded unless explicitly requested as described above.
+Continue through routine reversible engineering: inspect, edit, install local project dependencies, test, run browser QA, repair, update task docs, and prepare a verified handoff. Make the smallest safe reversible assumption and record it instead of asking about ordinary implementation choices. Routine PR delivery is included only through the scoped helper above; unrelated external actions are excluded.
 
 Stop only when:
 
@@ -84,4 +84,4 @@ End implementation work with:
 - **Files:** main files changed
 - **Verified:** exact commands/tools and outcomes
 - **Risks:** remaining risk, assumption, blocker, or skipped verification
-- **Git:** read-only state inspected and all mutation left to the owner, unless an exact action was explicitly authorized
+- **Git:** verified `ai-changes` commit/PR URL and CI status, or the precise delivery blocker/local-only opt-out
