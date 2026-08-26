@@ -6,6 +6,7 @@ All notable workflow changes are documented here. This project follows the spiri
 
 ### Added
 
+- Native Vision-aware browser QA: live model-capability guidance, image-block delivery diagnostics, reference/baseline inspection, focused crops, and bounded visual re-checks with honest evidence gaps.
 - Pi-native `/skill:quick-fix` routing for obvious low-risk edits, with targeted-only verification and explicit escalation boundaries.
 - Behavioral coverage for autonomous/strict guard modes and launcher trust overrides.
 - Product design contract, distinctive frontend-design skill, visual hard gates, and scored craft rubric.
@@ -24,6 +25,7 @@ All notable workflow changes are documented here. This project follows the spiri
 
 ### Changed
 
+- Playwright screenshot responses now include native images (`allow` instead of `omit`); Pi still owns image resizing/filtering, no extra Vision provider is installed, and sensitive captures remain prohibited.
 - Adopted automatic scoped PR delivery on persistent `ai-changes`, with a tested helper, opt-out/eval isolation, owner-only main integration, and no per-task branches; this supersedes the earlier per-action Git approval default.
 
 - Reworked `test-design`, `/test`, and `/build` around a Test Value Gate that rejects redundant/coverage-only cases, permits a deliberate `no new test` outcome, and requires independent oracles plus defect-sensitivity evidence.

@@ -124,6 +124,20 @@ For an actual workflow comparison:
 
 Passing deterministic gates yields `QUALITATIVE_REVIEW_REQUIRED`, not automatic promotion.
 
+## Native Vision amendment — reviewed 2026-08-26
+
+The previous Playwright configuration used `--image-responses omit`: screenshots could be saved without sending pixels to the model. The amended configuration uses `allow`, retaining the same pinned server, MCP proxy, eight-tool core, and selected provider. The runtime reads `ctx.model.input`, reports image-block counts without claiming perception, and adds guidance only on browser/image paths. Pi remains responsible for image resizing, provider serialization, and the `images.blockImages` opt-out; no image bytes are copied into the harness continuity capsule.
+
+| Primary source | Applied decision | Limit |
+|---|---|---|
+| [Pi extensions](https://pi.dev/docs/latest/extensions) and reviewed `0.84.2` source (`core/tools/read`, `core/sdk`, `utils/tool-result-images`) | Use live model metadata and native tool image blocks; preserve built-in normalization/filtering. | Metadata and hook output cannot prove downstream provider acceptance or correct perception. |
+| [Playwright MCP 0.0.79](https://github.com/microsoft/playwright-mcp/blob/4c5077651542f68525a0b51e97bab2a32abc9290/README.md) and [screenshots](https://playwright.dev/docs/screenshots) | Return native screenshots with `allow`; use viewport composition plus targeted element crops while retaining accessibility-based interaction. | The pinned schema supports `target` element captures and `scale`; screenshot capture is not visual review. |
+| [OpenAI images and vision](https://developers.openai.com/api/docs/guides/images-vision) | Require actual image inputs; zoom/crop unreadable detail and label reference/before/current evidence explicitly. Confirm non-Latin text and precise geometry with DOM. | Images can be resized; small text, exact localization, and interpretations can be wrong. Do not hard-code provider-specific detail parameters into Pi. |
+| [Anthropic Vision](https://platform.claude.com/docs/en/build-with-claude/vision) | Prefer readable, appropriately sized images; avoid repeated lossy compression and excessive images. Ground findings in visible evidence and verify exact claims independently. | Resolution limits vary by model/provider; no universal pixel/token threshold or guaranteed visual accuracy. |
+| [Playwright visual comparisons](https://playwright.dev/docs/test-snapshots) | Keep fixtures, environment, viewport, theme, locale, and readiness stable; re-capture affected states after repair. | Pixel differences detect change, not design excellence; never blind-update a baseline. |
+
+The resulting skill loop is reference/baseline inspection → small readable evidence set → evidence-backed critique → bounded repair → final re-capture. Fresh reviewers must inspect the images themselves. Exact accessibility/behavior/performance proof still comes from deterministic tools. Synthetic/masked captures protect privacy; images add provider cost. Structural tests and transport checks do not establish better design outcomes: repeated matched visual evals are still required, and no provider-backed quality comparison is claimed by this amendment.
+
 ## Project-specific work that remains
 
 `/bootstrap` should replace template examples with evidence from the real repository:
