@@ -121,14 +121,15 @@ export function runDelivery(argv, { cwd = process.cwd(), env = process.env, run 
     requireThat(githubRepository(pushUrls[0]).toLowerCase() === repo.toLowerCase(), "Fetch and push repositories differ.");
     const info = api("repos/" + repo);
     requireThat(info.full_name?.toLowerCase() === repo.toLowerCase() && info.default_branch === BASE, "Repository identity or default branch differs from the reviewed main target.");
-    requireThat(info.delete_branch_on_merge !== true, "Disable automatic head-branch deletion with owner approval before adopting a persistent ai-changes branch.");
     const currentBranch = () => git(["branch", "--show-current"]).trim();
     const sha = (ref = "HEAD") => git(["rev-parse", "--verify", ref]).trim();
     const cleanIndex = () => requireThat(git(["diff", "--cached", "--quiet"], true) !== null, "Pre-existing staged changes must remain owner-controlled.");
     const cleanTree = () => requireThat(!git(["status", "--porcelain=v1", "--untracked-files=all"]).trim(), "A clean worktree is required for prepare/resume; preserve user changes.");
-    const remoteHead = () => {
-      const value = git(["ls-remote", "--heads", REMOTE, "refs/heads/" + HEAD]).trim().split(/\s+/);
-      requireThat(value.length === 2 && SHA.test(value[0]) && value[1] === "refs/heads/" + HEAD, "The fixed remote ai-changes branch is missing. Ask the owner; do not recreate it automatically.");
+    const remoteHead = (allowMissing = false) => {
+      const output = git(["ls-remote", "--heads", REMOTE, "refs/heads/" + HEAD]).trim();
+      if (!output && allowMissing) return null;
+      const value = output.split(/\s+/);
+      requireThat(value.length === 2 && SHA.test(value[0]) && value[1] === "refs/heads/" + HEAD, "The fixed remote ai-changes branch is missing. Preserve current work; only a clean prepare may create it.");
       return value[0];
     };
     for (const name of ["MERGE_HEAD", "CHERRY_PICK_HEAD", "REVERT_HEAD", "rebase-merge", "rebase-apply", "sequencer"]) {
@@ -137,9 +138,8 @@ export function runDelivery(argv, { cwd = process.cwd(), env = process.env, run 
     cleanIndex();
     if (options.action === "prepare" || options.resume) cleanTree();
     else requireThat(currentBranch() === HEAD, "Delivery is allowed only on ai-changes; run prepare before editing. Never commit on main.");
-    const expectedRemote = remoteHead();
-    git(["fetch", "--no-tags", REMOTE, "refs/heads/" + BASE + ":refs/remotes/origin/" + BASE, "refs/heads/" + HEAD + ":refs/remotes/origin/" + HEAD]);
-    requireThat(sha("origin/" + HEAD) === expectedRemote, "The source branch changed during preflight; inspect the concurrent update.");
+    let expectedRemote = remoteHead(options.action === "prepare");
+    git(["fetch", "--no-tags", REMOTE, "refs/heads/" + BASE + ":refs/remotes/origin/" + BASE, ...(expectedRemote ? ["refs/heads/" + HEAD + ":refs/remotes/origin/" + HEAD] : [])]);
     const baseCommit = sha("origin/" + BASE);
     const pulls = (state) => api("repos/" + repo + "/pulls?state=" + state + "&head=" + repo.split("/")[0] + "%3A" + HEAD + "&base=" + BASE + "&per_page=100");
     const validatePull = (pr) => {
@@ -150,6 +150,17 @@ export function runDelivery(argv, { cwd = process.cwd(), env = process.env, run 
     requireThat(Array.isArray(openPulls) && openPulls.length <= 1, "Ambiguous open PR state.");
     const existing = openPulls[0] ? validatePull(openPulls[0]) : null;
     requireThat(existing ? options.pr === existing.number : options.pr === undefined, "An existing PR needs its exact --pr number and related task scope; do not mix unrelated work or create another branch.");
+    if (!expectedRemote) {
+      requireThat(!existing, "An open PR has a missing source branch; inspect its work before preparing another task.");
+      const localExists = git(["show-ref", "--verify", "--quiet", "refs/heads/" + HEAD], true) !== null;
+      requireThat(!localExists || git(["merge-base", "--is-ancestor", HEAD, baseCommit], true) !== null, "Unpublished or unmerged local ai-changes commits require inspection before recreating the remote branch.");
+      // Create-only API: a competing creator must fail, never overwrite an existing ref.
+      const created = api("repos/" + repo + "/git/refs", "POST", { ref: "refs/heads/" + HEAD, sha: baseCommit });
+      requireThat(created.ref === "refs/heads/" + HEAD && created.object?.sha === baseCommit && remoteHead() === baseCommit, "Branch creation did not match the captured main commit; inspect remote state.");
+      expectedRemote = baseCommit;
+      git(["fetch", "--no-tags", REMOTE, "refs/heads/" + HEAD + ":refs/remotes/origin/" + HEAD]);
+    }
+    requireThat(sha("origin/" + HEAD) === expectedRemote, "The source branch changed during preflight; inspect the concurrent update.");
     const push = (commit) => {
       requireThat(SHA.test(commit) && currentBranch() === HEAD && sha() === commit && remoteHead() === expectedRemote, "Branch changed before push; preserve state and inspect the concurrent writer.");
       requireThat(git(["merge-base", "--is-ancestor", expectedRemote, commit], true) !== null, "Automatic delivery must fast-forward the exact expected remote commit.");
