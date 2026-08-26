@@ -94,6 +94,8 @@ required=(
   scripts/verify-package-integrity.mjs
   scripts/run-workflow-evals.mjs
   scripts/lib/workflow-evals.mjs
+  scripts/ai-pr.mjs
+  tests/ai-pr.test.mjs
   scripts/verify-affected.mjs
   tests/harness-runtime.test.mjs
   tests/safety-guard.test.mjs
@@ -193,10 +195,10 @@ for reference in 'docs/HARNESS.md' 'docs/QUALITY.md' 'docs/GIT_POLICY.md' 'quick
   fi
 done
 
-if grep -Fq 'Git and GitHub mutation are always owner-controlled' .pi/APPEND_SYSTEM.md && \
+if grep -Fq 'automatic PR handoff' .pi/APPEND_SYSTEM.md && \
    grep -Fq 'same approach fails twice' .pi/APPEND_SYSTEM.md && \
    grep -Fq 'at most **two evaluator/repair rounds**' docs/HARNESS.md; then
-  pass "execution policy includes owner-controlled Git and bounded recovery/evaluation loops"
+  pass "execution policy includes scoped PR delivery and bounded recovery/evaluation loops"
 else
   fail "execution policy is missing Git ownership or recovery/evaluation bounds"
 fi
@@ -357,7 +359,7 @@ if grep -Fq 'PI_PROJECT_TRUST:-always' p && \
    grep -Fq 'PI_GUARD_MODE=${PI_GUARD_MODE:-strict}' scripts/pi-sandbox.sh && \
    grep -Fq 'PI_GUARD_FILE_SCOPE=repository' scripts/pi-sandbox.sh && \
    grep -Fq 'PI_GIT_MUTATION=deny' scripts/pi-sandbox.sh; then
-  pass "launcher grants trusted workspace access while Git stays owner-controlled; sandbox opts into strict repository scope"
+  pass "launcher preserves raw Git boundaries; scoped PR helper is separate and sandbox stays strict"
 else
   fail "launcher trust, workspace, Git, or sandbox defaults are inconsistent"
 fi

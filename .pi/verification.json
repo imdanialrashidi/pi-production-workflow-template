@@ -2,6 +2,11 @@
   "version": 1,
   "routes": [
     {
+      "id": "pr-delivery",
+      "include": ["scripts/ai-pr.mjs", "tests/ai-pr.test.mjs", "docs/GIT_POLICY.md"],
+      "commands": [["node", "--test", "tests/ai-pr.test.mjs"]]
+    },
+    {
       "id": "workflow-evals",
       "include": ["scripts/run-workflow-evals.mjs", "scripts/lib/workflow-evals.mjs", "evals/**", "tests/workflow-evals.test.mjs"],
       "commands": [

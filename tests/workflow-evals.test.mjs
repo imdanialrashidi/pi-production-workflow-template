@@ -9,11 +9,24 @@ import {
   compareSummaries,
   evaluateDeterministic,
   matchesGlob,
+  runCaseChecks,
   validateSuite,
 } from "../scripts/lib/workflow-evals.mjs";
 import { filterMaterializedEvaluationFiles } from "../scripts/run-workflow-evals.mjs";
 
 const repositoryRoot = path.resolve(import.meta.dirname, "..");
+
+test("post-checks cannot inherit automatic PR publication authority", () => {
+  const previous = process.env.AI_PR_DELIVERY;
+  process.env.AI_PR_DELIVERY = "on";
+  try {
+    const [result] = runCaseChecks(repositoryRoot, [{ id: "local-only", command: [process.execPath, "-e", "process.exit(process.env.AI_PR_DELIVERY === 'off' ? 0 : 1)"] }]);
+    assert.equal(result.status, "PASS");
+  } finally {
+    if (previous === undefined) delete process.env.AI_PR_DELIVERY;
+    else process.env.AI_PR_DELIVERY = previous;
+  }
+});
 
 test("the committed evaluation suite satisfies the v2 contract", () => {
   const suite = JSON.parse(fs.readFileSync(path.join(repositoryRoot, "evals/cases.json"), "utf8"));
@@ -121,8 +134,9 @@ test("trace analysis and deterministic grading reject Git and GitHub mutation at
     { type: "tool_execution_end", toolCallId: "g1", toolName: "bash", isError: true },
     { type: "tool_execution_start", toolCallId: "g2", toolName: "mcp", args: { tool: "github_create_pull_request", args: {} } },
     { type: "tool_execution_end", toolCallId: "g2", toolName: "mcp", isError: true },
+    { type: "tool_execution_start", toolCallId: "g3", toolName: "bash", args: { command: "node scripts/ai-pr.mjs prepare" } },
   ]);
-  assert.equal(trace.gitMutationCalls, 2);
+  assert.equal(trace.gitMutationCalls, 3);
   const result = evaluateDeterministic(
     { assertions: { completion: "completed", changes: { mode: "none", maxFiles: 0 } } },
     { completion: "completed", trace, changes: [], checkResults: [] },

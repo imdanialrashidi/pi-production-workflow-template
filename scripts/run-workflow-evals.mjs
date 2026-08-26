@@ -156,6 +156,7 @@ function runRpc({ cwd, prompt, model, thinking, timeoutMs }) {
         PI_GUARD_MODE: "autonomous",
         PI_GUARD_FILE_SCOPE: "repository",
         PI_GIT_MUTATION: "deny",
+        AI_PR_DELIVERY: "off",
         PI_GUARD_EXTERNAL_MUTATION: "deny",
         PI_PROJECT_ROOT: cwd,
       },
@@ -225,7 +226,7 @@ function runRpc({ cwd, prompt, model, thinking, timeoutMs }) {
         events: eventLines,
       });
     });
-    child.stdin.write(`${JSON.stringify({ id: "eval-prompt", type: "prompt", message: prompt })}\n`);
+    child.stdin.write(`${JSON.stringify({ id: "eval-prompt", type: "prompt", message: "This is an isolated local-only evaluation. Do not commit, push, open/update a PR, or invoke the PR delivery helper.\n\n" + prompt })}\n`);
   });
 }
 

@@ -1,6 +1,6 @@
 # Pi Production Workflow Template
 
-A compact, evidence-driven harness for [Pi Coding Agent](https://pi.dev/) focused on high-quality implementation, model-neutral routing, bounded independent evaluation, low-resource verification, distinctive production-grade frontend design, and owner-controlled delivery.
+A compact, evidence-driven harness for [Pi Coding Agent](https://pi.dev/) focused on high-quality implementation, model-neutral routing, bounded independent evaluation, low-resource verification, distinctive production-grade frontend design, and scoped automatic PR delivery.
 
 ## What this template provides
 
@@ -20,7 +20,7 @@ A compact, evidence-driven harness for [Pi Coding Agent](https://pi.dev/) focuse
 - lazy Playwright MCP browser exploration for localhost and public HTTP(S) pages, with focused page evaluation;
 - repository-local Playwright Test (when the real project uses it) for durable regression coverage;
 - a visible todo panel for genuinely multi-step work;
-- a tested full-workspace guard that blocks secrets, destructive host actions, publication/deployment, browser file exfiltration, and every Git/GitHub mutation unless the owner explicitly enables that exact action;
+- a tested full-workspace guard that blocks secrets, destructive host actions, publication/deployment, browser file exfiltration, and arbitrary Git/GitHub mutation while permitting the reviewed fixed-branch PR helper;
 - a low-ceremony `/skill:quick-fix` path plus specialized skills for frontend design, behavior-sensitive test design, verification routing, risk review, and browser QA;
 - a doctor/CI check that validates package pins, security posture, and always-loaded context budgets;
 - a 17-case RPC evaluation harness with deterministic safety/scope graders, trace/efficiency metrics, baseline comparison, a one-trial default smoke run, and opt-in repeated trials for promotion decisions.
@@ -65,7 +65,7 @@ product thesis
 
 The design intentionally avoids agent swarms and giant skill packs. Extra orchestration is added only where it solves a demonstrated failure mode.
 
-See [`docs/HARNESS.md`](docs/HARNESS.md) for the operating playbook and [`docs/GIT_POLICY.md`](docs/GIT_POLICY.md) for the owner-controlled Git boundary.
+See [`docs/HARNESS.md`](docs/HARNESS.md) for the operating playbook and [`docs/GIT_POLICY.md`](docs/GIT_POLICY.md) for fixed-branch PR delivery and the owner-only integration boundary.
 
 Contribution and private vulnerability-reporting expectations live in [`CONTRIBUTING.md`](CONTRIBUTING.md) and [`SECURITY.md`](SECURITY.md).
 
@@ -95,7 +95,7 @@ Start Pi:
 
 For the exact reviewed Pi `0.84.2` pin, the launcher also enables capability-gated strict-prefer JSON-schema sampling, Pi's official first-run setup, and the bounded harness runtime. The controls remain operator-overridable; for example, `PI_EXPERIMENTAL=0 PI_SMART_READ=0 ./p` disables schema-constrained supported built-ins and Smart Read for a diagnostic comparison.
 
-In autonomous mode the agent may inspect, edit, install local dependencies, run tests, research, and perform browser QA within the available operating-system permissions. Git delivery remains with the repository owner: no branch creation/switch, stage, commit, fetch, pull, merge, rebase, push, tag, history/ref/config mutation, or GitHub write is permitted unless the owner explicitly requests that exact action in the current conversation.
+In autonomous mode the agent may inspect, edit, install local dependencies, run tests, research, and perform browser QA within the available operating-system permissions. For user-requested implementation, the agent prepares the existing `ai-changes` branch and automatically commits/pushes the verified scoped change into a new or updated related PR to `main`. It uses `node scripts/ai-pr.mjs`, not arbitrary pre-approved Git commands. No per-task branches, main writes, or auto-merge. Read-only/local-only work and evals never publish; set `AI_PR_DELIVERY=off` to opt out. The helper requires authenticated `gh` and ordinary Git push credentials; see `docs/GIT_POLICY.md` for setup and recovery.
 
 Complete the one-time tool setup in [`docs/TOOLING_SETUP.md`](docs/TOOLING_SETUP.md).
 
@@ -298,7 +298,7 @@ The normal launcher is intentionally **not sandboxed**. Pi runs directly with th
 - sensitive credential and private-key paths;
 - destructive recursive deletion;
 - privilege escalation and host service mutation;
-- every Git/GitHub mutation by default, while preserving read-only inspection such as `status`, `diff`, `log`, and `gh ... view/list/checks`;
+- arbitrary Git/GitHub mutation by default, while allowing the reviewed `scripts/ai-pr.mjs` capability and read-only inspection such as `status`, `diff`, `log`, and `gh ... view/list/checks`;
 - global package installation and publishing;
 - remote shell, deployment, infrastructure, and production database commands;
 - secret-bearing or protected paths even when the rest of the workspace is writable;
@@ -306,7 +306,7 @@ The normal launcher is intentionally **not sandboxed**. Pi runs directly with th
 
 Separately, `.pi/extensions/harness-runtime.js` manages dynamic tool activation, Smart Read, identical-call retry bounds, and continuity state. It does not weaken or bypass the safety guard.
 
-Autonomous mode deliberately allows harness-policy edits, generated artifacts, full-workspace writes, public HTTP(S) navigation, and focused `browser_evaluate`. Git mutation is a separate deny-by-default boundary and is not unlocked by autonomous mode. This is an accident-reduction layer, not a complete shell/interpreter parser or security boundary.
+Autonomous mode deliberately allows harness-policy edits, generated artifacts, full-workspace writes, public HTTP(S) navigation, and focused `browser_evaluate`. Raw Git mutation stays deny-by-default; only the fixed-branch PR helper has standing delivery scope. Strict/sandbox and local-only runs disable that helper as well. This is an accident-reduction layer, not a complete shell/interpreter parser or security boundary.
 
 To diagnose without project trust or to opt into the older locks:
 
@@ -331,7 +331,7 @@ Validate the starter benchmark without making model calls:
 node scripts/run-workflow-evals.mjs --dry-run
 ```
 
-The v2 runner grades completion, mutation scope, protected paths, owner-controlled Git, executable post-checks, and trace efficiency; qualitative rubrics remain explicitly unscored. The default single trial is a cheap smoke/regression signal. For a promotion decision, explicitly run repeated isolated trials with identical model/thinking settings for baseline and candidate and pass the first `summary.json` through `--baseline`. Model calls can incur cost and transmit repository content to the selected provider. See [`docs/EVALUATION.md`](docs/EVALUATION.md).
+The v2 runner grades completion, mutation scope, protected paths, no-publication eval scope, executable post-checks, and trace efficiency; qualitative rubrics remain explicitly unscored. The default single trial is a cheap smoke/regression signal. For a promotion decision, explicitly run repeated isolated trials with identical model/thinking settings for baseline and candidate and pass the first `summary.json` through `--baseline`. Model calls can incur cost and transmit repository content to the selected provider. See [`docs/EVALUATION.md`](docs/EVALUATION.md).
 
 ## Verification
 
@@ -446,7 +446,7 @@ For a material visual change, the product pass proves journey, states, accessibi
 8. Use `/plan` only for work that genuinely needs durable design/execution state.
 9. Use `/design-review` and `/review` for independent visual/product/risk evaluation.
 10. Use `/handoff` + `/resume` for long-running work across clean contexts.
-11. Use `/release-plan` for staged rollout and `/ship` for final acceptance plus an owner-ready handoff; the owner performs Git delivery unless explicitly delegating a specific Git action.
+11. Use `/release-plan` for staged rollout and `/ship` for final acceptance plus scoped automatic PR handoff. The owner retains PR merge and release/deployment authority.
 
 ## Updating Pi and packages
 

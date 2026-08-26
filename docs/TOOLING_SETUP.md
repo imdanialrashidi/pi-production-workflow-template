@@ -34,7 +34,7 @@ Ask the agent to activate all required groups together. Passing an empty capabil
 ./p
 ```
 
-The repository launcher passes Pi's official `--approve` trust override, so it loads project resources and installs missing pinned packages without a trust prompt. It grants normal implementation access across the writable workspace, while Git/GitHub mutations remain disabled independently. Use `PI_PROJECT_TRUST=ask ./p` only when you intentionally want the interactive trust decision.
+The repository launcher passes Pi's official `--approve` trust override, so it loads project resources and installs missing pinned packages without a trust prompt. It grants normal implementation access across the writable workspace, while arbitrary Git/GitHub mutations remain disabled independently. Routine delivery uses the reviewed `scripts/ai-pr.mjs` helper on the persistent `ai-changes` branch; install/authenticate `gh` as the owner and see `docs/GIT_POLICY.md`. Set `AI_PR_DELIVERY=off` for local-only runs. Use `PI_PROJECT_TRUST=ask ./p` only when you intentionally want the interactive trust decision.
 
 For the reviewed Pi `0.84.2` pin, the launcher defaults to:
 
