@@ -64,7 +64,7 @@ The optimized workflow keeps a small model-neutral core and loads specialization
 | Smart Read | **Add bounded focus** | Pi already truncates at 2,000 lines/50 KiB; the extension adds an earlier 400-line bound only for large implicit reads and preserves explicit ranges. |
 | Continuity capsule | **Add bounded state** | Exact recent check status and hashed open failures can be lost across resume/compaction. Custom entries persist that state outside normal LLM context and inject it once. |
 | Vision-routing security section | **Remove** | The delegated vision tooling had already been removed, so the section was stale and misleading. |
-| Git delivery automation | **Scoped, owner-adopted** | A reviewed helper delivers only to persistent `ai-changes` and a matching PR; raw Git/main/merge remain protected and evals force delivery off. |
+| Git delivery automation | **Scoped, owner-adopted** | A reviewed helper creates a missing `ai-changes` from `main` during clean preparation and delivers only to that fixed lane and a matching PR; raw Git/main/merge remain protected and evals force delivery off. Automatic creation is an owner-requested policy change, not a model-quality claim. |
 | Three default eval trials | **Reduce to one smoke trial** | Cuts routine model calls by 66.7%; repeated trials remain explicitly required for promotion-quality comparisons. |
 
 ## Dependency review
