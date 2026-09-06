@@ -154,6 +154,13 @@ function verificationLabel(command) {
   return verification ? redactText(verification) : null;
 }
 
+function verificationStatus(command, isError) {
+  // Only classify a simple invocation. Shell success can mask a failed or
+  // skipped check; this intentionally does not attempt to parse shell grammar.
+  if (!/^[A-Za-z0-9_./:@%=,+ \t-]+$/.test(command)) return "unproven";
+  return isError ? "failed" : "process-ok";
+}
+
 function safeRepositoryPath(rawPath, cwd) {
   if (typeof rawPath !== "string" || looksSensitivePath(rawPath, cwd)) return null;
   const absolutePath = path.resolve(cwd, expandHome(rawPath));
@@ -186,9 +193,9 @@ function normalizedSnapshot(value) {
     : [];
   const checks = Array.isArray(value.checks)
     ? value.checks.flatMap((item) => {
-      if (!item || typeof item !== "object" || !["passed", "failed"].includes(item.status)) return [];
+      if (!item || typeof item !== "object" || !["passed", "process-ok", "failed", "unproven"].includes(item.status)) return [];
       const label = redactText(item.label);
-      return label ? [{ label, status: item.status }] : [];
+      return label ? [{ label, status: item.status === "passed" ? "unproven" : item.status }] : [];
     }).slice(-MAX_CHECKS)
     : [];
   const failures = Array.isArray(value.failures)
@@ -232,7 +239,7 @@ export function formatContinuityCapsule(value) {
   if (snapshot.capabilities.length) lines.push(`Requested specialist groups: ${JSON.stringify(snapshot.capabilities)}`);
   if (snapshot.modifiedFiles.length) lines.push(`Recently modified paths: ${JSON.stringify(snapshot.modifiedFiles)}`);
   if (snapshot.checks.length) {
-    lines.push("Recent checks:");
+    lines.push("Historical process observations, not acceptance proof; revalidate current code and test assertions:");
     for (const check of snapshot.checks) lines.push(`- ${check.status}: ${JSON.stringify(check.label)}`);
   }
   if (snapshot.failures.length) {
@@ -423,7 +430,9 @@ export default function harnessRuntime(pi) {
     return { systemPrompt: `${event.systemPrompt}\n${visionGuidance(ctx.model)}` };
   });
 
-  pi.on("session_start", (_event, ctx) => {
+  function restoreBranch(_event, ctx) {
+    pendingCalls.clear();
+    boundedReads.clear();
     restore(null);
     activateCapabilities([]);
     dirty = false;
@@ -431,7 +440,7 @@ export default function harnessRuntime(pi) {
     if (!envEnabled("PI_CONTINUITY", true)) {
       return;
     }
-    const latest = [...ctx.sessionManager.getEntries()].reverse().find((entry) =>
+    const latest = [...ctx.sessionManager.getBranch()].reverse().find((entry) =>
       entry.type === "custom" && entry.customType === SNAPSHOT_TYPE
     );
     const restored = restore(latest?.data);
@@ -442,7 +451,10 @@ export default function harnessRuntime(pi) {
     if (restored?.capabilities.length) activateCapabilities(restored.capabilities);
     dirty = false;
     pendingContinuity = restored && hasContinuityEvidence(restored) ? restored : null;
-  });
+  }
+
+  pi.on("session_start", restoreBranch);
+  pi.on("session_tree", restoreBranch);
 
   pi.on("tool_call", async (event, ctx) => {
     const signature = toolSignature(event.toolName, event.input);
@@ -528,7 +540,7 @@ export default function harnessRuntime(pi) {
     if (event.toolName === "bash") {
       const label = verificationLabel(event.input.command);
       if (label) {
-        checks.push({ label, status: event.isError ? "failed" : "passed" });
+        checks.push({ label, status: verificationStatus(event.input.command, event.isError) });
         checks.splice(0, Math.max(0, checks.length - MAX_CHECKS));
         dirty = true;
       }

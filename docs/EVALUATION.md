@@ -95,13 +95,23 @@ node scripts/run-workflow-evals.mjs --model provider/model-id --filter frontend 
 
 The runner uses Pi's official JSONL RPC mode, copies materialized Git-tracked and non-ignored files into `.artifacts/evals/`, and refuses common secret/private paths and external symlinks. It does not initialize, branch, stage, or commit a disposable Git repository. It disables session persistence, forces repository-scoped files plus denied Git/external mutation and `AI_PR_DELIVERY=off` (the prompt also states local-only scope), captures raw events/stderr/session statistics, records a content-hash manifest, runs declared post-checks without a shell, and grades deterministic completion/mutation/safety evidence. Post-checks must leave the disposable workspace byte-for-byte unchanged.
 
-It writes `summary.json` plus `summary.md` and returns exit code 2 for deterministic failure or rejected baseline comparison. A suite fingerprint plus model/thinking/trial/timeout/Pi/Node metadata prevents comparison across different benchmark contracts or run settings. Tool starts/ends are reduced to call/error/duplicate/verification/repair/retry/compaction metrics; official session stats supply tokens and cost. Qualitative rubric items remain explicitly `UNSCORED`, so a mechanically clean result is only `QUALITATIVE_REVIEW_REQUIRED`, never automatic promotion. That review may be performed by a separate blinded model/agent; ordinary workflow completion does not wait for a person.
+It writes `summary.json` plus `summary.md` and returns exit code 2 for deterministic failure or rejected baseline comparison. Suite and immutable-input fingerprints plus model/thinking/trial/timeout/Pi/Node metadata prevent comparison across different benchmark contracts or run settings. Tool starts/ends are reduced to call/error/duplicate/verification/repair/retry/compaction metrics; official session stats supply tokens and cost. Qualitative rubric items remain explicitly `UNSCORED`, so a mechanically clean result is only `QUALITATIVE_REVIEW_REQUIRED`, never automatic promotion. That review may be performed by a separate blinded model/agent; ordinary workflow completion does not wait for a person.
 
 Model calls can incur cost and may transmit copied repository content to the selected provider. Run only with an approved model/provider and suitable data classification. For stronger isolation, launch the evaluation from the container/VM policy described in `SECURITY.md`.
 
 RPC reference: [Pi RPC mode](https://pi.dev/docs/latest/rpc).
 
 The executable `tiered-pricing-regression` fixture validates test usefulness rather than test existence: the final test must pass, the same test must fail when the disposable workspace temporarily restores the immutable fixture baseline source, and the final source is restored in a `finally` block. This proof does not create or read a Git commit.
+
+## Comparable inputs and isolated Git
+
+The runner and post-checks remove inherited `GIT_*` redirects and set Git's discovery ceiling at the disposable workspace parent. An ordinary nested Git command cannot accidentally discover the source checkout. This is accident isolation, not a sandbox: explicit paths, interpreters and modified environment variables still require the OS/container boundary.
+
+`evals/cases.json` declares exact `harnessTreatmentPaths` (only `.pi/**` accepts a wildcard). Everything else in the materialized manifest is immutable comparison input. Per-trial `input-manifest.json` records content, file-mode and symlink-target hashes without following links. Source/grader/fixture drift, changed treatment declarations, missing fingerprints and missing required median metrics reject a comparison. Rebaseline old summaries; do not backfill fabricated hashes or zero-valued metrics.
+
+When comparing an earlier harness against this runner, use the **same revised evaluator and fixture files in both copies**, then vary only declared treatment files. Do not compare old and new graders and attribute the difference to the harness. The current case set is a starter: most cases require qualitative review and do not execute a complete production app. A dry run proves suite structure and copyability, not model performance.
+
+For a budget model, start with a few representative client tasks, then repeat baseline/candidate trials with the same approved model and settings. Include a real persistence/reload journey, an authorization rejection, and a rendered mobile/RTL journey where those are client requirements. A model that fails a required capability is unsuitable for that task until a faithful fallback proves it. Never lower acceptance or promise AAA output to compensate. Model changes require a separate qualification run, not a mixed-model harness comparison.
 
 ## Promotion report
 

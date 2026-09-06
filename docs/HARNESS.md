@@ -202,6 +202,12 @@ When a class of defect recurs, prefer this order:
 
 Project bootstrap should identify important architecture or quality invariants that can be enforced mechanically and add project-specific checks where justified.
 
+## Mechanical evidence limits
+
+Continuity restores the active Pi session branch on resume and `/tree`, not the newest entry across sibling branches. In-flight tracking is cleared on navigation. Old snapshots labeled `passed` are downgraded to `unproven`.
+
+Recognized checks retain a bounded redacted check label, not unrelated shell segments. A simple invocation may record `process-ok` or `failed`; shell control flow, pipes, substitution, quoting or redirection records `unproven`. These are historical process observations, never proof of assertions, test coverage, or the current worktree. Inspect the output and accepted behavior before reporting PASS. Complex valid commands remain usable; only automatic classification is conservative.
+
 ## Harness evaluation
 
 Judge harness changes against realistic tasks, not toy prompts. Useful measures include:

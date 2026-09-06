@@ -1,3 +1,4 @@
+import { isolatedGitEnvironment } from "./eval-isolation.mjs";
 import { spawnSync } from "node:child_process";
 import path from "node:path";
 import { isGitMutationCommand, isGitMutationTool } from "../../.pi/extensions/safety-guard.js";
@@ -317,7 +318,7 @@ export function runCaseChecks(workspace, checks = []) {
       cwd,
       encoding: "utf8",
       timeout: check.timeoutMs ?? 120_000,
-      env: { ...process.env, PI_EVAL_CHECK: "1", AI_PR_DELIVERY: "off" },
+      env: { ...isolatedGitEnvironment(workspace), PI_EVAL_CHECK: "1", AI_PR_DELIVERY: "off" },
       maxBuffer: 16 * 1024 * 1024,
     });
     return {
@@ -490,7 +491,7 @@ export function compareSummaries(candidate, baseline, configuredPromotion = {}) 
   const candidateCases = candidate.aggregate?.cases ?? {};
   const baselineCases = baseline.aggregate.cases;
 
-  for (const field of ["model", "thinking", "trials", "timeoutMs", "piVersion", "nodeVersion", "suiteFingerprint"]) {
+  for (const field of ["model", "thinking", "trials", "timeoutMs", "piVersion", "nodeVersion", "suiteFingerprint", "inputFingerprint", "inputContractFingerprint"]) {
     if (baseline[field] === undefined || candidate[field] === undefined) {
       reasons.push(`comparison metadata is missing ${field}`);
     } else if (candidate[field] !== baseline[field]) {
@@ -514,6 +515,9 @@ export function compareSummaries(candidate, baseline, configuredPromotion = {}) 
       fullGateCalls: regressionPercent(baselineCase.median.fullGateCalls, candidateCase.median.fullGateCalls),
     };
     const failures = [];
+    for (const [metric, value] of Object.entries(regressions)) {
+      if (value === null) failures.push(`required comparison metric is missing or nonfinite: ${metric}`);
+    }
     if (candidateCase.deterministicPassRate < baselineCase.deterministicPassRate) {
       failures.push("deterministic pass rate regressed");
     }

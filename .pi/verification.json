@@ -8,9 +8,9 @@
     },
     {
       "id": "workflow-evals",
-      "include": ["scripts/run-workflow-evals.mjs", "scripts/lib/workflow-evals.mjs", "evals/**", "tests/workflow-evals.test.mjs"],
+      "include": ["scripts/run-workflow-evals.mjs", "scripts/lib/workflow-evals.mjs", "scripts/lib/eval-isolation.mjs", "tests/eval-isolation.test.mjs", "evals/**", "tests/workflow-evals.test.mjs"],
       "commands": [
-        ["node", "--test", "tests/workflow-evals.test.mjs"],
+        ["node", "--test", "tests/workflow-evals.test.mjs", "tests/eval-isolation.test.mjs"],
         ["node", "scripts/run-workflow-evals.mjs", "--dry-run"]
       ]
     },

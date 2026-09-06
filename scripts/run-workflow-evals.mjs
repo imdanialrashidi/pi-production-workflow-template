@@ -17,6 +17,8 @@ import {
   validateSuite,
 } from "./lib/workflow-evals.mjs";
 
+import { isolatedGitEnvironment, benchmarkInputSnapshot } from "./lib/eval-isolation.mjs";
+
 const repositoryRoot = path.resolve(import.meta.dirname, "..");
 
 function requiredValue(argv, index, option) {
@@ -106,7 +108,7 @@ async function copyRepository(destination, files = evaluationFiles()) {
   }
 }
 
-async function fileManifest(root) {
+export async function fileManifest(root) {
   const manifest = new Map();
   const excluded = new Set([".git", ".artifacts", "node_modules", ".pi/npm"]);
 
@@ -118,9 +120,12 @@ async function fileManifest(root) {
       const relative = path.relative(root, absolute).split(path.sep).join("/");
       if ([...excluded].some((value) => relative === value || relative.startsWith(`${value}/`))) continue;
       if (entry.isDirectory()) await walk(absolute);
-      else if (entry.isFile()) {
+      else if (entry.isSymbolicLink()) {
+        manifest.set(relative, crypto.createHash("sha256").update(JSON.stringify({ type: "symlink", target: await fs.readlink(absolute) })).digest("hex"));
+      } else if (entry.isFile()) {
         const content = await fs.readFile(absolute);
-        manifest.set(relative, crypto.createHash("sha256").update(content).digest("hex"));
+        const mode = (await fs.stat(absolute)).mode & 0o777;
+        manifest.set(relative, crypto.createHash("sha256").update(JSON.stringify({ type: "file", mode })).update("\0").update(content).digest("hex"));
       }
     }
   }
@@ -129,7 +134,7 @@ async function fileManifest(root) {
   return manifest;
 }
 
-function manifestDiff(before, after) {
+export function manifestDiff(before, after) {
   const changed = [];
   for (const [file, hash] of before) {
     if (!after.has(file)) changed.push({ file, status: "deleted" });
@@ -150,7 +155,7 @@ function runRpc({ cwd, prompt, model, thinking, timeoutMs }) {
     const child = spawn("pi", args, {
       cwd,
       env: {
-        ...process.env,
+        ...isolatedGitEnvironment(cwd),
         PI_TELEMETRY: "0",
         PI_SKIP_VERSION_CHECK: "1",
         PI_GUARD_MODE: "autonomous",
@@ -249,6 +254,7 @@ async function main() {
   const options = parseArgs(process.argv.slice(2));
   const suite = validateSuite(JSON.parse(await fs.readFile(options.casesPath, "utf8")));
   const cases = selectedCases(suite, options.filter);
+  benchmarkInputSnapshot(new Map(), suite.harnessTreatmentPaths);
   const trials = options.trials ?? suite.defaultTrials;
   if (!Number.isInteger(trials) || trials < 1) throw new Error("trials must be a positive integer.");
   if (!Number.isFinite(options.timeoutMs) || options.timeoutMs < 1000) throw new Error("timeout-ms must be at least 1000.");
@@ -302,6 +308,12 @@ async function main() {
       await fs.mkdir(trialRoot, { recursive: true });
       await copyRepository(workspace, files);
       const before = await fileManifest(workspace);
+      const snapshot = benchmarkInputSnapshot(before, suite.harnessTreatmentPaths);
+      if (summary.inputFingerprint && summary.inputFingerprint !== snapshot.inputFingerprint) {
+        throw new Error("Benchmark input state changed between trials.");
+      }
+      Object.assign(summary, { inputFingerprint: snapshot.inputFingerprint, inputContractFingerprint: snapshot.inputContractFingerprint });
+      await fs.writeFile(path.join(trialRoot, "input-manifest.json"), JSON.stringify(snapshot, null, 2) + "\n");
       const result = await runRpc({ cwd: workspace, prompt: item.prompt, model: options.model, thinking: options.thinking, timeoutMs: options.timeoutMs });
       const afterAgent = await fileManifest(workspace);
       const checkResults = runCaseChecks(workspace, item.checks);
