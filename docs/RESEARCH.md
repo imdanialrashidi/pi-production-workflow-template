@@ -149,3 +149,49 @@ The resulting skill loop is reference/baseline inspection → small readable evi
 - affected-file routes with conservative full fallback for unmatched paths.
 
 Optimization must not rely on silent omission. If route/capability evidence is uncertain, widen the check or mark the criterion `UNPROVEN`.
+
+## Evidence-integrity amendment — reviewed 2026-09-05
+
+Scope: Pi `40d1c630fdea3acbd29dbb1c7a68e3bd2efb0477`; OMP comparison at `80d6e6173c610354351999d7bf59e8b9205fc279`. This is a failure-driven correction, not a wholesale rewrite. Low-resource and low-cost operation remains a priority.
+
+### Current primary evidence
+
+| Source and date | Finding used | Concrete decision and limitation |
+|---|---|---|
+| [Anthropic: Building effective agents](https://www.anthropic.com/engineering/building-effective-agents), 2024-12-19 | Start with simple compositions; add complexity for a demonstrated need. | Keep one writer, conditional specialists, native tools and existing gates. Do not import an OMP role/skill framework. This is engineering guidance, not a measured result for this template. |
+| [SWE-agent](https://arxiv.org/abs/2405.15793), 2024-05 | The agent-computer interface affects coding performance. | Fix the correctness of tool feedback before adding prompting layers. Benchmark results do not imply guaranteed production quality. |
+| [Anthropic: Writing tools for agents](https://www.anthropic.com/engineering/writing-tools-for-agents), 2025-09-11 | Focused tool contracts and evaluated outputs matter. | Preserve the eight-tool core; improve evidence labels without another schema. No tool-count reduction is itself proof of quality. |
+| [Anthropic: Effective harnesses for long-running agents](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents), 2025-11-26 | Incremental implementation, explicit feature status and end-to-end checks address premature completion. | Keep the existing acceptance/vertical-slice/browser workflow; repair continuity so another branch's history cannot become current evidence. No extra progress-file format is needed. |
+| [Anthropic: Demystifying evals for AI agents](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents), 2026-01-09 | Environment outcomes differ from an agent's claim; repeated trials and distinct graders are needed. | Process success is not test acceptance. Fingerprint inputs; reject missing measurement; retain qualitative review. Deterministic tests below prove specific harness behavior, not better client products. |
+| [OpenAI: Harness engineering](https://openai.com/index/harness-engineering/), 2026-02-11 | A concise map plus mechanical invariants is preferable to a large instruction manual. | Shorten always-loaded instructions while retaining links to detailed procedures and exact delivery policy. This is an experience report, not an isolated causal experiment. |
+| [Evaluating AGENTS.md](https://arxiv.org/abs/2602.11988), 2026-02 | In its tested settings, unnecessary context requirements reduced success and increased cost. | Remove repeated ceremony rather than delete useful repository knowledge. The result is task/model dependent. |
+| [On the Impact of AGENTS.md](https://arxiv.org/abs/2601.20404), 2026-01; revised 2026-03 | A different study associated context files with lower runtime and output-token use. | Do not generalize “all AGENTS files are harmful.” Keep commands, boundaries and a retrieval map. Efficiency is not the same measure as correctness. |
+| [Do Context Files Help Coding Agents?](https://arxiv.org/abs/2607.27250), 2026-07-28 | A small two-agent ablation found no measurable correctness change from context strategy; implementation skill remained a failure source. | Treat smaller context as a measured size saving and an unproven quality hypothesis. Its 17 tasks/3 repositories cannot justify a universal conclusion. |
+| [Anthropic: Managed Agents](https://www.anthropic.com/engineering/managed-agents), 2026-04-08 | Model-specific harness workarounds can become obsolete. | Keep model choice operator-owned and do not add automatic model switching or forced context resets. Re-evaluate controls with matched trials. |
+| [Pi extensions](https://pi.dev/docs/latest/extensions) and exact npm `0.84.2` declarations | `getEntries()` covers all entries; `getBranch()` follows the active branch; `session_tree` reports navigation. | Restore from the branch, clear pending tracking on navigation and preserve Pi-native APIs. Confirmed in the pinned package's `dist/core/session-manager.d.ts` and `dist/core/extensions/types.d.ts`, not just floating docs. |
+| [Git environment variables](https://git-scm.com/docs/git#_environment_variables) | Git can discover parent repositories and accept explicit environment redirects. | Scrub inherited `GIT_*` and set a discovery ceiling for eval subprocesses. This prevents accidental discovery; it is explicitly not containment against arbitrary code. |
+
+### Repository findings and changes
+
+| Finding | Smallest correction | Observable proof |
+|---|---|---|
+| `node --test missing.test.mjs || true` could be stored as a passed check; a skipped command and a pipe had the same problem. | Retain bounded check labels; classify shell ambiguity as `unproven`, direct success as `process-ok`; downgrade old `passed` snapshots. | Three masked/skipped/pipe regressions plus direct invocation and migration; the new regression failed on the original code. |
+| Resume selected the latest snapshot from all branches; `/tree` did not rebuild state. | Use the active branch and share restore logic across start/navigation. | A later sibling snapshot must not activate its tools or inject its paths; navigation to an empty branch clears state. Failed before the fix. |
+| Disposable eval copies live beneath the source checkout and inherited Git redirects. | Adapt OMP's small isolation helper for both agent and post-check processes. | Real Git subprocesses demonstrate parent discovery before isolation and rejection afterwards, including explicit inherited redirects. |
+| Suite metadata matched even when product/fixture/grader bytes differed; absent tokens skipped regression checks. | Declare harness treatment paths inside the existing suite, fingerprint all other input and reject absent required medians. | Changed fixture/grader/contract rejects; changed declared harness content remains comparable. Regression failed before the fix. |
+| File-only manifests omitted changed symlink targets and permissions. | Hash entry type, link target and mode along with bytes. | Real filesystem mode/link changes appear in the diff without following the link. |
+| Two always-loaded documents repeated the detailed workflow. | Reduce combined bytes from 8,689 to 5,355 (38.37%); preserve the fixed-lane delivery paragraph unchanged. | Exact UTF-8 byte counts and existing contract tests. Token savings and quality gains are not measured. |
+
+### What was deliberately not imported or removed
+
+OMP's isolation/manifest logic was adapted; its native task/agent layer, extra UI skills, readiness framework and OMP configuration were not copied. Pi already has design, RTL, browser, risk, test and verification guidance loaded on demand. Duplicating these would add maintenance and routing ambiguity without new evidence.
+
+Keep LSP/docs/web/browser and conditional review: they provide distinct evidence. Keep safety controls and real tests. Remove duplicate always-on explanation and the unsafe assumption that shell exit status proves a test. Do not remove useful capabilities solely to reduce repository file count.
+
+No extra dependency, model provider, tool schema, automatic self-improvement loop, vector database, mandatory agent team or forced reset was added. Existing pins are preserved; this amendment validates their relevant API, not a claim that every package is the latest release.
+
+### Promotion and honest limits
+
+The 17-case starter suite is not a production certification benchmark. Structural dry-run, deterministic regression tests and a Pi startup smoke cannot establish AAA UI, security, maintainability or weak-model reliability. Most starter cases still need independent qualitative grading. No paid model trials or cross-model quality gains are claimed in this amendment.
+
+For the first real client task, keep acceptance constant and compare old/new harness using the revised evaluator in both copies. Use the same approved model, prompt, fixtures, timeouts and thinking setting; three trials are a starting point, not statistical certainty. Measure acceptance, failures, repairs, latency and cost, then inspect actual rendered/persistence/access-control evidence. A cheaper model earns its role by passing those task-specific checks. If it cannot prove required behavior, reduce the slice or use an explicitly approved capable model; never lower the quality bar or promise universal AAA output.

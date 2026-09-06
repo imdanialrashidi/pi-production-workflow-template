@@ -1,6 +1,7 @@
 {
   "version": 2,
   "defaultTrials": 1,
+  "harnessTreatmentPaths": [".pi/**", "AGENTS.md", "p", "README.md", "CHANGELOG.md", "docs/HARNESS.md", "docs/QUALITY.md", "docs/RESEARCH.md", "docs/EVALUATION.md"],
   "promotion": {
     "minDeterministicPassRate": 1,
     "maxMedianDurationRegressionPercent": 25,

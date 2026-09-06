@@ -256,7 +256,7 @@ See [`docs/TOOLING_SETUP.md`](docs/TOOLING_SETUP.md) for LSP, documentation sear
 
 `AGENTS.md` is a map, not an encyclopedia. `scripts/pi-doctor.sh` enforces an always-loaded size budget so detailed guidance must live in docs/skills instead of silently consuming task context.
 
-The runtime records only bounded mechanical state—specialist groups, repository-relative modified paths, recent recognized check outcomes, hashed failed-call signatures, and Smart Read count. It never stores raw tool arguments or result bodies. That capsule is injected once after resume/compaction and complements, rather than replaces, Pi's built-in summary and the human-readable execution plan.
+The runtime records only bounded mechanical state—specialist groups, repository-relative modified paths, historical process observations (not acceptance verdicts), hashed failed-call signatures, and Smart Read count. It never stores raw tool arguments or result bodies. That capsule is restored from the active session branch and injected once after resume, tree navigation or compaction and complements, rather than replaces, Pi's built-in summary and the human-readable execution plan.
 
 For complex work, use `docs/exec-plans/active/`. The plan stores accepted criteria, verified state, decisions, evidence, risks, and the next action—not raw transcripts.
 

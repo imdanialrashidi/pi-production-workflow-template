@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased — evidence integrity and smaller context
+
+- Reduce always-loaded instructions from 8,689 to 5,355 bytes without changing the fixed-branch delivery policy.
+- Restore continuity from the active Pi branch, including `/tree`, and discard in-flight tracking on navigation.
+- Replace ambiguous shell success with `unproven`; record simple command success as `process-ok`, never acceptance proof. Conservatively migrate legacy `passed` snapshots.
+- Adapt OMP's small eval-isolation helper: prevent accidental parent Git discovery, fingerprint immutable inputs and detect symlink/mode changes.
+- Reject comparisons with changed inputs or missing required metrics. No new package, provider, tool schema or agent role.
+- Model-backed quality improvement remains unmeasured; see the 2026-09-05 amendment in `docs/RESEARCH.md`.
+
 All notable workflow changes are documented here. This project follows the spirit of Keep a Changelog; versioning begins when the first release is tagged.
 
 ## Unreleased

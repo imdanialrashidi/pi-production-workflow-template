@@ -176,6 +176,8 @@ const matchingRunMetadata = {
   piVersion: "0.84.2",
   nodeVersion: "22.19.0",
   suiteFingerprint: "suite",
+  inputFingerprint: "inputs",
+  inputContractFingerprint: "contract",
 };
 
 test("baseline comparison rejects deterministic and efficiency regressions", () => {
@@ -248,4 +250,17 @@ test("baseline comparison rejects a changed benchmark contract", () => {
   const comparison = compareSummaries(candidate, baseline);
   assert.equal(comparison.decision, "REJECT");
   assert.ok(comparison.reasons.some((reason) => reason.includes("suiteFingerprint")));
+});
+
+test('comparison rejects changed product inputs and missing measured tokens', () => {
+  const baseline = {schemaVersion: 2, ...matchingRunMetadata,
+    inputFingerprint: 'original', inputContractFingerprint: 'contract',
+    aggregate: aggregateRecords([record('case-a')])};
+  const changed = compareSummaries({...baseline, inputFingerprint: 'different'}, baseline);
+  assert.equal(changed.decision, 'REJECT');
+  const missing = record('case-a');
+  missing.stats = {};
+  const comparison = compareSummaries({...baseline, aggregate: aggregateRecords([missing])}, baseline);
+  assert.equal(comparison.decision, 'REJECT');
+  assert(comparison.reasons.some(reason => reason.includes('tokens')));
 });

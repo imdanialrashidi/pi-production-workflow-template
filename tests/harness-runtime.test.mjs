@@ -29,7 +29,7 @@ const {
 
 const specialistTools = Object.values(CAPABILITY_TOOL_GROUPS).flat();
 
-function createRuntime({ entries = [], extraTools = [] } = {}) {
+function createRuntime({ entries = [], branch = entries, extraTools = [] } = {}) {
   const handlers = new Map();
   const appended = [];
   let registeredTool;
@@ -60,7 +60,7 @@ function createRuntime({ entries = [], extraTools = [] } = {}) {
   registerHarness(pi);
   const ctx = {
     cwd: repositoryRoot,
-    sessionManager: { getEntries: () => entries },
+    sessionManager: { getEntries: () => entries, getBranch: () => branch },
   };
   return {
     activeTools: () => [...activeTools],
@@ -270,7 +270,7 @@ test("continuity snapshots persist bounded state and inject once after resume or
   assert.deepEqual(entry.data.modifiedFiles, ["src/app.js"]);
   assert.deepEqual(entry.data.checks, [{
     label: "node --test tests/app.test.mjs",
-    status: "passed",
+    status: "process-ok",
   }]);
   assert.equal(entry.data.failures.length, 1);
 
@@ -354,4 +354,46 @@ test("continuity and retry opt-outs do not restore or accumulate hidden state", 
     if (previousRetry === undefined) delete process.env.PI_BLIND_RETRY_LIMIT;
     else process.env.PI_BLIND_RETRY_LIMIT = previousRetry;
   }
+});
+
+test("continuity never promotes shell control flow or historical process success to test proof", async () => {
+  const runtime = createRuntime();
+  for (const [i, command] of [
+    'node --test missing.test.mjs || true',
+    'false && node --test missing.test.mjs; true',
+    'node --test missing.test.mjs | cat',
+  ].entries()) {
+    await emitTool(runtime, 'bash', { command }, false, `ambiguous-${i}`);
+  }
+  await emitTool(runtime, 'bash', { command: 'node --test tests/app.test.mjs' }, false, 'direct');
+  await runtime.handlers.get('agent_settled')();
+  assert.deepEqual(runtime.appended.at(-1).data.checks.map(check => check.status),
+    ['unproven', 'unproven', 'unproven', 'process-ok']);
+  const capsule = formatContinuityCapsule(runtime.appended.at(-1).data);
+  assert.match(capsule, /not acceptance proof/i);
+  const legacy = formatContinuityCapsule({ version: 1, checks: [{ label: 'npm test', status: 'passed' }] });
+  assert.match(legacy, /unproven/);
+});
+
+test("resume and tree navigation restore only current-branch evidence and clear pending calls", async () => {
+  const entry = (file, capabilities) => ({ type: 'custom', customType: SNAPSHOT_TYPE,
+    data: { version: 1, modifiedFiles: [file], capabilities } });
+  const current = entry('src/current.js', ['web']);
+  const sibling = entry('src/sibling.js', ['browser']);
+  const runtime = createRuntime({ entries: [current, sibling], branch: [current] });
+  await runtime.handlers.get('session_start')({}, runtime.ctx);
+  assert.equal(runtime.activeTools().includes('mcp'), false);
+  assert.equal(runtime.activeTools().includes('web_search'), true);
+  const restored = await runtime.handlers.get('context')({ messages: [] });
+  assert.match(restored.messages.at(-1).content, /current.js/);
+  assert.doesNotMatch(restored.messages.at(-1).content, /sibling.js/);
+  await runtime.handlers.get('tool_call')({toolName: 'read', input: {path: 'missing'}, toolCallId: 'old'}, runtime.ctx);
+  runtime.ctx.sessionManager.getBranch = () => [];
+  assert.equal(typeof runtime.handlers.get('session_tree'), 'function');
+  await runtime.handlers.get('session_tree')({}, runtime.ctx);
+  assert.equal(runtime.activeTools().includes('web_search'), false);
+  assert.equal(await runtime.handlers.get('context')({messages: []}), undefined);
+  await runtime.handlers.get('tool_result')({toolName: 'read', input: {path: 'missing'}, toolCallId: 'old', content: [], isError: true}, runtime.ctx);
+  await runtime.handlers.get('agent_settled')();
+  assert.equal(runtime.appended.length, 0);
 });
