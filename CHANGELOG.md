@@ -6,6 +6,7 @@
 - Consolidate the generic `risk-review` skill into `docs/QUALITY.md`; preserve review severity and evidence requirements.
 - Add the dependency-free `slate` dark theme and a footer status for elapsed run time and effective output tok/s. Keep Pi’s native footer and provider/model choice.
 - Measure through automatic recovery until `agent_settled`; show unavailable usage honestly, clean up timers, and keep print mode silent.
+- Add `./p --add-provider` for Pi's four supported custom API protocols; store models and private credentials in the user's Pi config, preserving existing entries.
 
 ## Unreleased — evidence integrity and smaller context
 

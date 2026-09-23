@@ -95,6 +95,7 @@ required=(
   evals/fixtures/tiered-pricing/pricing.test.mjs
   evals/fixtures/tiered-pricing/verify-regression.mjs
   scripts/pi-sandbox.sh
+  scripts/pi-provider.mjs
   scripts/verify-package-integrity.mjs
   scripts/run-workflow-evals.mjs
   scripts/lib/workflow-evals.mjs
@@ -104,6 +105,7 @@ required=(
   tests/harness-runtime.test.mjs
   tests/safety-guard.test.mjs
   tests/launcher.test.mjs
+  tests/pi-provider.test.mjs
   tests/quick-fix-skill.test.mjs
   tests/test-design-contract.test.mjs
   tests/workflow-evals.test.mjs
@@ -133,6 +135,12 @@ if node --check .pi/extensions/harness-runtime.js >/dev/null 2>&1 && \
   pass "harness runtime, safety guard, and run metrics parse"
 else
   fail "a harness runtime extension has a JavaScript syntax error"
+fi
+
+if node --check scripts/pi-provider.mjs >/dev/null 2>&1; then
+  pass "custom provider setup script parses"
+else
+  fail "custom provider setup script has a JavaScript syntax error"
 fi
 
 if [[ "$static_mode" -eq 1 ]]; then

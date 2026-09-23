@@ -119,6 +119,14 @@ PI_MAIN_MODEL="provider/model-id" PI_MAIN_THINKING="high" ./p
 
 Do not commit API keys or personal model preferences to `.pi/models.env`.
 
+Add a custom API-compatible provider without editing project files:
+
+```bash
+./p --add-provider
+```
+
+Enter the provider's API type, base URL, exact model ID, and capabilities. The wizard adds the model to your personal Pi `models.json` and stores a supplied key in `auth.json` with private permissions; it never writes credentials into this repository. Reopen `/model` to select it. This supports Pi's OpenAI Completions, OpenAI Responses, Anthropic Messages, and Google Generative AI protocols. An API that uses a different protocol or custom authentication headers needs a Pi extension or manual configuration.
+
 ## Daily usage
 
 Start:

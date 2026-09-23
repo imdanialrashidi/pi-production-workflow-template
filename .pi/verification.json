@@ -48,6 +48,11 @@
       ]
     },
     {
+      "id": "custom-provider",
+      "include": ["p", "scripts/pi-provider.mjs", "tests/pi-provider.test.mjs"],
+      "commands": [["node", "--test", "tests/pi-provider.test.mjs"]]
+    },
+    {
       "id": "workflow-contract",
       "include": ["AGENTS.md", ".mcp.json", ".pi/**", ".github/**", "p", "*.md", "docs/**", "scripts/*.sh", "scripts/verify-package-integrity.mjs", "Dockerfile.pi", ".dockerignore"],
       "commands": [
