@@ -270,10 +270,17 @@ export async function runWizard({ prompt = askLine, secret = askSecretHidden, en
 }
 
 async function main() {
-  if (!stdin.isTTY || !stdout.isTTY) {
-    throw new Error("Run ./p --add-provider in an interactive terminal so the API key can be entered without echo.");
+  try {
+    if (!stdin.isTTY || !stdout.isTTY) {
+      throw new Error("Run ./p --add-provider in an interactive terminal so the API key can be entered without echo.");
+    }
+    await runWizard();
+  } finally {
+    if (stdin.isTTY) {
+      if (stdin.isRaw) stdin.setRawMode(false);
+      stdin.pause();
+    }
   }
-  await runWizard();
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
