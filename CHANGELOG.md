@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased — writing, terminal theme, and run visibility
+
+- Add a Pi-native, MIT-attributed adaptation of Peter Yang’s `no-ai-slop` for substantive prose, with technical and multilingual exceptions.
+- Consolidate the generic `risk-review` skill into `docs/QUALITY.md`; preserve review severity and evidence requirements.
+- Add the dependency-free `slate` dark theme and a footer status for elapsed run time and effective output tok/s. Keep Pi’s native footer and provider/model choice.
+- Measure through automatic recovery until `agent_settled`; show unavailable usage honestly, clean up timers, and keep print mode silent.
+
 ## Unreleased — evidence integrity and smaller context
 
 - Reduce always-loaded instructions from 8,689 to 5,355 bytes without changing the fixed-branch delivery policy.

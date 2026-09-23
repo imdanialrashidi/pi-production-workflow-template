@@ -323,6 +323,35 @@ bash scripts/pi-sandbox.sh
 
 The wrapper enables strict guard mode, does not mount host Pi state, SSH/cloud credentials, or the Docker socket, and passes only recognized provider/search keys. The repository remains a read/write bind mount. See [`SECURITY.md`](SECURITY.md) and Pi's [official security guidance](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/security.md) for the exact trust/isolation distinction.
 
+## Terminal appearance and run metrics
+
+The project selects **slate**, a quiet dark theme with teal/blue accents, readable tool output, and distinct error/diff colors. Pi discovers `.pi/themes/slate.json`; no theme package or font is required. Try `./p --use-theme light` for a light terminal, or use `/settings` during a session. For a persistent project choice, change `theme` in `.pi/settings.json` (project settings override global settings at startup).
+
+The normal Pi footer remains intact. A small status entry shows, for example:
+
+```text
+Run 18.4s (running) | Model 42.7 tok/s
+```
+
+- **Run:** wall time from agent start until Pi settles, including tools, automatic retries, retry waits, and automatic compaction. The final duration remains visible; the next run resets it. Queued follow-ups/steering processed before settling belong to the same busy run, not separate per-prompt measurements.
+- **Model:** total provider-reported output tokens divided by the summed time from each turn's start to its finalized assistant response. This is an effective response rate including request/context preparation, first-token wait, and reasoning; it excludes intervening tool execution and retry backoff. It is not pure decode speed or a cross-provider benchmark. Provider accounting determines whether reasoning/tool-call tokens are included; input/cache tokens and delegated subagent usage are excluded. If the model changes mid-run, the value aggregates those responses.
+- Speed updates on finalized responses, not estimated character counts during streaming. Before usable usage arrives, or if any response lacks a valid positive count/timing, it shows `n/a`. `finished` means Pi is idle, not that verification passed; terminal error/abort responses are labeled separately.
+
+The local `run-metrics.js` extension adds no tool schemas, model requests, transcript storage, or background work in print mode. It updates the status once per second while running and clears its timer on settle, session navigation, or shutdown. RPC clients receive status UI messages if they support them.
+
+## Clear writing
+
+Use the on-demand Pi skill for product copy, documentation, or an existing draft:
+
+```text
+/skill:no-ai-slop Edit the landing-page copy while preserving the product facts and voice.
+/skill:no-ai-slop Detect formulaic patterns in this draft without rewriting: ...
+```
+
+This is a compact, MIT-attributed adaptation of [Peter Yang's no-ai-slop](https://github.com/petergyang/no-ai-slop). It preserves voice and facts, removes formulaic filler, supports Persian/English prose, and protects code, exact technical terms, and required report formats. It does not claim to detect AI authorship. No global installer, external service, or mandatory extra editing pass is introduced.
+
+The former generic `risk-review` skill is consolidated into [Quality: focused risk review](docs/QUALITY.md#focused-risk-review); `/review` and `/incident` use that procedure. The other five existing skills retain distinct jobs: tiny fixes, check selection, test design, browser evidence, and visual design.
+
 ## Harness evaluation
 
 Validate the starter benchmark without making model calls:
@@ -409,7 +438,9 @@ For a material visual change, the product pass proves journey, states, accessibi
 │   ├── verification.json
 │   ├── extensions/
 │   │   ├── harness-runtime.js
-│   │   └── safety-guard.js
+│   │   ├── safety-guard.js
+│   │   └── run-metrics.js
+│   ├── themes/slate.json
 │   ├── prompts/
 │   │   ├── discover.md / design.md / spec.md / adr.md
 │   │   ├── build.md / build-ui.md / design-review.md
@@ -418,7 +449,7 @@ For a material visual change, the product pass proves journey, states, accessibi
 │       ├── browser-qa/
 │       ├── frontend-design/
 │       ├── quick-fix/
-│       ├── risk-review/
+│       ├── no-ai-slop/
 │       ├── test-design/
 │       └── verification-routing/
 ├── docs/
