@@ -2,6 +2,11 @@
   "version": 1,
   "routes": [
     {
+      "id": "run-metrics",
+      "include": [".pi/extensions/run-metrics.js", "tests/run-metrics.test.mjs"],
+      "commands": [["node", "--test", "tests/run-metrics.test.mjs"]]
+    },
+    {
       "id": "pr-delivery",
       "include": ["scripts/ai-pr.mjs", "tests/ai-pr.test.mjs", "docs/GIT_POLICY.md"],
       "commands": [["node", "--test", "tests/ai-pr.test.mjs"]]

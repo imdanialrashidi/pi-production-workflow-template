@@ -70,7 +70,11 @@ required=(
   .pi/prompts/handoff.md
   .pi/prompts/resume.md
   .pi/prompts/test.md
-  .pi/skills/risk-review/SKILL.md
+  .pi/skills/no-ai-slop/SKILL.md
+  .pi/skills/no-ai-slop/LICENSE
+  .pi/themes/slate.json
+  .pi/extensions/run-metrics.js
+  tests/run-metrics.test.mjs
   .pi/skills/quick-fix/SKILL.md
   .pi/skills/verification-routing/SKILL.md
   .pi/skills/test-design/SKILL.md
@@ -117,15 +121,16 @@ else
   fail "Node >=22.19.0 is required for the reviewed Pi pin"
 fi
 
-if node -e 'for (const f of [".pi/settings.json", ".pi/verification.json", ".mcp.json", "evals/cases.json"]) JSON.parse(require("fs").readFileSync(f,"utf8"))' >/dev/null 2>&1; then
+if node -e 'for (const f of [".pi/settings.json", ".pi/verification.json", ".mcp.json", "evals/cases.json", ".pi/themes/slate.json"]) JSON.parse(require("fs").readFileSync(f,"utf8"))' >/dev/null 2>&1; then
   pass "Pi, verification, MCP, and evaluation configs are valid JSON"
 else
   fail "a Pi, verification, MCP, or evaluation config is invalid JSON"
 fi
 
 if node --check .pi/extensions/harness-runtime.js >/dev/null 2>&1 && \
-   node --check .pi/extensions/safety-guard.js >/dev/null 2>&1; then
-  pass "harness runtime and safety guard parse"
+   node --check .pi/extensions/safety-guard.js >/dev/null 2>&1 && \
+   node --check .pi/extensions/run-metrics.js >/dev/null 2>&1; then
+  pass "harness runtime, safety guard, and run metrics parse"
 else
   fail "a harness runtime extension has a JavaScript syntax error"
 fi
