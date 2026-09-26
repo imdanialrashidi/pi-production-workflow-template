@@ -39,7 +39,9 @@ A new or materially changed test is retained only when it identifies:
 5. an oracle independent from the implementation under test; and
 6. red-before-green, a controlled focused mutation, or equivalent defect-sensitivity evidence when practical.
 
-If no distinct failure model or evidence gap exists, extend an existing case or add no test. `No new test` is an acceptable professional outcome for behavior-neutral changes or behavior already proved by the suite. Coverage, assertion count, and test count are diagnostic signals—not acceptance goals.
+Extend an existing case only to close a distinct evidence gap; otherwise add no test. `No new test` is an acceptable professional outcome for behavior-neutral changes or behavior already proved by the suite. Coverage, assertion count, and test count are diagnostic signals—not acceptance goals.
+
+A test must justify what could break, why existing evidence misses it, and how it would detect that failure. Keep this explanation proportional; do not create a separate test-plan document for a small edit. Never substitute mocked unit tests for a real integration risk, or use prose/source-text matching as proof that an agent follows instructions. Preserve explicit machine-format and architecture checks where those are the contract.
 
 Select one representative per equivalence class and exact material boundaries. Use decision tables, pairwise cases, or properties for meaningful interactions instead of Cartesian enumeration. Prefer the lowest-cost layer that preserves the real contract; use full end-to-end tests only for failures lower layers cannot represent.
 

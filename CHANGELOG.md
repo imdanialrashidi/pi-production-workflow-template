@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased — deliberate testing
+
+- Make no-new-test decisions explicit in the always-loaded map and review; choose test layers by the actual failure mechanism.
+- Replace prose-matching test-design checks with executable evaluation-grader controls for a copy edit and already-covered behavior; keep the existing defect-sensitive pricing regression.
+- Reject evaluation records that omit declared post-check results. No new dependencies, tools, or mandatory test quotas.
+
 ## Unreleased — writing, terminal theme, and run visibility
 
 - Add a Pi-native, MIT-attributed adaptation of Peter Yang’s `no-ai-slop` for substantive prose, with technical and multilingual exceptions.

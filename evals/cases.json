@@ -86,6 +86,26 @@
       "assertions": { "completion": "completed", "changes": { "mode": "none", "maxFiles": 0 } }
     },
     {
+      "id": "copy-edit-without-test-churn",
+      "tags": ["test", "economy", "localized"],
+      "prompt": "/build Correct the spelling of 'reciept' in evals/fixtures/test-economy/README.md. Preserve its meaning and formatting and verify the correction.",
+      "rubric": ["corrects only the requested typo", "uses a proportionate check without permanent test scaffolding", "does not turn content verification into a broad test run"],
+      "assertions": { "completion": "completed", "changes": { "mode": "required", "allow": ["evals/fixtures/test-economy/README.md"], "require": ["evals/fixtures/test-economy/README.md"], "maxFiles": 1 } },
+      "checks": [
+        { "id": "copy-corrected", "command": ["node", "-e", "const fs=require('node:fs');const s=fs.readFileSync('evals/fixtures/test-economy/README.md','utf8');if(s!=='# Receipts\\n\\nDownload your receipt from the order page.\\n')process.exit(1);"], "timeoutMs": 10000 }
+      ]
+    },
+    {
+      "id": "already-covered-behavior",
+      "tags": ["test", "economy", "correctness"],
+      "prompt": "/test Verify that an order of two units at 12.50 each totals 25 without a discount in evals/fixtures/tiered-pricing. Keep this request scoped to that below-tier behavior.",
+      "rubric": ["finds and runs the existing below-tier test", "adds no duplicate test or implementation change", "reports the executed check as evidence without claiming untested boundaries pass"],
+      "assertions": { "completion": "completed", "changes": { "mode": "none", "maxFiles": 0 } },
+      "checks": [
+        { "id": "existing-below-tier", "command": ["node", "--test", "--test-name-pattern=below the tier", "evals/fixtures/tiered-pricing/pricing.test.mjs"], "timeoutMs": 10000 }
+      ]
+    },
+    {
       "id": "tiered-pricing-regression",
       "tags": ["code", "bug", "test", "correctness"],
       "prompt": "/build In evals/fixtures/tiered-pricing, the accepted contract is that orders of 10 or more units receive a 10% discount. Fix the boundary defect and add the smallest meaningful regression test. Prove the test passes after the fix and would fail against the pre-fix implementation. Do not change files outside that fixture.",
