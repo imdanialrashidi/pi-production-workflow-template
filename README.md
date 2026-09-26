@@ -331,6 +331,21 @@ bash scripts/pi-sandbox.sh
 
 The wrapper enables strict guard mode, does not mount host Pi state, SSH/cloud credentials, or the Docker socket, and passes only recognized provider/search keys. The repository remains a read/write bind mount. See [`SECURITY.md`](SECURITY.md) and Pi's [official security guidance](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/security.md) for the exact trust/isolation distinction.
 
+## Set the product design once
+
+Tell Pi your preferences in ordinary language at the start, or use the existing `/design` prompt:
+
+```text
+/design Record this direction: calm, minimal Persian RTL interface. Light theme,
+canvas #F8FAFC, primary text #0F172A, primary action #166534 with white text.
+Use Vazirmatn with a suitable fallback, restrained rounding, no gradients.
+Save these preferences only; do not build the UI yet.
+```
+
+Pi records explicit choices separately from proposed details in `docs/DESIGN.md`: style, colors and roles, themes, typography, constraints, and any liked/disliked examples with reasons. You do not have to fill the template or supply references. An approximate color name is a proposed exact shade, not an approved hex value. Later `/build-ui`, design review, and bootstrap reuse the recorded contract; a new session reads the file instead of relying on chat memory.
+
+On implementation, map roles to the project's existing CSS variables/theme/native tokens and record that source path. Code owns resolved token values; the document owns intent and mappings. Changes update both, preserving unrelated choices. Requested brand colors remain explicit; contrast is measured on the actual foreground/background/state pairs and inaccessible uses are explained, not silently replaced. These are product preferences, separate from Pi's terminal theme. Saving instructions does not prove a model followed them: inspect the resulting UI and token mapping.
+
 ## Terminal appearance and run metrics
 
 The project selects **slate**, a quiet dark theme with teal/blue accents, readable tool output, and distinct error/diff colors. Pi discovers `.pi/themes/slate.json`; no theme package or font is required. Try `./p --use-theme light` for a light terminal, or use `/settings` during a session. For a persistent project choice, change `theme` in `.pi/settings.json` (project settings override global settings at startup).
@@ -338,11 +353,14 @@ The project selects **slate**, a quiet dark theme with teal/blue accents, readab
 The normal Pi footer remains intact. A small status entry shows, for example:
 
 ```text
-Run 18.4s (running) | Model 42.7 tok/s
+Run 18.4s (running) | 42.7 tok/s | Tools 4.2s | Retry 1 | ~$0.0123
 ```
 
 - **Run:** wall time from agent start until Pi settles, including tools, automatic retries, retry waits, and automatic compaction. The final duration remains visible; the next run resets it. Queued follow-ups/steering processed before settling belong to the same busy run, not separate per-prompt measurements.
 - **Model:** total provider-reported output tokens divided by the summed time from each turn's start to its finalized assistant response. This is an effective response rate including request/context preparation, first-token wait, and reasoning; it excludes intervening tool execution and retry backoff. It is not pure decode speed or a cross-provider benchmark. Provider accounting determines whether reasoning/tool-call tokens are included; input/cache tokens and delegated subagent usage are excluded. If the model changes mid-run, the value aggregates those responses.
+- **Tools:** observed wall time with at least one foreground tool executing. Concurrent tool intervals count once; an in-flight tool counts until settling/cancellation. It excludes tool work not exposed by Pi's lifecycle events.
+- **Retry:** observed new model turns following an assistant error in the same run. Ordinary tool turns, repeated commands, and failed responses with no subsequent attempt are not counted. Pi 0.84.2's extension API does not expose internal HTTP retries; this is not a provider retry count or an inferred count of repair rounds.
+- **~$:** sum of Pi's positive, internally consistent USD usage-cost estimates for foreground assistant responses, including reported input/output/cache costs. It is based on configured pricing, not an invoice. Missing usage, zero/default prices, or inconsistent costs make the whole run `cost n/a`; a later successful response cannot hide a gap. Known free use and unknown all-zero pricing are intentionally not distinguished. Compaction, delegated agents, external tools, subscriptions/credits, taxes, and provider-side charges not present in these messages are outside this estimate. Values below $0.0001 display as a positive amount, not $0.0000.
 - Speed updates on finalized responses, not estimated character counts during streaming. Before usable usage arrives, or if any response lacks a valid positive count/timing, it shows `n/a`. `finished` means Pi is idle, not that verification passed; terminal error/abort responses are labeled separately.
 
 The local `run-metrics.js` extension adds no tool schemas, model requests, transcript storage, or background work in print mode. It updates the status once per second while running and clears its timer on settle, session navigation, or shutdown. RPC clients receive status UI messages if they support them.

@@ -19,7 +19,7 @@ Read only what the current decision needs:
 
 - `docs/HARNESS.md`: non-trivial execution, bounded recovery and handoff.
 - `docs/QUALITY.md`: acceptance, test value, security and UI quality.
-- `docs/PRODUCT.md`, `DESIGN.md`, `ARCHITECTURE.md`, `PLAN.md`: the corresponding product decision.
+- `docs/PRODUCT.md`, `DESIGN.md`, `ARCHITECTURE.md`, `PLAN.md`: the corresponding product decision. For UI work, read `docs/DESIGN.md` first; record explicit user design/color choices there before implementation and reuse its mapped tokens.
 - `docs/EVALUATION.md`: harness measurement and model comparisons.
 - `docs/GIT_POLICY.md`: before authorized Git/GitHub writes.
 - `docs/exec-plans/active/`: when resuming durable work.

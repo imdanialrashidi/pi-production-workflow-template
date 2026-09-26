@@ -2,6 +2,19 @@
 
 Keep this document specific, short, and durable. It is the visual and interaction source of truth shared by design, implementation, browser QA, and review. Replace template prompts with accepted decisions; do not preserve a menu of unused options.
 
+## Owner direction
+
+Capture this from the user's ordinary brief or `/design`; do not require every field or a separate approval step. Keep explicit choices separate from agent-proposed details. Preserve it across bootstrap/resume; revise only what the current request supersedes.
+
+- Owner-stated style / design system:
+- Exact brand colors and intended roles:
+- Theme(s), typography, density, shape, motion, RTL/locales:
+- Must keep / avoid:
+- Agent-proposed details / unresolved choices:
+- Canonical code token source (path; unknown until inspected or implemented):
+
+Before implementation, semantic values below specify the intended palette; distinguish owner-stated values from proposed details. After implementation, the code token source owns resolved values; this document owns intent and token mappings. Update both for an accepted design change. Never maintain a second competing palette. Color/style choices here affect the product, not Pi's terminal theme.
+
 ## Experience brief
 
 - Product / surface:
@@ -20,17 +33,17 @@ Describe useful tensions rather than vague adjectives.
 
 ## Reference calibration
 
-| Reference | Adopt | Avoid | Why it fits this product |
+| Reference / local image | Owner preference | Adopt / avoid and reason | Inspection status |
 |---|---|---|---|
-|  |  |  |  |
+|  | liked / disliked / unspecified |  | inspected / not inspected |
 
-References calibrate principles; they are not permission to clone another product.
+Use a few relevant examples when supplied; do not invent owner approval or visual observations. Judge the rendered result against these preferences and record concrete mismatches, not a generic beauty score. References calibrate principles; they are not permission to clone another product.
 
 ## Direction
 
 - Visual thesis:
 - Signature element:
-- One justified aesthetic risk:
+- Aesthetic risk or intentional restraint:
 - What must feel familiar:
 - What must never look generic:
 
@@ -38,15 +51,16 @@ References calibrate principles; they are not permission to clone another produc
 
 ### Color
 
-| Role | Value | Foreground/background use | Contrast proof |
-|---|---|---|---|
-| canvas |  |  |  |
-| surface |  |  |  |
-| text |  |  |  |
-| muted text |  |  |  |
-| action |  |  |  |
-| accent |  |  |  |
-| danger / success / warning |  |  |  |
+Use only required roles/themes. Values must be exact (for example HEX or OKLCH), not just “green”. If the user supplied only a color name, label the chosen value as proposed. Record actual foreground/background pairs and measured ratios; leave unmeasured contrast unproven.
+
+| Role / state | Theme | Exact value or resolved code token | Foreground/background pair | Contrast proof |
+|---|---|---|---|---|
+| canvas / surface |  |  |  |  |
+| text / muted text |  |  |  |  |
+| action / on-action |  |  |  |  |
+| accent |  |  |  |  |
+| border / focus |  |  |  |  |
+| danger / success / warning |  |  |  |  |
 
 ### Typography
 

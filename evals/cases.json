@@ -20,6 +20,16 @@
       "assertions": { "completion": "completed", "changes": { "mode": "required", "allow": ["docs/PRODUCT.md", "docs/PLAN.md"], "require": ["docs/PRODUCT.md", "docs/PLAN.md"], "maxFiles": 2 } }
     },
     {
+      "id": "design-save-owner-direction",
+      "tags": ["frontend", "design", "preferences"],
+      "prompt": "/design فقط این ترجیحات را برای پروژه ثبت کن: رابط فارسی راست‌به‌چپ، روشن و مینیمال؛ پس‌زمینه #F8FAFC، متن #0F172A و دکمه اصلی #166534 با متن سفید. فونت Vazirmatn، گوشه‌های کم‌گرد و بدون گرادینت. هنوز کد رابط را پیاده نکن.",
+      "rubric": ["persists explicit owner colors, roles, font and RTL in DESIGN", "distinguishes owner choices from proposed details and unmeasured contrast", "does not invent inspected references or token source paths", "records preferences without a questionnaire, redesign exploration or application edits"],
+      "assertions": { "completion": "completed", "changes": { "mode": "required", "allow": ["docs/DESIGN.md"], "require": ["docs/DESIGN.md"], "maxFiles": 1 } },
+      "checks": [
+        { "id": "owner-values-saved", "command": ["node", "-e", "const s=require('node:fs').readFileSync('docs/DESIGN.md','utf8').toLowerCase();if(!['#f8fafc','#0f172a','#166534','vazirmatn'].every(v=>s.includes(v)))process.exit(1);"], "timeoutMs": 10000 }
+      ]
+    },
+    {
       "id": "design-rtl-finance",
       "tags": ["frontend", "design", "rtl", "flagship"],
       "prompt": "/design A flagship Persian-language personal-finance onboarding journey for first-time investors. It must feel calm and credible, not like a crypto dashboard. Create the accepted direction only.",
