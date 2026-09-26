@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased — saved design direction and run cost
+
+- Capture natural-language design preferences in the existing DESIGN contract; preserve owner choices across design, build, bootstrap, and resume, with semantic code-token mappings and optional reference calibration.
+- Show observed tool wall time, post-error model retries, and native foreground USD cost estimates alongside run time and effective tok/s. Unknown pricing stays unavailable; overlapping tools count once.
+- Add no dependencies, tool schemas, or extra setup command.
+
 ## Unreleased — deliberate testing
 
 - Make no-new-test decisions explicit in the always-loaded map and review; choose test layers by the actual failure mechanism.
