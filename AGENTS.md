@@ -24,7 +24,7 @@ Read only what the current decision needs:
 - `docs/GIT_POLICY.md`: before authorized Git/GitHub writes.
 - `docs/exec-plans/active/`: when resuming durable work.
 
-When tests are added or materially changed, use `test-design`: distinct failure model, independent oracle, cheapest faithful layer and defect sensitivity. Use `verification-routing` for non-obvious check selection. Load browser/frontend skills only for matching work; use `docs/QUALITY.md` for risk review and `no-ai-slop` for substantive prose.
+Do not add tests by default: identify a plausible regression and a gap in existing evidence first. `No new test` is a valid outcome; fewer tests alone is not the goal. When tests are added or materially changed, use `test-design`: independent oracle, cheapest faithful layer and defect sensitivity. Use `verification-routing` for non-obvious check selection. Load browser/frontend skills only for matching work; use `docs/QUALITY.md` for risk review and `no-ai-slop` for substantive prose.
 
 ## Engineering invariants
 
