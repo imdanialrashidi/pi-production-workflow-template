@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased — LSP host dependency repair
+
+- Correct the reviewed `pi-lsp-adapter@0.1.3` installed manifest before launcher startup: Pi TUI and TypeBox become optional wildcard peers supplied by Pi, preserving LSP source and all unrelated settings.
+- Reapply after successful launcher install/update commands; prepare missing LSP on the first trusted session and keep help/opt-out runs free of pre-installs.
+- Add a read-only doctor check and focused preservation/idempotence/drift regressions. Keep other extension warnings visible.
+
 ## Unreleased — Pi 1.0 compatibility
 
 - Upgrade the reviewed runtime to Pi 1.0.0, todo to 2.12.0, web search to 0.5.1, and Playwright MCP to 0.0.83; refresh registry integrities.

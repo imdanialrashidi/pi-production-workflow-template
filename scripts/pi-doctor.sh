@@ -46,6 +46,7 @@ required=(
   .github/dependabot.yml
   .github/pull_request_template.md
   p
+  scripts/pi-extension-compat.mjs
   .pi/mcp.json
   .pi/settings.json
   .pi/package-integrity.json
@@ -141,6 +142,12 @@ if node --check scripts/pi-provider.mjs >/dev/null 2>&1; then
   pass "custom provider setup script parses"
 else
   fail "custom provider setup script has a JavaScript syntax error"
+fi
+
+if node --check scripts/pi-extension-compat.mjs && node scripts/pi-extension-compat.mjs --check; then
+  pass "extension compatibility helper parses; any installed LSP manifest is compatible"
+else
+  fail "extension compatibility check failed; start ./p to repair the reviewed LSP package"
 fi
 
 if [[ "$static_mode" -eq 1 ]]; then

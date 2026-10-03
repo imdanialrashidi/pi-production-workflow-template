@@ -2,6 +2,16 @@
 
 Reviewed: **2026-08-23**. Test-quality amendment reviewed: **2026-08-24**. This record connects current primary evidence to concrete workflow controls. It does not claim that a prompt- or tool-level change improves every model or repository; deterministic tests protect invariants, and repeated matched-model evals remain the promotion standard.
 
+## 2026-10-03 — LSP packaging compatibility
+
+The latest published [pi-lsp-adapter manifest](https://github.com/nikmmd/pi-lsp-adapter/blob/main/package.json) is still `0.1.3`: it incorrectly declares `@earendil-works/pi-tui` and `typebox` as dependencies. Pi [resource loading](https://github.com/earendil-works/pi/blob/v1.0.1/packages/coding-agent/src/core/resource-loader.ts) detects this risk; its [extension loader](https://github.com/earendil-works/pi/blob/v1.0.1/packages/coding-agent/src/core/extensions/loader.ts) supplies host modules through aliases/virtual modules. Changing the reviewed installed manifest to optional wildcard peers follows that contract without replacing LSP or hiding warnings. The source/tarball integrity record remains unchanged. Remove this narrowly versioned workaround when a corrected upstream release is reviewed.
+
+Validation on installed Pi **1.0.1**: all project extensions loaded with zero errors and zero package warnings; CLI RPC returned state and commands with no host-dependency warning. A separate empty-cache project exercised the real native installer, a subsequent package install, clean JSONL output and unchanged project settings. Existing launcher/compatibility checks and the full workflow gate passed (100 tests); seven registry integrity records passed online. The real VTSLS `0.3.0`/TypeScript `6.0.3` server detected deliberate error `TS2322` and returned no diagnostics for valid code through the native Pi tool pipeline; only model responses selecting the audit tools were synthetic. Home-based LSP state was isolated in a disposable fixture.
+
+The LSP smoke check also exposed cold-start latency: the adapter waits only 350 ms, so its first empty diagnostic response is not evidence of a valid file. A later query returned the expected error. Setup guidance now requires rechecking or the project's compiler gate; this packaging fix does not change upstream diagnostic scheduling or claim a performance improvement.
+
+The first GitHub run exposed a launcher-test fixture gap: the fake CLI could not install the newly prepared package, while the local cache masked that missing precondition. Launcher argument tests now copy the launcher/config/helper into their own disposable project with an installed-manifest fixture. They neither depend on nor mutate the checkout's package cache. The real empty-cache installation remains covered by the separate native RPC smoke check.
+
 ## 2026-10-01 — Pi 1.0 compatibility review
 
 This amendment supersedes the earlier runtime/MCP package and tool-loading decisions below; those remain an audit history. Reviewed Pi tag `v1.0.0` resolves to `a13d35a742c6ef8462812a28fbe1d8c8b7431c32`. Registry metadata and tarball integrities were checked on this date.
