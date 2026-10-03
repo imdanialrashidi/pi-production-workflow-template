@@ -159,6 +159,12 @@ test("native MCP subcommands are commands rather than accidental model prompts",
   assert.deepEqual(result.args, ["mcp", "list", "--json"]);
 });
 
+test("native package installation and updates preserve command arguments", () => {
+  for (const args of [["install", "--local", "npm:pi-lsp-adapter@0.1.3"], ["update", "--help"]]) {
+    assert.deepEqual(parsed(runLauncher({}, args)).args, args);
+  }
+});
+
 test("custom-provider setup routes through Node before requiring Pi", () => {
   const result = runLauncher({}, ["--add-provider"]);
   assert.equal(result.status, 1);

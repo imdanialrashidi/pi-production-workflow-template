@@ -114,6 +114,19 @@ Do not claim pixel-level or aesthetic screenshot findings that the active model 
 
 ## Language server setup
 
+Start this workflow with `./p`. The published `pi-lsp-adapter@0.1.3` incorrectly lists Pi TUI and TypeBox as runtime dependencies. `scripts/pi-extension-compat.mjs` moves only those reviewed declarations to optional `"*"` peers in the project's installed `.pi/npm` cache, before Pi reads extension manifests. Pi supplies the actual runtime modules through its loader. Upstream source, registry integrity records, product dependencies and provider settings stay unchanged.
+
+The launcher installs the configured adapter on its first trusted session if missing, then repairs it. Help, explicit no-approval/no-extension runs and ask/never trust modes do not trigger this pre-install. `./p install ...` and `./p update ...` reapply the correction after successful installation. The workaround retires automatically when the configured LSP pin changes; it does not patch an unknown release or suppress diagnostics.
+
+For an existing project showing the host-dependency warning, copy the updated `p` and `scripts/pi-extension-compat.mjs` from the same workflow revision, quit Pi and run `./p` again. For a direct `pi` launch, repair the installed cache first:
+
+```bash
+node scripts/pi-extension-compat.mjs
+pi
+```
+
+Reapply after a direct `pi update` reinstalls this package, or use `./p update`. `/bootstrap` fills product contracts; it cannot repair an npm manifest. Doctor checks an installed adapter without modifying it and reports how to repair it.
+
 Check available servers:
 
 ```text
@@ -137,6 +150,8 @@ or:
 Missing language servers are not silently installed.
 
 The `/lsp` management command is always available. The model activates `code_intelligence` only when definitions, references, workspace symbols, or diagnostics add evidence beyond exact text search.
+
+Language-server diagnostics arrive asynchronously. A cold first query can say "No LSP diagnostics" before TypeScript publishes its errors. Recheck after initialization or a recent edit; use the project's compiler/check command for authoritative verification. Empty LSP output alone is not a passed build.
 
 ## Documentation search
 
