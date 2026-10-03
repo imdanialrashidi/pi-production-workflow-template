@@ -10,6 +10,8 @@ Validation on installed Pi **1.0.1**: all project extensions loaded with zero er
 
 The LSP smoke check also exposed cold-start latency: the adapter waits only 350 ms, so its first empty diagnostic response is not evidence of a valid file. A later query returned the expected error. Setup guidance now requires rechecking or the project's compiler gate; this packaging fix does not change upstream diagnostic scheduling or claim a performance improvement.
 
+The first GitHub run exposed a launcher-test fixture gap: the fake CLI could not install the newly prepared package, while the local cache masked that missing precondition. Launcher argument tests now copy the launcher/config/helper into their own disposable project with an installed-manifest fixture. They neither depend on nor mutate the checkout's package cache. The real empty-cache installation remains covered by the separate native RPC smoke check.
+
 ## 2026-10-01 — Pi 1.0 compatibility review
 
 This amendment supersedes the earlier runtime/MCP package and tool-loading decisions below; those remain an audit history. Reviewed Pi tag `v1.0.0` resolves to `a13d35a742c6ef8462812a28fbe1d8c8b7431c32`. Registry metadata and tarball integrities were checked on this date.
