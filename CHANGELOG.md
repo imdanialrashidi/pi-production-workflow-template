@@ -1,6 +1,11 @@
 # Changelog
 
-## Unreleased — official Context7 MCP for docs
+## Unreleased — DeepWiki MCP replaces Context7
+
+- Replace `@upstash/context7-mcp@4.1.2` stdio MCP with the official DeepWiki remote MCP (`https://mcp.deepwiki.com/mcp`, hidden, deferred `read_wiki_structure`/`read_wiki_contents`/`ask_wiki_question` via `tool_search`). No package install, no API key for public repos; private repos stay out of scope.
+- Drop the `CONTEXT7_API_KEY` env mapping and sandbox passthrough; doctor rejects a stale `context7` server, non-official URLs, stdio commands, and hardcoded keys on the DeepWiki entry.
+- Retarget the docs secret/path guard and eval contract to DeepWiki inputs (`repoName`/`question`); legacy Context7 tool names stay guarded.
+- Remove the Context7 integrity record (remote servers need none); refresh doctor/integrity/test/docs coverage.
 
 - Replace third-party `@dreki-gg/pi-doc-search@0.3.2` with official `@upstash/context7-mcp@4.1.2` as a native deferred MCP server (`resolve-library-id`, `query-docs` via `tool_search`).
 - Remove the `docs` capability from `harness_tools`; docs now follows the same native MCP pattern as Playwright. Legacy `doc_search_*` schemas are cleared on reset/resume for pre-migration sessions; unknown capabilities are ignored without crashing.
