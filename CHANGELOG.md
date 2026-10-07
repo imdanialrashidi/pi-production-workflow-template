@@ -1,5 +1,19 @@
 # Changelog
 
+## Unreleased — official Context7 MCP for docs
+
+- Replace third-party `@dreki-gg/pi-doc-search@0.3.2` with official `@upstash/context7-mcp@4.1.2` as a native deferred MCP server (`resolve-library-id`, `query-docs` via `tool_search`).
+- Remove the `docs` capability from `harness_tools`; docs now follows the same native MCP pattern as Playwright. Legacy `doc_search_*` schemas are cleared on reset/resume for pre-migration sessions; unknown capabilities are ignored without crashing.
+- Keep `CONTEXT7_API_KEY` out of Git via `${CONTEXT7_API_KEY}` env mapping; unauthenticated use stays at lower rate limits. Refresh registry integrities and doctor/integrity/test coverage.
+
+## Unreleased — hardening and Pi 1.0.4
+
+- Re-pin reviewed runtime `1.0.0` → `1.0.4` across launcher, Docker, integrity, setup, doctor, and theme schema; structural validation passes on installed `1.0.4` (per-version upstream changelog deltas not individually audited).
+- Fix `verify-package-integrity.mjs --online`: unwrap the array `npm view --json` returns so registry comparisons read the real record.
+- Block secrets and sensitive file references in Context7 `resolve-library-id`/`query-docs` calls; ordinary docs questions pass.
+- Add `docs-mcp-workflow` eval case locking the local-first, `tool_search` + `mcp__context7__*` resolve-then-query contract with no live fetch.
+- Document Context7 rate limits, retry behavior, no-cache tradeoff, direct `/org/project` IDs, and key handling.
+
 ## Unreleased — LSP host dependency repair
 
 - Correct the reviewed `pi-lsp-adapter@0.1.3` installed manifest before launcher startup: Pi TUI and TypeBox become optional wildcard peers supplied by Pi, preserving LSP source and all unrelated settings.
