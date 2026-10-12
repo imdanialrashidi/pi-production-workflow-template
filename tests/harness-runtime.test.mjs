@@ -96,21 +96,21 @@ test("specialist capability groups load additively and reset without dropping un
     tool.parameters.properties.capabilities.items.enum,
     Object.keys(CAPABILITY_TOOL_GROUPS),
   );
-  assert.deepEqual(tool.prepareArguments({ capabilities: '["planning","web"]' }), {
-    capabilities: ["planning", "web"],
+  assert.deepEqual(tool.prepareArguments({ capabilities: '["web"]' }), {
+    capabilities: ["web"],
   });
 
-  const first = await tool.execute("loader-1", { capabilities: ["planning", "web"] });
-  assert.deepEqual(first.details.added, ["todo", "web_search", "web_fetch"]);
+  const first = await tool.execute("loader-1", { capabilities: ["web"] });
+  assert.deepEqual(first.details.added, ["web_search", "web_fetch"]);
   assert.ok(runtime.activeTools().includes("web_search"));
   assert.ok(runtime.activeTools().includes("local_custom"));
 
-  const second = await tool.execute("loader-2", { capabilities: ["planning", "web"] });
+  const second = await tool.execute("loader-2", { capabilities: ["web"] });
   assert.deepEqual(second.details.added, []);
   assert.equal(new Set(runtime.activeTools()).size, runtime.activeTools().length);
 
   const reset = await tool.execute("loader-3", { capabilities: [] });
-  assert.deepEqual(new Set(reset.details.removed), new Set(["todo", "web_search", "web_fetch"]));
+  assert.deepEqual(new Set(reset.details.removed), new Set(["web_search", "web_fetch"]));
   assert.ok(runtime.activeTools().includes("local_custom"));
   assert.equal(runtime.activeTools().some((name) => specialistTools.includes(name)), false);
 });

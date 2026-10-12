@@ -7,7 +7,6 @@ The reviewed Pi pin requires Node.js 22.19.0 or newer. The included CI pins Node
 ## Included packages
 
 - `pi-sub-agent@0.1.5`
-- `@juicesharp/rpiv-todo@2.12.0`
 - `@bytetrue/pi-web-search@0.5.1`
 
 Pi `1.0.4` loads `.pi/mcp.json` natively. It pins `@playwright/mcp@0.0.83`, exposes only the listed browser tools on demand, and keeps unlisted tools hidden. No MCP adapter is installed.
@@ -16,7 +15,6 @@ The packages remain installed and their commands remain available, but their mod
 
 | `harness_tools` capability | Activated schemas |
 |---|---|
-| `planning` | `todo` |
 | `delegation` | `subagent` |
 | `web` | `web_search`, `web_fetch` |
 
@@ -65,16 +63,6 @@ For a tiny, obvious, low-risk change, invoke the project skill directly:
 ```
 
 Pi exposes project skills as `/skill:name` commands and also selects them from their descriptions. This path deliberately skips plans, todos, subagents, broad suites, and full gates unless scope, risk, or repository policy requires escalation.
-
-## Todo panel
-
-Confirm the extension:
-
-```text
-/todos
-```
-
-Use todos only for genuinely multi-step work.
 
 ## MCP and Playwright browser tools
 
@@ -140,7 +128,6 @@ Do not commit search API keys or proxy credentials.
 After setup:
 
 ```text
-/todos
 /mcp
 /web --show
 ```

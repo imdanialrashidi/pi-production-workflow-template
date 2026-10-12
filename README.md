@@ -19,7 +19,6 @@ A compact, evidence-driven harness for [Pi Coding Agent](https://pi.dev/) focuse
 - on-demand web search/fetch;
 - lazy Playwright MCP browser exploration for localhost and public HTTP(S) pages, with focused page evaluation;
 - repository-local Playwright Test (when the real project uses it) for durable regression coverage;
-- a visible todo panel for genuinely multi-step work;
 - a tested full-workspace guard that blocks secrets, destructive host actions, publication/deployment, browser file exfiltration, and arbitrary Git/GitHub mutation while permitting the reviewed fixed-branch PR helper;
 - a low-ceremony `/skill:quick-fix` path plus specialized skills for frontend design, behavior-sensitive test design, verification routing, risk review, and browser QA;
 - a doctor/CI check that validates package pins, security posture, and always-loaded context budgets;
@@ -223,7 +222,6 @@ The template pins:
 
 ```text
 pi-sub-agent
-@juicesharp/rpiv-todo
 @bytetrue/pi-web-search
 ```
 
@@ -243,7 +241,6 @@ read, bash, edit, write, grep, find, ls, harness_tools, tool_search
 
 | Capability | Deferred tools |
 |---|---|
-| `planning` | `todo` |
 | `delegation` | `subagent` |
 | `web` | `web_search`, `web_fetch` |
 
@@ -254,12 +251,11 @@ An empty capability list unloads managed specialists and preserves unrelated cus
 Useful checks:
 
 ```text
-/todos
 /mcp
 /web --show
 ```
 
-See [`docs/TOOLING_SETUP.md`](docs/TOOLING_SETUP.md) for documentation search, web search, and Playwright setup.
+See [`docs/TOOLING_SETUP.md`](docs/TOOLING_SETUP.md) for web search and Playwright setup.
 
 ## Context and long-running work
 

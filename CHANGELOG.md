@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased — Remove todo package
+
+- Remove `@juicesharp/rpiv-todo@2.12.0` from `.pi/settings.json` and its integrity record. Two npm packages remain (`pi-sub-agent`, `pi-web-search`).
+- Remove the `planning` capability group (`todo`) from `harness_tools`; two groups remain (`delegation`, `web`). Old snapshots carrying `planning` restore safely (unknown capabilities are filtered).
+- Multi-step tracking moves to execution plans for durable state and compact in-context contracts for ordinary work; HARNESS, TOOLING_SETUP, README, `/resume`, doctor, and loader tests updated. Record the decision in `docs/RESEARCH.md` (2026-10-12 entry).
+
 ## Unreleased — Remove DeepWiki MCP
 
 - Remove the `deepwiki` remote MCP server from `.pi/mcp.json`. Docs evidence is local source, installed types, repository patterns, and web search/fetch; no remote wiki index, no third-party docs dependency.

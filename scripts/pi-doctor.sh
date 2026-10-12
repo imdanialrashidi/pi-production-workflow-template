@@ -224,7 +224,6 @@ const installed = new Set((settings.packages || []).map((entry) =>
 ));
 const required = [
   'npm:pi-sub-agent@0.1.5',
-  'npm:@juicesharp/rpiv-todo@2.12.0',
   'npm:@bytetrue/pi-web-search@0.5.1',
 ];
 const missing = required.filter((item) => !installed.has(item));
@@ -317,7 +316,6 @@ done
 
 specialist_tools=(
   subagent
-  todo
   web_search
   web_fetch
 )

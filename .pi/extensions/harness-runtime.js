@@ -17,7 +17,6 @@ export const CORE_TOOLS = Object.freeze([
 ]);
 
 export const CAPABILITY_TOOL_GROUPS = Object.freeze({
-  planning: Object.freeze(["todo"]),
   delegation: Object.freeze(["subagent"]),
   web: Object.freeze(["web_search", "web_fetch"]),
 });
@@ -249,7 +248,7 @@ export function formatContinuityCapsule(value) {
 }
 
 function isDiscriminatingSuccess(toolName) {
-  return !["harness_tools", "todo"].includes(toolName);
+  return toolName !== "harness_tools";
 }
 
 function imageInput(model) {
@@ -387,7 +386,7 @@ export default function harnessRuntime(pi) {
     name: "harness_tools",
     label: "Harness Tools",
     description: "Activate specialist tool groups only when core repository tools are insufficient. Use native tool_search for MCP/browser/docs tools. Request all needed groups together; pass an empty list to unload managed specialists.",
-    promptSnippet: "Activate specialist planning, delegation, or web tools on demand",
+    promptSnippet: "Activate specialist delegation or web tools on demand",
     promptGuidelines: [
       "Use harness_tools once with every needed specialist group when core tools are insufficient; keep localized work on the core surface.",
     ],

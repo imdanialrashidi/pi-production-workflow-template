@@ -2,6 +2,16 @@
 
 Reviewed: **2026-08-23**. Test-quality amendment reviewed: **2026-08-24**. This record connects current primary evidence to concrete workflow controls. It does not claim that a prompt- or tool-level change improves every model or repository; deterministic tests protect invariants, and repeated matched-model evals remain the promotion standard.
 
+## 2026-10-12 — Remove todo package (@juicesharp/rpiv-todo@2.12.0)
+
+Per owner request, the todo package is removed from `.pi/settings.json` and `.pi/package-integrity.json`, and the `planning` capability group (`todo`) is removed from `harness-runtime.js`. Two capability groups remain (`delegation`, `web`). Multi-step tracking now relies on the execution plan (`docs/exec-plans/active/`) for durable state and a compact in-context contract for ordinary work; HARNESS, TOOLING_SETUP, README, the `/resume` prompt, doctor pins, and the loader tests are updated to match. Old continuity snapshots carrying `planning` restore safely: unknown capabilities are filtered on restore and ignored by the loader. This supersedes the "Todo package: Keep, conditional" row below.
+
+| Primary source / inspection | Decision | Evidence limit |
+|---|---|---|
+| Owner request 2026-10-12 + repo-wide reference audit (settings, integrity, runtime, doctor, tests, docs, prompts) | Remove the pin, the capability group, the Todo-panel guidance, and all living references | No matched-model A/B was run; quality/cost effect of the removal is unmeasured — compare baseline/candidate with the promotion protocol before claiming an improvement |
+
+Validation: deterministic `node --test tests/*.test.mjs`, `bash scripts/pi-doctor.sh --ci --static`, `node scripts/verify-package-integrity.mjs`, and eval `--dry-run` must pass after the removal. No paid model trials or cross-model quality gains are claimed.
+
 ## 2026-10-12 — Remove DeepWiki MCP
 
 Per owner request, the `deepwiki` remote MCP server (`https://mcp.deepwiki.com/mcp`) is removed from `.pi/mcp.json`. Remote docs lookup is gone: docs evidence is now local source, installed types, repository patterns, and `web_search`/`web_fetch` for current upstream facts. Doctor and `verify-package-integrity` reject a re-added `deepwiki` (or stale `context7`) server instead of pinning the official endpoint. The `docs-deepwiki-workflow` eval case is removed; HARNESS discovery order, TOOLING_SETUP, README, and the CHANGELOG are updated to match; the dated DeepWiki/Context7 entries below stay as audit history. Deliberately kept: the `docsSecretReason` guard in `safety-guard.js` still blocks secret-like and sensitive-path inputs on docs-query tool names — it fires only on matching MCP tools (e.g. an operator-added user-level docs server), costs one regex on MCP calls, and is defense in depth, not project docs infrastructure. Its test is retitled to the generic "docs MCP questions".
@@ -78,7 +88,7 @@ The optimized workflow keeps a small model-neutral core and loads specialization
 
 1. **No provider/model/thinking pin.** Pi uses the operator's active selection. Rules route by capability and provide fallbacks when image input, subagents, extended thinking, or a large context window is absent.
 2. **Less always-loaded policy.** `AGENTS.md` is the repository map; detailed procedure stays in on-demand docs, prompts, and skills.
-3. **Adaptive tool surface.** The launcher starts with eight schemas instead of 19: seven core repository tools plus `harness_tools`. Planning, delegation, and web groups remain installed and activate additively only when required.
+3. **Adaptive tool surface.** The launcher starts with eight schemas instead of 19: seven core repository tools plus `harness_tools`. Delegation and web groups remain installed and activate additively only when required.
 4. **Conditional orchestration.** One primary writer handles normal work. Scout/reviewer/security roles are used only for a named ambiguity or risk; a separate self-review is the universal fallback.
 5. **Schema prevention before repair.** On the exact reviewed Pi pin, capability-gated strict-prefer JSON-schema sampling is enabled for supported built-ins, while Pi's existing pre-validation argument preparation and the MCP proxy's object/JSON-string handling remain authoritative. The workflow does not guess-repair schema-invalid calls after validation.
 6. **Implementation autonomy, scoped PR delivery.** Owner-adopted policy on 2026-08-26 adds verified commit/push/PR handoff through a fixed `ai-changes` helper. Main integration and other external actions remain owner-controlled. This is a user authority choice, not a claim of improved model quality.
@@ -128,7 +138,7 @@ The optimized workflow keeps a small model-neutral core and loads specialization
 | 16 slash-command prompts | **Keep on demand** | They cover distinct deliverables and are not all loaded per turn; merging would make selection less precise. |
 | 6 specialist skills | **Keep on demand** | Each has a distinct trigger/evidence contract; Pi progressive disclosure avoids constant context cost. `quick-fix` replaces ceremony for genuinely Localized work rather than adding another review stage. |
 | Subagent package | **Keep, conditional** | Independent context helps ambiguity/risk, but default invocation adds cost and can dilute ownership. |
-| Todo package | **Keep, conditional** | One compact tool helps genuinely multi-step state; localized tasks explicitly avoid it. |
+| Todo package (`planning`) | **Remove 2026-10-12** | Owner decision; execution plans carry durable multi-step state, ordinary contracts stay compact in context. See the dated entry above. |
 | LSP (`code_intelligence`) | **Remove 2026-10-12** | Owner decision; exact search, focused reads, installed types, and the compiler gate are the fallback. See the dated entry above. |
 | Web (`web_search`/`web_fetch` via `harness_tools`) | **Keep deferred** | Current external evidence improves correctness when needed, but specialist schemas do not need to accompany every localized task. Docs lookup is local-first (source, types, patterns) since DeepWiki removal 2026-10-12. |
 | Playwright MCP | **Keep deferred + lazy** | The single `mcp` schema activates only for browser work. With valid cached metadata the server starts lazily; missing/stale metadata may require a startup catalog connection. |
