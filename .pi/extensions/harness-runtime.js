@@ -361,8 +361,7 @@ export default function harnessRuntime(pi) {
       activeCapabilities.clear();
     } else {
       for (const capability of requested) {
-        // Unknown groups (e.g. legacy `docs`, now served by native
-        // DeepWiki MCP via tool_search) are ignored so a stale caller
+        // Unknown groups (e.g. legacy `docs`) are ignored so a stale caller
         // cannot crash the loader or pollute continuity state. Pi's
         // schema enum rejects them before execute in live sessions.
         if (!CAPABILITY_TOOL_GROUPS[capability]) continue;

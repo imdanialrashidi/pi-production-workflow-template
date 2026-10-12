@@ -66,8 +66,7 @@ Preferred order:
 2. exact search/symbol lookup;
 3. focused source ranges and affected tests;
 4. installed types and local dependency source;
-5. `mcp__deepwiki__*` via `tool_search` for public-repo documentation;
-6. web search for current upstream issues, advisories, regressions, or release notes.
+5. web search for current upstream issues, advisories, regressions, or release notes.
 
 If subagents are available, use `scout` only when the relevant surface or cross-module flow is genuinely unclear. Otherwise investigate directly. Do not delegate the same discovery twice.
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased — Remove DeepWiki MCP
+
+- Remove the `deepwiki` remote MCP server from `.pi/mcp.json`. Docs evidence is local source, installed types, repository patterns, and web search/fetch; no remote wiki index, no third-party docs dependency.
+- Doctor and `verify-package-integrity` now reject a re-added `deepwiki` (or stale `context7`) server instead of pinning the official endpoint.
+- Remove the `docs-deepwiki-workflow` eval case and all living docs references. The `safety-guard.js` docs-query secret/path guard stays as defense in depth for any operator-added docs MCP; its test is retitled generically.
+- The 2026-10-07 DeepWiki/Context7 entries in `docs/RESEARCH.md` stay as audit history; the removal decision and tradeoff are recorded in a new 2026-10-12 entry.
+
 ## Unreleased — Remove LSP adapter
 
 - Remove `pi-lsp-adapter@0.1.3` from `.pi/settings.json` and its integrity record. Semantic lookup falls back to exact search, focused reads, installed types, and the project compiler/typecheck gate.

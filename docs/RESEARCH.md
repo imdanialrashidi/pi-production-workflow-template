@@ -2,6 +2,16 @@
 
 Reviewed: **2026-08-23**. Test-quality amendment reviewed: **2026-08-24**. This record connects current primary evidence to concrete workflow controls. It does not claim that a prompt- or tool-level change improves every model or repository; deterministic tests protect invariants, and repeated matched-model evals remain the promotion standard.
 
+## 2026-10-12 — Remove DeepWiki MCP
+
+Per owner request, the `deepwiki` remote MCP server (`https://mcp.deepwiki.com/mcp`) is removed from `.pi/mcp.json`. Remote docs lookup is gone: docs evidence is now local source, installed types, repository patterns, and `web_search`/`web_fetch` for current upstream facts. Doctor and `verify-package-integrity` reject a re-added `deepwiki` (or stale `context7`) server instead of pinning the official endpoint. The `docs-deepwiki-workflow` eval case is removed; HARNESS discovery order, TOOLING_SETUP, README, and the CHANGELOG are updated to match; the dated DeepWiki/Context7 entries below stay as audit history. Deliberately kept: the `docsSecretReason` guard in `safety-guard.js` still blocks secret-like and sensitive-path inputs on docs-query tool names — it fires only on matching MCP tools (e.g. an operator-added user-level docs server), costs one regex on MCP calls, and is defense in depth, not project docs infrastructure. Its test is retitled to the generic "docs MCP questions".
+
+| Primary source / inspection | Decision | Evidence limit |
+|---|---|---|
+| Owner request 2026-10-12 + repo-wide reference audit (mcp config, doctor, integrity script, runtime comment, tests, eval case, docs) | Remove the server, endpoint checks, eval case, and all living references; doctor/integrity reject re-adding | No matched-model A/B was run; quality/cost effect of the removal is unmeasured — compare baseline/candidate with the promotion protocol before claiming an improvement |
+
+Validation: deterministic `node --test tests/*.test.mjs`, `bash scripts/pi-doctor.sh --ci --static`, `node scripts/verify-package-integrity.mjs`, and eval `--dry-run` must pass after the removal. No paid model trials or cross-model quality gains are claimed.
+
 ## 2026-10-12 — Remove LSP adapter (pi-lsp-adapter@0.1.3)
 
 Per owner request, `pi-lsp-adapter@0.1.3` is removed from `.pi/settings.json` and `.pi/package-integrity.json`, the `code_intelligence` capability group (`lsp_diagnostics`, `lsp_definition`, `lsp_references`, `lsp_workspace_symbols`, `lsp_more`) is removed from `harness-runtime.js`, and the `scripts/pi-extension-compat.mjs` packaging workaround plus its launcher/doctor/test coverage is deleted. Semantic lookup now relies on exact search (`grep`/`find`), focused reads, installed types, and the project's compiler/typecheck gate — the same fallback the setup guidance already required for cold-start diagnostics (see the 2026-10-03 note below: a first query can report no diagnostics before the server initializes). Tradeoff: cross-file definition/reference navigation loses a dedicated tool; tasks that genuinely need it use `scout` delegation or the project's own language tooling instead. HARNESS, TOOLING_SETUP, EVALUATION, README, doctor pins, and the CHANGELOG are updated to match; the dated entries below stay as audit history. This supersedes the "LSP/docs/web: Keep deferred" row and the `pi-lsp-adapter` dependency row.
@@ -120,7 +130,7 @@ The optimized workflow keeps a small model-neutral core and loads specialization
 | Subagent package | **Keep, conditional** | Independent context helps ambiguity/risk, but default invocation adds cost and can dilute ownership. |
 | Todo package | **Keep, conditional** | One compact tool helps genuinely multi-step state; localized tasks explicitly avoid it. |
 | LSP (`code_intelligence`) | **Remove 2026-10-12** | Owner decision; exact search, focused reads, installed types, and the compiler gate are the fallback. See the dated entry above. |
-| Docs (DeepWiki via `tool_search`)/web | **Keep deferred** | Local/current evidence improves correctness when needed, but specialist schemas do not need to accompany every localized task. |
+| Web (`web_search`/`web_fetch` via `harness_tools`) | **Keep deferred** | Current external evidence improves correctness when needed, but specialist schemas do not need to accompany every localized task. Docs lookup is local-first (source, types, patterns) since DeepWiki removal 2026-10-12. |
 | Playwright MCP | **Keep deferred + lazy** | The single `mcp` schema activates only for browser work. With valid cached metadata the server starts lazily; missing/stale metadata may require a startup catalog connection. |
 | Smart Read | **Add bounded focus** | Pi already truncates at 2,000 lines/50 KiB; the extension adds an earlier 400-line bound only for large implicit reads and preserves explicit ranges. |
 | Continuity capsule | **Add bounded state** | Exact recent check status and hashed open failures can be lost across resume/compaction. Custom entries persist that state outside normal LLM context and inject it once. |
