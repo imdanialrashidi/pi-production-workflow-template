@@ -16,7 +16,7 @@ A compact, evidence-driven harness for [Pi Coding Agent](https://pi.dev/) focuse
 - a model-neutral runtime that bounds implicit large-file reads, stops blind identical retries, and preserves a compact continuity capsule across resume/compaction;
 - Pi-native capability-aware tool schemas for the reviewed runtime;
 - bounded read-heavy subagents through the pinned `pi-sub-agent` package;
-- on-demand LSP, DeepWiki MCP documentation search, and web search/fetch;
+- on-demand DeepWiki MCP documentation search and web search/fetch;
 - lazy Playwright MCP browser exploration for localhost and public HTTP(S) pages, with focused page evaluation;
 - repository-local Playwright Test (when the real project uses it) for durable regression coverage;
 - a visible todo panel for genuinely multi-step work;
@@ -224,7 +224,6 @@ The template pins:
 ```text
 pi-sub-agent
 @juicesharp/rpiv-todo
-pi-lsp-adapter
 @bytetrue/pi-web-search
 ```
 
@@ -247,7 +246,6 @@ read, bash, edit, write, grep, find, ls, harness_tools, tool_search
 |---|---|
 | `planning` | `todo` |
 | `delegation` | `subagent` |
-| `code_intelligence` | five focused LSP tools |
 | `web` | `web_search`, `web_fetch` |
 
 Docs and browser work use native `tool_search` directly: load only the needed `mcp__deepwiki__*` or `mcp__playwright__*` tools, then call their returned schemas.
@@ -258,12 +256,11 @@ Useful checks:
 
 ```text
 /todos
-/lsp status
 /mcp
 /web --show
 ```
 
-See [`docs/TOOLING_SETUP.md`](docs/TOOLING_SETUP.md) for LSP, documentation search, web search, and Playwright setup.
+See [`docs/TOOLING_SETUP.md`](docs/TOOLING_SETUP.md) for documentation search, web search, and Playwright setup.
 
 ## Context and long-running work
 

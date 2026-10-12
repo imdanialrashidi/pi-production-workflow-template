@@ -8,7 +8,6 @@ The reviewed Pi pin requires Node.js 22.19.0 or newer. The included CI pins Node
 
 - `pi-sub-agent@0.1.5`
 - `@juicesharp/rpiv-todo@2.12.0`
-- `pi-lsp-adapter@0.1.3`
 - `@bytetrue/pi-web-search@0.5.1`
 
 Pi `1.0.4` loads `.pi/mcp.json` natively. It pins `@playwright/mcp@0.0.83` and the official DeepWiki remote MCP endpoint, exposes only the listed browser/docs tools on demand, and keeps unlisted tools hidden. No MCP adapter is installed.
@@ -19,7 +18,6 @@ The packages remain installed and their commands remain available, but their mod
 |---|---|
 | `planning` | `todo` |
 | `delegation` | `subagent` |
-| `code_intelligence` | `lsp_diagnostics`, `lsp_definition`, `lsp_references`, `lsp_workspace_symbols`, `lsp_more` |
 | `web` | `web_search`, `web_fetch` |
 
 Browser and docs work uses native `tool_search` directly: load only the needed `mcp__playwright__*` or `mcp__deepwiki__*` tools, then call their returned schemas. No docs capability-loader call is needed.
@@ -112,47 +110,6 @@ Use browser-observable evidence first for behavior: accessibility snapshots, DOM
 
 Do not claim pixel-level or aesthetic screenshot findings that the active model cannot actually inspect. Mark those acceptance criteria `UNPROVEN` and report the saved screenshot path instead.
 
-## Language server setup
-
-Start this workflow with `./p`. The published `pi-lsp-adapter@0.1.3` incorrectly lists Pi TUI and TypeBox as runtime dependencies. `scripts/pi-extension-compat.mjs` moves only those reviewed declarations to optional `"*"` peers in the project's installed `.pi/npm` cache, before Pi reads extension manifests. Pi supplies the actual runtime modules through its loader. Upstream source, registry integrity records, product dependencies and provider settings stay unchanged.
-
-The launcher installs the configured adapter on its first trusted session if missing, then repairs it. Help, explicit no-approval/no-extension runs and ask/never trust modes do not trigger this pre-install. `./p install ...` and `./p update ...` reapply the correction after successful installation. The workaround retires automatically when the configured LSP pin changes; it does not patch an unknown release or suppress diagnostics.
-
-For an existing project showing the host-dependency warning, copy the updated `p` and `scripts/pi-extension-compat.mjs` from the same workflow revision, quit Pi and run `./p` again. For a direct `pi` launch, repair the installed cache first:
-
-```bash
-node scripts/pi-extension-compat.mjs
-pi
-```
-
-Reapply after a direct `pi update` reinstalls this package, or use `./p update`. `/bootstrap` fills product contracts; it cannot repair an npm manifest. Doctor checks an installed adapter without modifying it and reports how to repair it.
-
-Check available servers:
-
-```text
-/lsp status
-```
-
-Install only the server required by the current project, for example:
-
-```text
-/lsp install vtsls
-/lsp doctor vtsls
-```
-
-or:
-
-```text
-/lsp install pyright
-/lsp doctor pyright
-```
-
-Missing language servers are not silently installed.
-
-The `/lsp` management command is always available. The model activates `code_intelligence` only when definitions, references, workspace symbols, or diagnostics add evidence beyond exact text search.
-
-Language-server diagnostics arrive asynchronously. A cold first query can say "No LSP diagnostics" before TypeScript publishes its errors. Recheck after initialization or a recent edit; use the project's compiler/check command for authoritative verification. Empty LSP output alone is not a passed build.
-
 ## Documentation search
 
 DeepWiki runs as a native remote MCP server (see `.pi/mcp.json`): Pi connects over streamable HTTP to `https://mcp.deepwiki.com/mcp`. It covers public GitHub repositories with no API key and no local process. Private repositories need a Devin account and are out of scope for the default workflow — treat private-repo docs as `UNPROVEN` via local source instead.
@@ -200,7 +157,6 @@ After setup:
 
 ```text
 /todos
-/lsp status
 /mcp
 /web --show
 ```

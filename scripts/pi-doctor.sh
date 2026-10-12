@@ -46,7 +46,6 @@ required=(
   .github/dependabot.yml
   .github/pull_request_template.md
   p
-  scripts/pi-extension-compat.mjs
   .pi/mcp.json
   .pi/settings.json
   .pi/package-integrity.json
@@ -144,12 +143,6 @@ else
   fail "custom provider setup script has a JavaScript syntax error"
 fi
 
-if node --check scripts/pi-extension-compat.mjs && node scripts/pi-extension-compat.mjs --check; then
-  pass "extension compatibility helper parses; any installed LSP manifest is compatible"
-else
-  fail "extension compatibility check failed; start ./p to repair the reviewed LSP package"
-fi
-
 if [[ "$static_mode" -eq 1 ]]; then
   pass "workflow behavior tests omitted in explicit static-only mode"
 elif node --test tests/*.test.mjs; then
@@ -232,7 +225,6 @@ const installed = new Set((settings.packages || []).map((entry) =>
 const required = [
   'npm:pi-sub-agent@0.1.5',
   'npm:@juicesharp/rpiv-todo@2.12.0',
-  'npm:pi-lsp-adapter@0.1.3',
   'npm:@bytetrue/pi-web-search@0.5.1',
 ];
 const missing = required.filter((item) => !installed.has(item));
@@ -349,11 +341,6 @@ done
 specialist_tools=(
   subagent
   todo
-  lsp_diagnostics
-  lsp_definition
-  lsp_references
-  lsp_workspace_symbols
-  lsp_more
   web_search
   web_fetch
 )

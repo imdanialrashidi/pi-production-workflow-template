@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased — Remove LSP adapter
+
+- Remove `pi-lsp-adapter@0.1.3` from `.pi/settings.json` and its integrity record. Semantic lookup falls back to exact search, focused reads, installed types, and the project compiler/typecheck gate.
+- Remove the `code_intelligence` capability group (`lsp_diagnostics`, `lsp_definition`, `lsp_references`, `lsp_workspace_symbols`, `lsp_more`) from `harness_tools`; three capability groups remain (`planning`, `delegation`, `web`).
+- Delete `scripts/pi-extension-compat.mjs` and its test; the `p` launcher no longer repairs a reviewed LSP manifest, and doctor no longer pins or checks the adapter.
+- Retire the "LSP host dependency repair" workaround below; it stays as history. Record the decision and tradeoff in `docs/RESEARCH.md` (2026-10-12 entry).
+
 ## Unreleased — DeepWiki MCP replaces Context7
 
 - Replace `@upstash/context7-mcp@4.1.2` stdio MCP with the official DeepWiki remote MCP (`https://mcp.deepwiki.com/mcp`, hidden, deferred `read_wiki_structure`/`read_wiki_contents`/`ask_wiki_question` via `tool_search`). No package install, no API key for public repos; private repos stay out of scope.
